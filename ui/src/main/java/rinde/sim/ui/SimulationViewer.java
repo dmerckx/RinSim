@@ -37,7 +37,7 @@ import rinde.sim.core.model.ModelReceiver;
 import rinde.sim.core.simulation.Controller;
 import rinde.sim.core.simulation.Simulator;
 import rinde.sim.core.simulation.Agent;
-import rinde.sim.core.simulation.TimeLapse;
+import rinde.sim.core.simulation.time.TimeLapse;
 import rinde.sim.ui.renderers.Renderer;
 import rinde.sim.ui.renderers.ViewPort;
 import rinde.sim.ui.renderers.ViewRect;

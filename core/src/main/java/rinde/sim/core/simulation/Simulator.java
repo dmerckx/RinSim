@@ -12,16 +12,25 @@ import rinde.sim.core.model.Model;
 import rinde.sim.core.model.ModelManager;
 import rinde.sim.core.model.ModelProvider;
 import rinde.sim.core.model.simulator.SimulatorModel;
-import rinde.sim.core.simulation.policies.TickPolicy;
+import rinde.sim.core.simulation.policies.ParallelInterval;
+import rinde.sim.core.simulation.policies.ParallelLapse;
+import rinde.sim.core.simulation.policies.SerialInterval;
+import rinde.sim.core.simulation.time.TimeIntervalImpl;
+import rinde.sim.core.simulation.types.Agent;
+import rinde.sim.core.simulation.types.ExternalTickListener;
+import rinde.sim.core.simulation.types.Port;
+import rinde.sim.core.simulation.types.PrimaryTickListener;
 import rinde.sim.event.Event;
 import rinde.sim.event.EventAPI;
 import rinde.sim.event.EventDispatcher;
 
 /**
  * Simulator is the core class of a simulation. It is responsible for managing
- * time which it does by periodically providing {@link TimeLapse} instances to
- * registered {@link Agent}s. Further it provides methods to start and
- * stop simulations. The simulator also acts as a facade through which
+ * time which it does by periodically providing all his registered policies
+ * with {@link TimeInterval} objects.
+ * 
+ * Further it provides methods to start and stop simulations.
+ * The simulator also acts as a facade through which
  * {@link Model}s and objects can be added to the simulator, more info about
  * models can be found in {@link ModelManager}.
  * 
@@ -38,23 +47,13 @@ import rinde.sim.event.EventDispatcher;
  * 
  * 
  * @author Rinde van Lon (rinde.vanlon@cs.kuleuven.be)
- * @author Bartosz Michalik <bartosz.michalik@cs.kuleuven.be> - simulator API
- *         changes
- * 
+ * @author dmerckx
  */
 public class Simulator{
 
-    /**
-     * The enum class containing all the policy rules that will be used.
-     * These rules are per definition unmodifiable at runtime.
-     */
-    TickPolicy<?>[] policies;
+    private TickPolicy<?>[] policies;
     
-    /**
-     * The policy rule currently being executed. Null is the standard when
-     * no execution is going on.
-     */
-    TickPolicy<?> activePolicy;
+    private TickPolicy<?> activePolicy;
     
     /**
      * The logger of the simulator.
@@ -116,20 +115,26 @@ public class Simulator{
     private final long timeStep;
 
 
-    // TODO RandomGenerator should be moved into an own model. This way, objects
-    // that need a reference to a random generator can get one by implementing
-    // this model's interface. The model could have several policies for
-    // distributing RNGs: ALL_SAME, CLASS_SAME, ALL_DIFFERENT. This would
-    // indicate: every subscribing object uses same RNG, objects of the same
-    // class share same RNG, all objects get a different RNG instance
-    // respectively.
+    public static final TickPolicy<?>[] getStdPolicies(){
+        TickPolicy<?>[] policies = new TickPolicy[4];
+        
+        policies[0] = new SerialInterval<PrimaryTickListener>(true, PrimaryTickListener.class);
+        policies[1] = new ParallelLapse<Agent>(false, Agent.class);
+        policies[2] = new ParallelInterval<Port>(false, Port.class);
+        policies[3] = new SerialInterval<ExternalTickListener>(false, ExternalTickListener.class);
+        
+        return policies;
+    }
+    
+    public Simulator(long step) {
+        this(step, getStdPolicies());
+    }
+    
     /**
-     * Create a new simulator instance.
-     * @param r The random number generator that is used in this simulator.
-     * @param step The time that passes each tick. This can be in any unit the
-     *            programmer prefers.
+     * @param step The stepsize used in between 2 ticks
+     * @param policies The policies used to register/unregister/execute {@link TickListener}s
      */
-    public <F extends TickListener<?>> Simulator(long step, TickPolicy<?>[] policies) {
+    protected <F extends TickListener<?>> Simulator(long step, TickPolicy<?>[] policies) {
         timeStep = step;
         
         this.policies = policies;
@@ -325,7 +330,7 @@ public class Simulator{
     private void tick() {
         long timeS = System.currentTimeMillis();
         
-        TimeInterval interval = new TimeInterval(time, time+timeStep);
+        TimeInterval interval = new TimeIntervalImpl(time, time+timeStep);
         
         for(TickPolicy<?> rule:policies){
             activePolicy = rule;

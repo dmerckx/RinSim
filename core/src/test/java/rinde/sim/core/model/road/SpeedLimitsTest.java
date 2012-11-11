@@ -25,7 +25,7 @@ import rinde.sim.core.graph.Point;
 import rinde.sim.core.graph.TestMultimapGraph;
 import rinde.sim.core.graph.TestTableGraph;
 import rinde.sim.core.model.road.users.MovingRoadUser;
-import rinde.sim.core.simulation.TimeLapse;
+import rinde.sim.core.simulation.time.TimeLapse;
 import rinde.sim.util.TimeUnit;
 
 /**

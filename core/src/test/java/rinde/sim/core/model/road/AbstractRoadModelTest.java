@@ -28,7 +28,7 @@ import rinde.sim.core.TimeLapseFactory;
 import rinde.sim.core.graph.Point;
 import rinde.sim.core.model.road.users.MovingRoadUser;
 import rinde.sim.core.model.road.users.RoadUser;
-import rinde.sim.core.simulation.TimeLapse;
+import rinde.sim.core.simulation.time.TimeLapse;
 import rinde.sim.util.SpeedConverter;
 import rinde.sim.util.TrivialRoadUser;
 

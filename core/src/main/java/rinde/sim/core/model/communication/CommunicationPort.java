@@ -11,9 +11,8 @@ import rinde.sim.core.graph.Point;
 import rinde.sim.core.refs.Ref;
 import rinde.sim.core.refs.RefBackup;
 import rinde.sim.core.refs.UpdateListener;
-import rinde.sim.core.simulation.Port;
 import rinde.sim.core.simulation.TimeInterval;
-import rinde.sim.core.simulation.TimeLapse;
+import rinde.sim.core.simulation.types.Port;
 
 class CommunicationPort implements CommunicationAPI, Port, UpdateListener{
 	
@@ -71,7 +70,7 @@ class CommunicationPort implements CommunicationAPI, Port, UpdateListener{
     // ----- PORT -----
 
     @Override
-    public void afterTick(TimeInterval l) {
+    public void tick(TimeInterval l) {
         mailbox.addAll(tempMailbox);
         tempMailbox.clear();
     }

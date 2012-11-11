@@ -10,7 +10,7 @@ import rinde.sim.core.model.pdp.PDPModel;
 import rinde.sim.core.model.pdp.Parcel;
 import rinde.sim.core.model.pdp.Vehicle;
 import rinde.sim.core.model.road.RoadModel;
-import rinde.sim.core.simulation.TimeLapse;
+import rinde.sim.core.simulation.time.TimeLapse;
 
 /**
  * @author Rinde van Lon <rinde.vanlon@cs.kuleuven.be>

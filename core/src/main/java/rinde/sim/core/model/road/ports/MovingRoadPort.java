@@ -13,9 +13,9 @@ import rinde.sim.core.model.road.users.MovingRoadUser;
 import rinde.sim.core.refs.ConstantRef;
 import rinde.sim.core.refs.Ref;
 import rinde.sim.core.refs.RefBackup;
-import rinde.sim.core.simulation.Port;
 import rinde.sim.core.simulation.TimeInterval;
 import rinde.sim.core.simulation.TimeLapse;
+import rinde.sim.core.simulation.types.Port;
 
 public class MovingRoadPort extends RoadPort implements Port, MovingRoadAPI, RefBackup<Point> {
 
@@ -50,7 +50,7 @@ public class MovingRoadPort extends RoadPort implements Port, MovingRoadAPI, Ref
     }
 
     @Override
-    public void afterTick(TimeInterval l) {
+    public void tick(TimeInterval l) {
         lastLoc = model.getPosition(user);
     }
     

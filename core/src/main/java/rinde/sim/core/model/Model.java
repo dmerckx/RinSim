@@ -8,7 +8,7 @@ import rinde.sim.core.simulation.TimeInterval;
  * @author Bartosz Michalik <bartosz.michalik@cs.kuleuven.be>
  * @param <T> basic type of element supported by model
  */
-public interface Model<T> extends TickListener {
+public interface Model<T>{
     
     /**
      * Through this method the user of the simulator receives a reference to the
@@ -28,15 +28,6 @@ public interface Model<T> extends TickListener {
      * @param element the <code>! null</code> should be imposed
      */
     void unregister(T element);
-
-    /**
-     * Is called at the start of each tick. A modelTick differs from 
-     * a normal tick in that they are guaranteed to be carried out sequentially,
-     * so no measures have to be taken for threadsafety. ModelTicks are carried
-     * out in the order that models were added to the simulator.
-     * @param time the time at which this tick starts
-     */
-    void preTick(TimeInterval t);
     
     /**
      * @return The class of the type supported by this model.

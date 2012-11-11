@@ -5,10 +5,8 @@ import java.util.HashMap;
 import rinde.sim.core.graph.Point;
 import rinde.sim.core.model.Model;
 import rinde.sim.core.model.SimulatorModelAPI;
-import rinde.sim.core.simulation.TimeInterval;
-import rinde.sim.core.simulation.TimeLapse;
 
-public class CommunicationModel implements Model<CommunicationUser> {
+public class CommunicationModel implements Model<CommunicationUser>{
 
 	private final HashMap<Address, CommunicationPort> comms;
 	private int nextId = 0;
@@ -69,10 +67,5 @@ public class CommunicationModel implements Model<CommunicationUser> {
 	@Override
 	public Class<CommunicationUser> getSupportedType() {
 		return CommunicationUser.class;
-	}
-
-	@Override
-	public void preTick(TimeInterval l) {
-		// do nothing
 	}
 }

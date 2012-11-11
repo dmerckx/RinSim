@@ -11,8 +11,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import rinde.sim.core.simulation.Simulator;
-import rinde.sim.core.simulation.Agent;
-import rinde.sim.core.simulation.TimeLapse;
+import rinde.sim.core.simulation.TimeInterval;
+import rinde.sim.core.simulation.types.ExternalTickListener;
 import rinde.sim.event.Event;
 import rinde.sim.event.EventAPI;
 import rinde.sim.event.EventDispatcher;
@@ -26,7 +26,7 @@ import rinde.sim.event.Listener;
  * @author Bartosz Michalik <bartosz.michalik@cs.kuleuven.be>
  * @since 2.0
  */
-public abstract class ScenarioController implements Agent {
+public abstract class ScenarioController implements ExternalTickListener {
 
     /**
      * Logger for this class.
@@ -117,7 +117,7 @@ public abstract class ScenarioController implements Agent {
         simulator.configure();
         LOGGER.info("simulator created");
 
-        simulator.addTickListener(this);
+        simulator.register(this);
 
         uiMode = createUserInterface();
     }
@@ -188,10 +188,10 @@ public abstract class ScenarioController implements Agent {
     }
 
     @Override
-    final public void tick(TimeLapse timeLapse) {
+    final public void tick(TimeInterval timeLapse) {
         if (!uiMode && ticks == 0) {
             LOGGER.info("scenario finished at virtual time:"
-                    + timeLapse.getTime() + "[stopping simulation]");
+                    + timeLapse.getStartTime() + "[stopping simulation]");
             simulator.stop();
         }
         if (LOGGER.isDebugEnabled() && ticks >= 0) {
@@ -203,11 +203,11 @@ public abstract class ScenarioController implements Agent {
         TimedEvent e = null;
 
         while ((e = scenarioQueue.peek()) != null
-                && e.time <= timeLapse.getTime()) {
+                && e.time <= timeLapse.getStartTime()) {
             scenarioQueue.poll();
             if (status == null) {
                 LOGGER.info("scenario started at virtual time:"
-                        + timeLapse.getTime());
+                        + timeLapse.getStartTime());
                 status = EventType.SCENARIO_STARTED;
                 disp.dispatchEvent(new Event(status, this));
             }
@@ -217,11 +217,11 @@ public abstract class ScenarioController implements Agent {
         if (e == null && status != EventType.SCENARIO_FINISHED) {
             if (ticks == 0) {
                 LOGGER.info("scenario finished at virtual time:"
-                        + timeLapse.getTime() + "[stopping simulation]");
+                        + timeLapse.getStartTime() + "[stopping simulation]");
                 simulator.stop();
             } else {
                 LOGGER.info("scenario finished at virtual time:"
-                        + timeLapse.getTime()
+                        + timeLapse.getStartTime()
                         + " [scenario controller is detaching from simulator..]");
             }
             status = EventType.SCENARIO_FINISHED;

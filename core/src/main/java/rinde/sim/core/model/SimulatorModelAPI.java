@@ -1,7 +1,7 @@
 package rinde.sim.core.model;
 
 import rinde.sim.core.model.simulator.SimulatorAPI;
-import rinde.sim.core.simulation.Port;
+import rinde.sim.core.simulation.types.Port;
 
 public interface SimulatorModelAPI extends SimulatorAPI {
 

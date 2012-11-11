@@ -1,19 +1,17 @@
 package rinde.sim.core.simulation.policies;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import rinde.sim.core.simulation.ExecutionRule;
 import rinde.sim.core.simulation.Simulator;
 import rinde.sim.core.simulation.TickListener;
+import rinde.sim.core.simulation.TickPolicy;
 import rinde.sim.core.simulation.TimeInterval;
 
 /**
@@ -55,6 +53,10 @@ public abstract class Parallel<T extends TickListener<I>, I extends TimeInterval
      */
     protected Set<T> listeners = new LinkedHashSet<T>();
     
+    /**
+     * Calls 
+     * @param targetClass
+     */
     public Parallel(Class<T> targetClass) {
         this(false, targetClass);
     }

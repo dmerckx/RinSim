@@ -1,13 +1,10 @@
 package rinde.sim.core.model.road.apis;
 
-import java.util.List;
 import java.util.Queue;
 
 import rinde.sim.core.graph.Point;
 import rinde.sim.core.model.road.InvalidLocationException;
-import rinde.sim.core.refs.RefBackup;
 import rinde.sim.core.refs.Ref;
-import rinde.sim.core.refs.VariableRef;
 import rinde.sim.core.simulation.TimeLapse;
 
 public interface MovingRoadAPI extends RoadAPI{

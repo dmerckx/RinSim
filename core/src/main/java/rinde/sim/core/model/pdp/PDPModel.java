@@ -23,8 +23,9 @@ import rinde.sim.core.model.ModelReceiver;
 import rinde.sim.core.model.pdp.twpolicy.LiberalPolicy;
 import rinde.sim.core.model.pdp.twpolicy.TimeWindowPolicy;
 import rinde.sim.core.model.road.RoadModel;
-import rinde.sim.core.simulation.Agent;
+import rinde.sim.core.simulation.TimeInterval;
 import rinde.sim.core.simulation.TimeLapse;
+import rinde.sim.core.simulation.types.PrimaryTickListener;
 import rinde.sim.event.Event;
 import rinde.sim.event.EventAPI;
 import rinde.sim.event.EventDispatcher;
@@ -62,7 +63,7 @@ import com.google.common.collect.Multimap;
  * 
  * @author Rinde van Lon <rinde.vanlon@cs.kuleuven.be>
  */
-public class PDPModel implements Model<PDPObject>, ModelReceiver {
+public class PDPModel implements Model<PDPObject>, ModelReceiver, PrimaryTickListener {
 
     /**
      * {@link EventAPI} which allows adding and removing listeners to the model.
@@ -565,7 +566,7 @@ public class PDPModel implements Model<PDPObject>, ModelReceiver {
     }
 
     @Override
-    public void preTick(TimeLapse timeLapse) {
+    public void tick(TimeInterval timeLapse) {
         currentTime = timeLapse.getStartTime();
         final Collection<Parcel> parcels = parcelState
                 .get(ParcelState.ANNOUNCED);

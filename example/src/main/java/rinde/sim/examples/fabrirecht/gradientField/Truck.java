@@ -8,7 +8,7 @@ import rinde.sim.core.model.pdp.PDPModel.VehicleState;
 import rinde.sim.core.model.pdp.Parcel;
 import rinde.sim.core.model.road.RoadModels;
 import rinde.sim.core.model.road.users.RoadUser;
-import rinde.sim.core.simulation.TimeLapse;
+import rinde.sim.core.simulation.time.TimeLapse;
 import rinde.sim.problem.fabrirecht.FRParcel;
 import rinde.sim.problem.fabrirecht.FRVehicle;
 import rinde.sim.problem.fabrirecht.VehicleDTO;

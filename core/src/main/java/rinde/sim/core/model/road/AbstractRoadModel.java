@@ -30,6 +30,7 @@ import rinde.sim.core.model.road.users.MovingRoadUser;
 import rinde.sim.core.model.road.users.RoadUser;
 import rinde.sim.core.simulation.TimeInterval;
 import rinde.sim.core.simulation.TimeLapse;
+import rinde.sim.core.simulation.types.PrimaryTickListener;
 import rinde.sim.event.EventAPI;
 import rinde.sim.event.EventDispatcher;
 import rinde.sim.util.SpeedConverter;
@@ -49,7 +50,7 @@ import com.google.common.collect.Sets;
  * @author Rinde van Lon <rinde.vanlon@cs.kuleuven.be>
  */
 public abstract class AbstractRoadModel<T> extends AbstractModel<RoadUser>
-        implements RoadModel {
+        implements RoadModel, PrimaryTickListener{
 
     private Map<RoadUser, RoadPort> userToPortMapping;
     
@@ -418,5 +419,5 @@ public abstract class AbstractRoadModel<T> extends AbstractModel<RoadUser>
     }
 
     @Override
-    public void preTick(TimeInterval t) {}
+    public void tick(TimeInterval t) {}
 }

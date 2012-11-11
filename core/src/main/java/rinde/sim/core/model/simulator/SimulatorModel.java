@@ -3,12 +3,13 @@ package rinde.sim.core.model.simulator;
 import rinde.sim.core.model.Model;
 import rinde.sim.core.model.SimulatorModelAPI;
 import rinde.sim.core.simulation.TimeInterval;
+import rinde.sim.core.simulation.types.PrimaryTickListener;
 
 /**
  * @author dmerckx
  *
  */
-public class SimulatorModel implements Model<SimulatorUser>{
+public class SimulatorModel implements Model<SimulatorUser>, PrimaryTickListener{
     
     private SimulatorHelper helper;
     private SimulatorModelAPI api;
@@ -36,7 +37,7 @@ public class SimulatorModel implements Model<SimulatorUser>{
     }
 
     @Override
-    public void preTick(TimeInterval t) {
+    public void tick(TimeInterval t) {
         for(Object o: helper.objectsToAdd){
             api.register(o);
         }

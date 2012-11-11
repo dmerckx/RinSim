@@ -23,7 +23,7 @@ import rinde.sim.core.model.pdp.PDPModel.PickupAction;
 import rinde.sim.core.model.pdp.PDPModel.VehicleState;
 import rinde.sim.core.model.road.PlaneRoadModel;
 import rinde.sim.core.model.road.RoadModel;
-import rinde.sim.core.simulation.TimeLapse;
+import rinde.sim.core.simulation.time.TimeLapse;
 import rinde.sim.util.TimeWindow;
 
 /**

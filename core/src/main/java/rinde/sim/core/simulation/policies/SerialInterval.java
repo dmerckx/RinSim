@@ -17,7 +17,7 @@ public class SerialInterval<T extends TickListener<TimeInterval>> extends Serial
     public SerialInterval(boolean register, Class<T> acceptedClass) {
         super(register, acceptedClass);
     }
-
+    
     @Override
     public void performTicks(TimeInterval interval) {
         for(T listener:listeners){
