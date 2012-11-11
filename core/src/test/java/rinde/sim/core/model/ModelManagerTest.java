@@ -21,7 +21,7 @@ import rinde.sim.core.graph.LengthData;
 import rinde.sim.core.graph.MultimapGraph;
 import rinde.sim.core.model.road.GraphRoadModel;
 import rinde.sim.core.model.road.RoadModel;
-import rinde.sim.core.model.road.RoadUser;
+import rinde.sim.core.model.road.users.RoadUser;
 
 public class ModelManagerTest {
 

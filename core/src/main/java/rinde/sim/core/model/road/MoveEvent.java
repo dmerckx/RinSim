@@ -4,6 +4,7 @@
 package rinde.sim.core.model.road;
 
 import rinde.sim.core.model.road.AbstractRoadModel.RoadEvent;
+import rinde.sim.core.model.road.users.MovingRoadUser;
 import rinde.sim.event.Event;
 
 /**

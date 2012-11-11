@@ -1,22 +1,12 @@
 package rinde.sim.core.model.communication;
 
-/**
- * @author Bartosz Michalik <bartosz.michalik@cs.kuleuven.be>
- * 
- */
-public abstract class Message implements Cloneable {
-    protected final CommunicationUser sender;
+import java.io.Serializable;
 
-    public Message(CommunicationUser sender) {
-        this.sender = sender;
-    }
+@SuppressWarnings("serial")
+public abstract class Message implements Serializable {
 
-    @Override
-    public Message clone() throws CloneNotSupportedException {
-        return (Message) super.clone();
-    }
-
-    public CommunicationUser getSender() {
-        return sender;
-    }
+	@Override
+	public Message clone() throws CloneNotSupportedException{
+		throw new CloneNotSupportedException();
+	}
 }

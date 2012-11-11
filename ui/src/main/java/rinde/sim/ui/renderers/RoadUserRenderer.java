@@ -13,7 +13,7 @@ import org.eclipse.swt.graphics.Image;
 import rinde.sim.core.graph.Point;
 import rinde.sim.core.model.ModelProvider;
 import rinde.sim.core.model.road.RoadModel;
-import rinde.sim.core.model.road.RoadUser;
+import rinde.sim.core.model.road.users.RoadUser;
 
 /**
  * @author Rinde van Lon (rinde.vanlon@cs.kuleuven.be)

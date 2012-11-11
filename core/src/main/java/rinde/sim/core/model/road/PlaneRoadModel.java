@@ -13,8 +13,10 @@ import java.util.Queue;
 
 import org.apache.commons.math3.random.RandomGenerator;
 
-import rinde.sim.core.TimeLapse;
 import rinde.sim.core.graph.Point;
+import rinde.sim.core.model.road.users.MovingRoadUser;
+import rinde.sim.core.model.road.users.RoadUser;
+import rinde.sim.core.simulation.TimeLapse;
 import rinde.sim.util.SpeedConverter;
 
 /**
@@ -92,7 +94,7 @@ public class PlaneRoadModel extends AbstractRoadModel<Point> {
 
         double traveled = 0;
         final SpeedConverter sc = new SpeedConverter();
-        double speed = min(object.getSpeed(), maxSpeed);
+        double speed = min(getSpeed(object), maxSpeed);
         if (speed == 0) {
             // FIXME add test for this case, also check GraphRoadModel
             return new MoveProgress(0, 0, new ArrayList<Point>());

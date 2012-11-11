@@ -1,35 +1,47 @@
 package rinde.sim.core.model.communication;
 
-/**
- * Communication API exposed to agent to allow them for communication.
- * @author Bartosz Michalik <bartosz.michalik@cs.kuleuven.be>
- * @since 2.0
- */
-public interface CommunicationAPI {
-    /**
-     * Send the message to a given recipient. Message will be delivered with a
-     * specific probability if recipient is within the range (see
-     * {@link CommunicationUser} for details).
-     * @param recipient
-     * @param message
-     */
-    void send(CommunicationUser recipient, Message message);
+import java.util.Iterator;
 
+import rinde.sim.core.graph.Point;
+import rinde.sim.core.refs.Ref;
+import rinde.sim.core.refs.RefBackup;
+
+
+interface CommunicationAPI {
+	
+	/**
+	 * Must be called when the model is set within a CommunicationUser.
+	 * The values given will be used throughout the simulator for this agent.
+	 * Changing the position, radius or reliability can be done by holding
+	 * your own copy of the Value object and modifying this when necessary.
+	 * @param pos
+	 * 		The position of the CommunicationUser.
+	 * @param radius
+	 * 		The radius at which the CommunicatorUser can be reached.
+	 * @param reliability
+	 * 		The reliability of messages received by the CommunicationUser.
+	 * 		Must be a value in the range of ]0,1].
+	 */
+	void init(RefBackup<Point> pos, Ref<Double> radius, Ref<Double> reliability);
+	
+	/**
+	 * Send a message to the given address.
+	 */
+    void send(Address destination, Message message);
+    
     /**
-     * Send the message to a given recipient. Message will be delivered with a
-     * specific probability to all possible recipients within the range (see
-     * {@link CommunicationUser} for details).
-     * @param recipient
-     * @param message
+     * Broadcast a message
      */
     void broadcast(Message message);
+    
+    /**
+     * Returns all messages in the form of an iterator. The remove() method
+     * of the iterator can be used to safely remove handled messages.
+     */
+    Iterator<Delivery> getMessages();
 
     /**
-     * Send the message to a given recipient. Message will be delivered with a
-     * specific probability to all possible recipients within the range (see
-     * {@link CommunicationUser} for details).
-     * @param message
-     * @param type type of recipient to deliver a message to
+     * Returns your address.
      */
-    void broadcast(Message message, Class<? extends CommunicationUser> type);
+    Address getAddress();
 }

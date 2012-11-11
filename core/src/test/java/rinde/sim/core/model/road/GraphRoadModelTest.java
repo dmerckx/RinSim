@@ -35,6 +35,8 @@ import rinde.sim.core.graph.Point;
 import rinde.sim.core.graph.TestMultimapGraph;
 import rinde.sim.core.graph.TestTableGraph;
 import rinde.sim.core.model.road.GraphRoadModel.Loc;
+import rinde.sim.core.model.road.users.MovingRoadUser;
+import rinde.sim.core.model.road.users.RoadUser;
 import rinde.sim.util.TimeUnit;
 
 /**

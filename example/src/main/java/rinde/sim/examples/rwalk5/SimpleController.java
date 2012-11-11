@@ -5,13 +5,13 @@ import java.util.Random;
 import org.apache.commons.math3.random.MersenneTwister;
 import org.eclipse.swt.graphics.RGB;
 
-import rinde.sim.core.Simulator;
 import rinde.sim.core.graph.Graph;
 import rinde.sim.core.graph.MultiAttributeData;
 import rinde.sim.core.model.communication.CommunicationModel;
 import rinde.sim.core.model.communication.CommunicationModel2;
 import rinde.sim.core.model.road.GraphRoadModel;
 import rinde.sim.core.model.road.RoadModel;
+import rinde.sim.core.simulation.Simulator;
 import rinde.sim.scenario.ConfigurationException;
 import rinde.sim.scenario.Scenario;
 import rinde.sim.scenario.ScenarioController;

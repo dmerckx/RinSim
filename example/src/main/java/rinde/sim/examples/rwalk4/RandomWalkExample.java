@@ -8,12 +8,12 @@ import java.util.Random;
 import org.apache.commons.math3.random.MersenneTwister;
 import org.eclipse.swt.graphics.RGB;
 
-import rinde.sim.core.Simulator;
 import rinde.sim.core.graph.Graph;
 import rinde.sim.core.graph.LengthData;
 import rinde.sim.core.model.communication.CommunicationModel;
 import rinde.sim.core.model.road.GraphRoadModel;
 import rinde.sim.core.model.road.RoadModel;
+import rinde.sim.core.simulation.Simulator;
 import rinde.sim.serializers.DotGraphSerializer;
 import rinde.sim.serializers.SelfCycleFilter;
 import rinde.sim.ui.View;

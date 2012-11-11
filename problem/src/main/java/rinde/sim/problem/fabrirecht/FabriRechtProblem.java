@@ -11,18 +11,18 @@ import java.util.Set;
 
 import org.apache.commons.math3.random.MersenneTwister;
 
-import rinde.sim.core.Simulator;
-import rinde.sim.core.Simulator.SimulatorEventType;
 import rinde.sim.core.model.pdp.PDPModel;
 import rinde.sim.core.model.pdp.PDPModel.PDPModelEvent;
 import rinde.sim.core.model.pdp.PDPModel.PDPModelEventType;
 import rinde.sim.core.model.pdp.PDPScenarioEvent;
 import rinde.sim.core.model.pdp.twpolicy.TardyAllowedPolicy;
 import rinde.sim.core.model.road.AbstractRoadModel.RoadEvent;
+import rinde.sim.core.model.road.users.MovingRoadUser;
 import rinde.sim.core.model.road.MoveEvent;
-import rinde.sim.core.model.road.MovingRoadUser;
 import rinde.sim.core.model.road.PlaneRoadModel;
 import rinde.sim.core.model.road.RoadModel;
+import rinde.sim.core.simulation.Simulator;
+import rinde.sim.core.simulation.Simulator.SimulatorEventType;
 import rinde.sim.event.Event;
 import rinde.sim.event.EventAPI;
 import rinde.sim.event.EventDispatcher;
@@ -57,7 +57,7 @@ public abstract class FabriRechtProblem extends ScenarioController {
 	// subclasses can override this method to add more models
 	@Override
 	protected Simulator createSimulator() throws Exception {
-		simulator = new Simulator(new MersenneTwister(123), 1);
+		simulator = new Simulator(1);
 		roadModel = new PlaneRoadModel(fabriRechtScenario.min, fabriRechtScenario.max, false, 1.0);
 		pdpModel = new PDPModel(new TardyAllowedPolicy());
 		simulator.getEventAPI().addListener(statisticsListener, SimulatorEventType.values());

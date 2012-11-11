@@ -17,9 +17,19 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 
-import rinde.sim.core.TimeLapse;
 import rinde.sim.core.graph.Point;
 import rinde.sim.core.model.AbstractModel;
+import rinde.sim.core.model.SimulatorModelAPI;
+import rinde.sim.core.model.road.apis.FixedRoadAPI;
+import rinde.sim.core.model.road.apis.MovingRoadAPI;
+import rinde.sim.core.model.road.ports.FixedRoadPort;
+import rinde.sim.core.model.road.ports.MovingRoadPort;
+import rinde.sim.core.model.road.ports.RoadPort;
+import rinde.sim.core.model.road.users.FixedRoadUser;
+import rinde.sim.core.model.road.users.MovingRoadUser;
+import rinde.sim.core.model.road.users.RoadUser;
+import rinde.sim.core.simulation.TimeInterval;
+import rinde.sim.core.simulation.TimeLapse;
 import rinde.sim.event.EventAPI;
 import rinde.sim.event.EventDispatcher;
 import rinde.sim.util.SpeedConverter;
@@ -41,6 +51,8 @@ import com.google.common.collect.Sets;
 public abstract class AbstractRoadModel<T> extends AbstractModel<RoadUser>
         implements RoadModel {
 
+    private Map<RoadUser, RoadPort> userToPortMapping;
+    
     protected final SpeedConverter speedConverter;
 
     protected boolean useSpeedConversion;
@@ -48,9 +60,20 @@ public abstract class AbstractRoadModel<T> extends AbstractModel<RoadUser>
     // TODO event dispatching has to be tested
     protected final EventDispatcher eventDispatcher;
     protected final EventAPI eventAPI;
+    
+    protected SimulatorModelAPI simAPI;
 
     public enum RoadEvent {
         MOVE
+    }
+    
+    @Override
+    public void setSimulatorAPI(SimulatorModelAPI api){
+        this.simAPI = api;
+    }
+    
+    public double getSpeed(MovingRoadUser user){
+        return ((MovingRoadPort) userToPortMapping.get(user)).getSpeed();
     }
 
     /**
@@ -315,22 +338,34 @@ public abstract class AbstractRoadModel<T> extends AbstractModel<RoadUser>
     }
 
     @Override
-    public boolean register(RoadUser roadUser) {
-        if (roadUser == null) {
+    public void register(RoadUser user) {
+        if (user == null) {
             throw new IllegalArgumentException("roadUser can not be null");
         }
-        roadUser.initRoadUser(this);
-        return true;
+        
+        RoadPort port;
+        if( user instanceof FixedRoadUser){
+            port = new FixedRoadPort((FixedRoadUser) user, this);
+            ((FixedRoadUser) user).initRoadUser((FixedRoadAPI) port);
+        }
+        else if( user instanceof MovingRoadUser){
+            port = new MovingRoadPort((MovingRoadUser) user, this);
+            ((MovingRoadUser) user).initRoadUser((MovingRoadAPI) port);
+        }
+        else {
+            throw new IllegalArgumentException("Unknown type of road user: " + user);
+        }
+        
+        userToPortMapping.put(user, port);
     }
 
     @Override
-    public boolean unregister(RoadUser roadUser) {
+    public void unregister(RoadUser roadUser) {
         checkArgument(roadUser != null, "RoadUser can not be null");
         if (containsObject(roadUser)) {
             removeObject(roadUser);
-            return true;
+            userToPortMapping.remove(roadUser);
         }
-        return false;
     }
 
     @Override
@@ -381,4 +416,7 @@ public abstract class AbstractRoadModel<T> extends AbstractModel<RoadUser>
             path = p;
         }
     }
+
+    @Override
+    public void preTick(TimeInterval t) {}
 }

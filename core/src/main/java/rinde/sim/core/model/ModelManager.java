@@ -78,28 +78,27 @@ public class ModelManager implements ModelProvider {
      * @return <code>true</code> if object was added to at least one model
      */
     @SuppressWarnings("unchecked")
-    public <T> boolean register(T object) {
+    public <T> void register(T object) {
         if (object == null) {
             throw new IllegalArgumentException("Can not register null");
         }
         if (object instanceof Model) {
             checkState(!configured, "model can not be registered after configure()");
-            return add((Model<?>) object);
+            add((Model<?>) object);
+            return;
         }
         checkState(configured, "can not register an object if configure() has not been called");
 
-        boolean result = false;
         final Set<Class<?>> modelSupportedTypes = registry.keySet();
         for (final Class<?> modelSupportedType : modelSupportedTypes) {
             if (modelSupportedType.isAssignableFrom(object.getClass())) {
                 final Collection<Model<?>> assignableModels = registry
                         .get(modelSupportedType);
                 for (final Model<?> m : assignableModels) {
-                    result |= ((Model<T>) m).register(object);
+                    ((Model<T>) m).register(object);
                 }
             }
         }
-        return result;
     }
 
     /**
@@ -112,14 +111,13 @@ public class ModelManager implements ModelProvider {
      *             configured
      */
     @SuppressWarnings("unchecked")
-    public <T> boolean unregister(T object) {
+    public <T> void unregister(T object) {
         if (object == null) {
             throw new IllegalArgumentException("can not unregister null");
         }
         checkArgument(!(object instanceof Model), "can not unregister a model");
         checkState(configured, "can not unregister when not configured, call configure() first");
 
-        boolean result = false;
         final Set<Class<?>> modelSupportedTypes = registry.keySet();
         for (final Class<?> modelSupportedType : modelSupportedTypes) {
             // check if object is from a known type
@@ -127,11 +125,10 @@ public class ModelManager implements ModelProvider {
                 final Collection<Model<?>> assignableModels = registry
                         .get(modelSupportedType);
                 for (final Model<?> m : assignableModels) {
-                    result |= ((Model<T>) m).unregister(object);
+                    ((Model<T>) m).unregister(object);
                 }
             }
         }
-        return result;
     }
 
     /**

@@ -16,8 +16,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import rinde.sim.core.TickListener;
-import rinde.sim.core.TimeLapse;
 import rinde.sim.core.graph.Point;
 import rinde.sim.core.model.Model;
 import rinde.sim.core.model.ModelProvider;
@@ -25,6 +23,8 @@ import rinde.sim.core.model.ModelReceiver;
 import rinde.sim.core.model.pdp.twpolicy.LiberalPolicy;
 import rinde.sim.core.model.pdp.twpolicy.TimeWindowPolicy;
 import rinde.sim.core.model.road.RoadModel;
+import rinde.sim.core.simulation.Agent;
+import rinde.sim.core.simulation.TimeLapse;
 import rinde.sim.event.Event;
 import rinde.sim.event.EventAPI;
 import rinde.sim.event.EventDispatcher;
@@ -62,7 +62,7 @@ import com.google.common.collect.Multimap;
  * 
  * @author Rinde van Lon <rinde.vanlon@cs.kuleuven.be>
  */
-public class PDPModel implements Model<PDPObject>, TickListener, ModelReceiver {
+public class PDPModel implements Model<PDPObject>, ModelReceiver {
 
     /**
      * {@link EventAPI} which allows adding and removing listeners to the model.
@@ -109,7 +109,7 @@ public class PDPModel implements Model<PDPObject>, TickListener, ModelReceiver {
      * @author Rinde van Lon <rinde.vanlon@cs.kuleuven.be>
      */
     public enum ParcelState {
-
+        
         // TODO perhaps a LATE state could be added as well, indicating that a
         // parcel is late for pickup
         /**
@@ -487,7 +487,7 @@ public class PDPModel implements Model<PDPObject>, TickListener, ModelReceiver {
     }
 
     @Override
-    public boolean register(PDPObject element) {
+    public void register(PDPObject element) {
         if (element.getType() == PDPType.PARCEL) {
             checkArgument(!parcelState.containsValue(element));
             final Parcel p = (Parcel) element;
@@ -510,12 +510,10 @@ public class PDPModel implements Model<PDPObject>, TickListener, ModelReceiver {
             }
         }
         element.initPDPObject(this);
-
-        return true;
     }
 
     @Override
-    public boolean unregister(PDPObject element) {
+    public void unregister(PDPObject element) {
         // TODO implement
         throw new UnsupportedOperationException();
     }
@@ -567,7 +565,7 @@ public class PDPModel implements Model<PDPObject>, TickListener, ModelReceiver {
     }
 
     @Override
-    public void tick(TimeLapse timeLapse) {
+    public void preTick(TimeLapse timeLapse) {
         currentTime = timeLapse.getStartTime();
         final Collection<Parcel> parcels = parcelState
                 .get(ParcelState.ANNOUNCED);
@@ -581,10 +579,7 @@ public class PDPModel implements Model<PDPObject>, TickListener, ModelReceiver {
             parcelState.put(ParcelState.AVAILABLE, p);
         }
     }
-
-    @Override
-    public void afterTick(TimeLapse timeLapse) {}
-
+    
     public TimeWindowPolicy getTimeWindowPolicy() {
         return timeWindowPolicy;
     }

@@ -10,9 +10,9 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import rinde.sim.core.Simulator;
-import rinde.sim.core.TickListener;
-import rinde.sim.core.TimeLapse;
+import rinde.sim.core.simulation.Simulator;
+import rinde.sim.core.simulation.Agent;
+import rinde.sim.core.simulation.TimeLapse;
 import rinde.sim.event.Event;
 import rinde.sim.event.EventAPI;
 import rinde.sim.event.EventDispatcher;
@@ -26,7 +26,7 @@ import rinde.sim.event.Listener;
  * @author Bartosz Michalik <bartosz.michalik@cs.kuleuven.be>
  * @since 2.0
  */
-public abstract class ScenarioController implements TickListener {
+public abstract class ScenarioController implements Agent {
 
     /**
      * Logger for this class.
@@ -156,7 +156,7 @@ public abstract class ScenarioController implements TickListener {
      */
     public void stop() {
         if (!uiMode) {
-            simulator.removeTickListener(this);
+            simulator.unregister(this);
             simulator.stop();
         }
     }
@@ -225,14 +225,11 @@ public abstract class ScenarioController implements TickListener {
                         + " [scenario controller is detaching from simulator..]");
             }
             status = EventType.SCENARIO_FINISHED;
-            simulator.removeTickListener(this);
+            simulator.unregister(this);
             disp.dispatchEvent(new Event(status, this));
         }
 
     }
-
-    @Override
-    public void afterTick(TimeLapse timeLapse) {} // not needed
 
     class TimedEventHandler implements Listener {
 

@@ -5,7 +5,7 @@ package rinde.sim.examples.fabrirecht.gradientField;
 
 import java.io.IOException;
 
-import rinde.sim.core.Simulator;
+import rinde.sim.core.simulation.Simulator;
 import rinde.sim.problem.fabrirecht.AddParcelEvent;
 import rinde.sim.problem.fabrirecht.AddVehicleEvent;
 import rinde.sim.problem.fabrirecht.FRDepot;

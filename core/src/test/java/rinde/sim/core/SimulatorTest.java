@@ -14,6 +14,12 @@ import org.apache.commons.math3.random.MersenneTwister;
 import org.junit.Before;
 import org.junit.Test;
 
+import rinde.sim.core.model.simulator.SimulatorAPI;
+import rinde.sim.core.model.simulator.SimulatorUser;
+import rinde.sim.core.simulation.Simulator;
+import rinde.sim.core.simulation.Agent;
+import rinde.sim.core.simulation.TimeLapse;
+
 import com.google.common.collect.Sets;
 
 /**
@@ -150,7 +156,7 @@ public class SimulatorTest {
 
 	class DummyObject {}
 
-	class DummyObjectTickListener implements TickListener {
+	class DummyObjectTickListener implements Agent {
 		@Override
 		public void tick(TimeLapse tl) {}
 
@@ -171,7 +177,7 @@ public class SimulatorTest {
 		}
 	}
 
-	class DummyModelAsTickListener extends DummyModel implements TickListener {
+	class DummyModelAsTickListener extends DummyModel implements Agent {
 
 		@Override
 		public void tick(TimeLapse tl) {}
@@ -181,7 +187,7 @@ public class SimulatorTest {
 
 	}
 
-	class LimitingTickListener implements TickListener {
+	class LimitingTickListener implements Agent {
 		private final int limit;
 		private int tickCount;
 		private final Simulator sim;
@@ -215,7 +221,7 @@ public class SimulatorTest {
 		}
 	}
 
-	class TickListenerImpl implements TickListener {
+	class TickListenerImpl implements Agent {
 		private int count = 0;
 		private long execTime;
 		private long afterTime;

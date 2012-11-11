@@ -3,7 +3,7 @@
  */
 package rinde.sim.core.model.pdp;
 
-import rinde.sim.core.model.road.RoadUser;
+import rinde.sim.core.model.road.users.RoadUser;
 
 /**
  * Base interface for objects in {@link PDPModel}. Can be used directly but

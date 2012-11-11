@@ -11,6 +11,7 @@ import java.util.Set;
 
 import rinde.sim.core.graph.Graph;
 import rinde.sim.core.graph.Point;
+import rinde.sim.core.model.road.users.RoadUser;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.LinkedHashMultimap;

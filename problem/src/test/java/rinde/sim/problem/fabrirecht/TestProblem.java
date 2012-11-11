@@ -11,7 +11,7 @@ import java.io.IOException;
 
 import org.junit.Test;
 
-import rinde.sim.core.TimeLapse;
+import rinde.sim.core.simulation.TimeLapse;
 
 /**
  * @author Rinde van Lon <rinde.vanlon@cs.kuleuven.be>

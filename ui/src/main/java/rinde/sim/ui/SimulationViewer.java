@@ -32,11 +32,12 @@ import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.ScrollBar;
 import org.eclipse.swt.widgets.Shell;
 
-import rinde.sim.core.Simulator;
-import rinde.sim.core.TickListener;
-import rinde.sim.core.TimeLapse;
 import rinde.sim.core.graph.Point;
 import rinde.sim.core.model.ModelReceiver;
+import rinde.sim.core.simulation.Controller;
+import rinde.sim.core.simulation.Simulator;
+import rinde.sim.core.simulation.Agent;
+import rinde.sim.core.simulation.TimeLapse;
 import rinde.sim.ui.renderers.Renderer;
 import rinde.sim.ui.renderers.ViewPort;
 import rinde.sim.ui.renderers.ViewRect;
@@ -49,7 +50,7 @@ import rinde.sim.util.TimeFormatter;
  * @author Rinde van Lon <rinde.vanlon@cs.kuleuven.be>
  * 
  */
-public class SimulationViewer extends Composite implements TickListener, ControlListener, PaintListener,
+public class SimulationViewer extends Composite implements Controller, ControlListener, PaintListener,
 		SelectionListener {
 
 	public static final String COLOR_WHITE = "white";
@@ -103,7 +104,7 @@ public class SimulationViewer extends Composite implements TickListener, Control
 			}
 		}
 		simulator = sim;
-		simulator.addTickListener(this);
+		simulator.register(this);
 
 		this.renderers = renderers;
 		this.speedUp = speedUp;
@@ -304,7 +305,7 @@ public class SimulationViewer extends Composite implements TickListener, Control
 		if (simulator.isPlaying()) {
 			simulator.stop();
 		}
-		simulator.tick();
+		simulator.advanceTick();
 	}
 
 	protected void onZooming(MenuItem source) {
@@ -341,12 +342,7 @@ public class SimulationViewer extends Composite implements TickListener, Control
 			}
 		}
 	}
-
-	@Override
-	public void tick(TimeLapse timeLapse) {
-
-	}
-
+	
 	public Image drawRoads() {
 		size = new org.eclipse.swt.graphics.Point((int) (m * viewRect.width), (int) (m * viewRect.height));
 		final Image img = new Image(getDisplay(), size.x + 10, size.y + 10);
@@ -530,7 +526,7 @@ public class SimulationViewer extends Composite implements TickListener, Control
 	}
 
 	@Override
-	public void afterTick(TimeLapse timeLapse) {
+	public void preTick(TimeLapse timeLapse) {
 		if (simulator.isPlaying() && lastRefresh + timeLapse.getTimeStep() * speedUp > timeLapse.getStartTime()) {
 			return;
 		}

@@ -22,11 +22,11 @@ import org.junit.runners.Parameterized.Parameters;
 
 import rinde.sim.core.TimeLapseFactory;
 import rinde.sim.core.model.road.GraphRoadModel;
-import rinde.sim.core.model.road.MovingRoadUser;
 import rinde.sim.core.model.road.MoveProgress;
 import rinde.sim.core.model.road.RoadModel;
 import rinde.sim.core.model.road.RoadModels;
-import rinde.sim.core.model.road.RoadUser;
+import rinde.sim.core.model.road.users.MovingRoadUser;
+import rinde.sim.core.model.road.users.RoadUser;
 import rinde.sim.util.TimeUnit;
 import rinde.sim.util.TrivialRoadUser;
 

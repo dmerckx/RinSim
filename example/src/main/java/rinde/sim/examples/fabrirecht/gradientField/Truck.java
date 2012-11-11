@@ -2,13 +2,13 @@ package rinde.sim.examples.fabrirecht.gradientField;
 
 import java.util.Map;
 
-import rinde.sim.core.TimeLapse;
 import rinde.sim.core.graph.Point;
 import rinde.sim.core.model.pdp.PDPModel.ParcelState;
 import rinde.sim.core.model.pdp.PDPModel.VehicleState;
 import rinde.sim.core.model.pdp.Parcel;
 import rinde.sim.core.model.road.RoadModels;
-import rinde.sim.core.model.road.RoadUser;
+import rinde.sim.core.model.road.users.RoadUser;
+import rinde.sim.core.simulation.TimeLapse;
 import rinde.sim.problem.fabrirecht.FRParcel;
 import rinde.sim.problem.fabrirecht.FRVehicle;
 import rinde.sim.problem.fabrirecht.VehicleDTO;

@@ -9,12 +9,12 @@ import java.io.IOException;
 import org.apache.commons.math3.random.MersenneTwister;
 import org.apache.commons.math3.random.RandomGenerator;
 
-import rinde.sim.core.Simulator;
 import rinde.sim.core.graph.Graph;
 import rinde.sim.core.graph.MultiAttributeData;
 import rinde.sim.core.model.pdp.PDPModel;
 import rinde.sim.core.model.road.GraphRoadModel;
 import rinde.sim.core.model.road.RoadModel;
+import rinde.sim.core.simulation.Simulator;
 import rinde.sim.serializers.DotGraphSerializer;
 import rinde.sim.serializers.SelfCycleFilter;
 import rinde.sim.ui.View;
@@ -33,7 +33,7 @@ public class PDPExample {
 		final String MAP_DIR = "../core/files/maps/";
 		// create a new simulator, load map of Leuven
 		final RandomGenerator rng = new MersenneTwister(123);
-		final Simulator simulator = new Simulator(rng, 1000);
+		final Simulator simulator = new Simulator(1000);
 		final Graph<MultiAttributeData> graph = DotGraphSerializer
 				.getMultiAttributeGraphSerializer(new SelfCycleFilter()).read(MAP_DIR + "leuven-simple.dot");
 		final RoadModel roadModel = new GraphRoadModel(graph);

@@ -16,6 +16,7 @@ import org.apache.commons.math3.random.RandomGenerator;
 import org.junit.Test;
 
 import rinde.sim.core.graph.Point;
+import rinde.sim.core.model.road.users.MovingRoadUser;
 
 /**
  * @author Rinde van Lon (rinde.vanlon@cs.kuleuven.be)

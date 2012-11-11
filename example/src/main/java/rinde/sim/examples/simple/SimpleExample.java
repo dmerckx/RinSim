@@ -6,13 +6,13 @@ package rinde.sim.examples.simple;
 import org.apache.commons.math3.random.MersenneTwister;
 import org.apache.commons.math3.random.RandomGenerator;
 
-import rinde.sim.core.Simulator;
-import rinde.sim.core.TickListener;
-import rinde.sim.core.TimeLapse;
 import rinde.sim.core.graph.Point;
-import rinde.sim.core.model.road.MovingRoadUser;
 import rinde.sim.core.model.road.PlaneRoadModel;
 import rinde.sim.core.model.road.RoadModel;
+import rinde.sim.core.model.road.users.MovingRoadUser;
+import rinde.sim.core.simulation.Simulator;
+import rinde.sim.core.simulation.Agent;
+import rinde.sim.core.simulation.TimeLapse;
 import rinde.sim.ui.View;
 import rinde.sim.ui.renderers.PlaneRoadModelRenderer;
 import rinde.sim.ui.renderers.RoadUserRenderer;
@@ -63,7 +63,7 @@ public class SimpleExample {
 		// calling: sim.start();
 	}
 
-	static class Driver implements MovingRoadUser, TickListener {
+	static class Driver implements MovingRoadUser, Agent {
 		// the MovingRoadUser interface indicates that this class can move on a
 		// RoadModel. The TickListener interface indicates that this class wants
 		// to keep track of time.

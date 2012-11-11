@@ -13,13 +13,15 @@ import java.util.Queue;
 
 import org.apache.commons.math3.random.RandomGenerator;
 
-import rinde.sim.core.TimeLapse;
 import rinde.sim.core.graph.Connection;
 import rinde.sim.core.graph.ConnectionData;
 import rinde.sim.core.graph.Graph;
 import rinde.sim.core.graph.MultiAttributeData;
 import rinde.sim.core.graph.Point;
 import rinde.sim.core.model.road.GraphRoadModel.Loc;
+import rinde.sim.core.model.road.users.MovingRoadUser;
+import rinde.sim.core.model.road.users.RoadUser;
+import rinde.sim.core.simulation.TimeLapse;
 import rinde.sim.util.SpeedConverter;
 import rinde.sim.util.TimeUnit;
 
@@ -261,11 +263,11 @@ public class GraphRoadModel extends AbstractRoadModel<Loc> {
                 final MultiAttributeData maed = (MultiAttributeData) conn
                         .getData();
                 final double speed = maed.getMaxSpeed();
-                return Double.isNaN(speed) ? object.getSpeed() : Math
-                        .min(speed, object.getSpeed());
+                return Double.isNaN(speed) ? getSpeed(object) : Math
+                        .min(speed, getSpeed(object));
             }
         }
-        return object.getSpeed();
+        return getSpeed(object);
     }
 
     /**

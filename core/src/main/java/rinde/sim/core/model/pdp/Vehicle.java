@@ -3,16 +3,16 @@
  */
 package rinde.sim.core.model.pdp;
 
-import rinde.sim.core.TickListener;
-import rinde.sim.core.TimeLapse;
-import rinde.sim.core.model.road.MovingRoadUser;
+import rinde.sim.core.model.road.users.MovingRoadUser;
+import rinde.sim.core.simulation.Agent;
+import rinde.sim.core.simulation.TimeLapse;
 
 /**
  * Abstract base class for vehicle concept: moving {@link Container}.
  * @author Rinde van Lon <rinde.vanlon@cs.kuleuven.be>
  */
 public abstract class Vehicle extends ContainerImpl implements MovingRoadUser,
-        TickListener {
+        Agent {
 
     @Override
     public final PDPType getType() {
@@ -29,12 +29,9 @@ public abstract class Vehicle extends ContainerImpl implements MovingRoadUser,
 
     /**
      * Is called every tick. This replaces the
-     * {@link TickListener#tick(TimeLapse)} for vehicles.
+     * {@link Agent#tick(TimeLapse)} for vehicles.
      * @param time The time lapse that can be used.
-     * @see TickListener#tick(TimeLapse)
+     * @see Agent#tick(TimeLapse)
      */
     protected abstract void tickImpl(TimeLapse time);
-
-    @Override
-    public void afterTick(TimeLapse time) {}
 }

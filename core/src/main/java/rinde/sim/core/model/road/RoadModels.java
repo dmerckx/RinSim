@@ -8,6 +8,7 @@ import java.util.List;
 
 import rinde.sim.core.graph.Graphs;
 import rinde.sim.core.graph.Point;
+import rinde.sim.core.model.road.users.RoadUser;
 
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;

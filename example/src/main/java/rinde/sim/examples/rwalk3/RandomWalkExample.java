@@ -13,7 +13,6 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.RGB;
 
-import rinde.sim.core.Simulator;
 import rinde.sim.core.graph.Graph;
 import rinde.sim.core.graph.MultiAttributeData;
 import rinde.sim.core.graph.Point;
@@ -22,7 +21,8 @@ import rinde.sim.core.model.communication.CommunicationModel;
 import rinde.sim.core.model.road.GraphRoadModel;
 import rinde.sim.core.model.road.RoadModel;
 import rinde.sim.core.model.road.RoadModels;
-import rinde.sim.core.model.road.RoadUser;
+import rinde.sim.core.model.road.users.RoadUser;
+import rinde.sim.core.simulation.Simulator;
 import rinde.sim.examples.common.Package;
 import rinde.sim.serializers.DotGraphSerializer;
 import rinde.sim.serializers.SelfCycleFilter;

@@ -8,7 +8,7 @@ import org.eclipse.swt.graphics.DeviceData;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 
-import rinde.sim.core.Simulator;
+import rinde.sim.core.simulation.Simulator;
 import rinde.sim.ui.renderers.Renderer;
 import rinde.sim.ui.utils.Sleak;
 
