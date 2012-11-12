@@ -20,14 +20,14 @@ public class TimeLapseTest {
 	@Test
 	public void emptyConstructor() {
 		TimeLapse tl = new TimeLapse();
-		assertEquals(0, tl.getTime());
+		assertEquals(0, tl.getCurrentTime());
 	}
 
 	@Test
 	public void constructor() {
 		TimeLapse tl = new TimeLapse(0, 10);
 
-		assertEquals(0, tl.getTime());
+		assertEquals(0, tl.getCurrentTime());
 		assertEquals(0, tl.getTimeConsumed());
 		assertEquals(10, tl.getTimeStep());
 		assertEquals(10, tl.getTimeLeft());
@@ -56,21 +56,21 @@ public class TimeLapseTest {
 		for (int i = 0; i < start.length; i++) {
 			TimeLapse tl = new TimeLapse(start[i], end[i]);
 			assertEquals(end[i] - start[i], tl.getTimeLeft());
-			assertEquals(start[i], tl.getTime());
+			assertEquals(start[i], tl.getCurrentTime());
 			assertEquals(0, tl.getTimeConsumed());
 			assertTrue(tl.hasTimeLeft());
 			assertEquals(end[i] - start[i], tl.getTimeStep());
 
 			tl.consume(10);
 			assertEquals(end[i] - start[i] - 10, tl.getTimeLeft());
-			assertEquals(start[i] + 10, tl.getTime());
+			assertEquals(start[i] + 10, tl.getCurrentTime());
 			assertEquals(10, tl.getTimeConsumed());
 			assertTrue(tl.hasTimeLeft());
 			assertEquals(end[i] - start[i], tl.getTimeStep());
 
 			tl.consumeAll();
 			assertEquals(0, tl.getTimeLeft());
-			assertEquals(end[i], tl.getTime());
+			assertEquals(end[i], tl.getCurrentTime());
 			assertEquals(end[i] - start[i], tl.getTimeConsumed());
 			assertFalse(tl.hasTimeLeft());
 			assertEquals(end[i] - start[i], tl.getTimeStep());

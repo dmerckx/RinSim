@@ -25,5 +25,5 @@ public interface RoadAPI {
      * @return
      */
     public <T extends RoadUser, R extends Serializable> R
-            visitNode(Class<T> target, Visitor<T, R> visitor);
+            visitNode(Visitor<T, R> visitor);
 }

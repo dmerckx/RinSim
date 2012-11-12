@@ -4,7 +4,7 @@
 package rinde.sim.core.model.pdp;
 
 import rinde.sim.core.model.road.users.MovingRoadUser;
-import rinde.sim.core.simulation.time.TimeLapse;
+import rinde.sim.core.simulation.TimeLapse;
 import rinde.sim.core.simulation.types.Agent;
 
 /**

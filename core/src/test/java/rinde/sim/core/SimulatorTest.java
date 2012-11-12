@@ -211,7 +211,7 @@ public class SimulatorTest {
 		public void afterTick(TimeLapse tl) {
 			if (tickCount >= limit) {
 				assertTrue(sim.isPlaying());
-				if (tl.getTime() > limit * tl.getTimeStep()) {
+				if (tl.getCurrentTime() > limit * tl.getTimeStep()) {
 					sim.togglePlayPause();
 				}
 				sim.stop();

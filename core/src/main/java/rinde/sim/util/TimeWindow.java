@@ -11,7 +11,7 @@ import java.io.Serializable;
 public class TimeWindow implements Serializable {
     private static final long serialVersionUID = 7548761538022038612L;
 
-    public static TimeWindow ALWAYS = new TimeWindow(0, Long.MAX_VALUE);
+    public static final TimeWindow ALWAYS = new TimeWindow(0, Long.MAX_VALUE);
 
     public final long begin;
     public final long end;
