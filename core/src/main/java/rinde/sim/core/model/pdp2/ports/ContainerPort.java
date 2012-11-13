@@ -5,16 +5,15 @@ import java.util.List;
 import rinde.sim.core.model.pdp2.PdpModel;
 import rinde.sim.core.model.pdp2.actions.Delivery;
 import rinde.sim.core.model.pdp2.actions.Pickup;
-import rinde.sim.core.model.pdp2.apis.TruckAPI;
+import rinde.sim.core.model.pdp2.apis.TruckAPI.TruckState;
 import rinde.sim.core.model.pdp2.objects.Parcel2;
 import rinde.sim.core.model.pdp2.users.Truck;
 import rinde.sim.core.model.road.apis.RoadAPI;
 import rinde.sim.core.simulation.TimeLapse;
 import rinde.sim.core.simulation.types.Agent;
-import rinde.sim.core.simulation.types.AgentPort;
 
-public class TruckPort implements AgentPort, TruckAPI{
-
+public abstract class ContainerPort implements AgentPort, ContainerAPI{
+    
     private final RoadAPI roadAPI;
     private final PdpModel pdpModel;
     private final Truck truck;

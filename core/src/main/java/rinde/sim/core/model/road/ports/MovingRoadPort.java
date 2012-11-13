@@ -15,9 +15,9 @@ import rinde.sim.core.refs.Ref;
 import rinde.sim.core.refs.RefBackup;
 import rinde.sim.core.simulation.TimeInterval;
 import rinde.sim.core.simulation.TimeLapse;
-import rinde.sim.core.simulation.types.Port;
+import rinde.sim.core.simulation.types.AgentPort;
 
-public class MovingRoadPort extends RoadPort implements Port, MovingRoadAPI, RefBackup<Point> {
+public class MovingRoadPort extends RoadPort implements AgentPort, MovingRoadAPI, RefBackup<Point> {
 
     private MovingRoadUser user;
 

@@ -12,13 +12,14 @@ import rinde.sim.core.model.Model;
 import rinde.sim.core.model.ModelManager;
 import rinde.sim.core.model.ModelProvider;
 import rinde.sim.core.model.simulator.SimulatorModel;
+import rinde.sim.core.simulation.policies.ParallelAgents;
 import rinde.sim.core.simulation.policies.ParallelInterval;
 import rinde.sim.core.simulation.policies.ParallelLapse;
 import rinde.sim.core.simulation.policies.SerialInterval;
 import rinde.sim.core.simulation.time.TimeIntervalImpl;
 import rinde.sim.core.simulation.types.Agent;
 import rinde.sim.core.simulation.types.ExternalTickListener;
-import rinde.sim.core.simulation.types.Port;
+import rinde.sim.core.simulation.types.AgentPort;
 import rinde.sim.core.simulation.types.PrimaryTickListener;
 import rinde.sim.event.Event;
 import rinde.sim.event.EventAPI;
@@ -116,12 +117,11 @@ public class Simulator{
 
 
     public static final TickPolicy<?>[] getStdPolicies(){
-        TickPolicy<?>[] policies = new TickPolicy[4];
+        TickPolicy<?>[] policies = new TickPolicy[3];
         
         policies[0] = new SerialInterval<PrimaryTickListener>(true, PrimaryTickListener.class);
-        policies[1] = new ParallelLapse<Agent>(false, Agent.class);
-        policies[2] = new ParallelInterval<Port>(false, Port.class);
-        policies[3] = new SerialInterval<ExternalTickListener>(false, ExternalTickListener.class);
+        policies[1] = new ParallelAgents();
+        policies[2] = new SerialInterval<ExternalTickListener>(false, ExternalTickListener.class);
         
         return policies;
     }

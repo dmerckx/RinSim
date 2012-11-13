@@ -37,13 +37,6 @@ import rinde.sim.core.simulation.TimeInterval;
  */
 public abstract class Parallel<T extends TickListener<I>, I extends TimeInterval> extends ThreadState implements TickPolicy<T>{
     
-    /**
-     * This bounds the maximal number of threads used by all running instances of
-     * {@link Parallel} (also across different running {@link Simulator}s).
-     */
-    public static final int NR_THREADS = 4;
-    private static ExecutorService pool = Executors.newFixedThreadPool(NR_THREADS);
-    
     private boolean register;
     private Class<T> acceptedClass;
     

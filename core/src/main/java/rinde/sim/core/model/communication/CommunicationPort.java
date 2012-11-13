@@ -12,9 +12,9 @@ import rinde.sim.core.refs.Ref;
 import rinde.sim.core.refs.RefBackup;
 import rinde.sim.core.refs.UpdateListener;
 import rinde.sim.core.simulation.TimeInterval;
-import rinde.sim.core.simulation.types.Port;
+import rinde.sim.core.simulation.types.AgentPort;
 
-class CommunicationPort implements CommunicationAPI, Port, UpdateListener{
+class CommunicationPort implements CommunicationAPI, AgentPort, UpdateListener{
 	
 	private List<Delivery> mailbox;
 	private SortedSet<Delivery> tempMailbox;

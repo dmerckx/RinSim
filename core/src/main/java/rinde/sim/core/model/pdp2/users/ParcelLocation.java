@@ -2,7 +2,7 @@ package rinde.sim.core.model.pdp2.users;
 
 import rinde.sim.core.model.pdp2.PdpAPI;
 import rinde.sim.core.model.pdp2.PdpUser;
-import rinde.sim.core.model.pdp2.objects.Parcel;
+import rinde.sim.core.model.pdp2.objects.Parcel2;
 import rinde.sim.core.model.road.apis.FixedRoadAPI;
 import rinde.sim.core.model.road.users.FixedRoadUser;
 
@@ -11,10 +11,10 @@ public class ParcelLocation implements FixedRoadUser, PdpUser {
     private FixedRoadAPI roadAPI;
     private PdpAPI pdpAPI;
     
-    public final Parcel parcelToDeliver;
+    public final Parcel2 parcelToDeliver;
     private boolean pickedUp = false;
     
-    public ParcelLocation(Parcel parcel) {
+    public ParcelLocation(Parcel2 parcel) {
         this.parcelToDeliver = parcel;
     }
     
@@ -28,9 +28,10 @@ public class ParcelLocation implements FixedRoadUser, PdpUser {
         this.pdpAPI = api;
     }
     
+    
     // ----- METHODS AVAILABLE DURING ACTIONS ------ //
     
-    public Parcel inspectParcel(){
+    public Parcel2 inspectParcel(){
         return parcelToDeliver.clone();
     }
     
@@ -38,7 +39,7 @@ public class ParcelLocation implements FixedRoadUser, PdpUser {
         return pickedUp;
     }
     
-    public Parcel tryPickup(){
+    public Parcel2 tryPickup(){
         if(canBePickedUp()){
             pickedUp = true;
             return parcelToDeliver;
