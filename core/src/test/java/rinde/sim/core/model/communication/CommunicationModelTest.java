@@ -17,6 +17,8 @@ import org.junit.runners.Parameterized.Parameters;
 
 import rinde.sim.core.TimeLapseFactory;
 import rinde.sim.core.graph.Point;
+import rinde.sim.core.model.communication.apis.CommunicationAPI;
+import rinde.sim.core.model.communication.users.CommUser;
 
 @RunWith(Parameterized.class)
 public class CommunicationModelTest {
@@ -292,10 +294,10 @@ public class CommunicationModelTest {
 
 	@Test
 	public void testGetSupportedType() {
-		assertEquals(CommunicationUser.class, model.getSupportedType());
+		assertEquals(CommUser.class, model.getSupportedType());
 	}
 
-	class TestCommunicationUser implements CommunicationUser {
+	class TestCommunicationUser implements CommUser {
 
 		Point position;
 		double radius;

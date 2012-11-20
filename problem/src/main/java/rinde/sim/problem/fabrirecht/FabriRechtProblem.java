@@ -11,16 +11,16 @@ import java.util.Set;
 
 import org.apache.commons.math3.random.MersenneTwister;
 
-import rinde.sim.core.model.pdp.PDPModel;
-import rinde.sim.core.model.pdp.PDPModel.PDPModelEvent;
-import rinde.sim.core.model.pdp.PDPModel.PDPModelEventType;
-import rinde.sim.core.model.pdp.PDPScenarioEvent;
+import rinde.sim.core.model.pdp.scenario.PDPScenarioEvent;
 import rinde.sim.core.model.pdp.twpolicy.TardyAllowedPolicy;
 import rinde.sim.core.model.road.AbstractRoadModel.RoadEvent;
 import rinde.sim.core.model.road.users.MovingRoadUser;
 import rinde.sim.core.model.road.MoveEvent;
 import rinde.sim.core.model.road.PlaneRoadModel;
 import rinde.sim.core.model.road.RoadModel;
+import rinde.sim.core.old.pdp.PDPModel;
+import rinde.sim.core.old.pdp.PDPModel.PDPModelEvent;
+import rinde.sim.core.old.pdp.PDPModel.PDPModelEventType;
 import rinde.sim.core.simulation.Simulator;
 import rinde.sim.core.simulation.Simulator.SimulatorEventType;
 import rinde.sim.event.Event;

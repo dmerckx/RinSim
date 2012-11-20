@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Set;
 
 import rinde.sim.core.graph.Point;
-import rinde.sim.core.model.pdp.PDPScenarioEvent;
+import rinde.sim.core.model.pdp.scenario.PDPScenarioEvent;
 import rinde.sim.scenario.ScenarioBuilder;
 import rinde.sim.scenario.ScenarioBuilder.ScenarioCreator;
 import rinde.sim.scenario.TimedEvent;

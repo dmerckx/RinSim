@@ -5,9 +5,9 @@ package rinde.sim.examples.fabrirecht.simple;
 
 import java.io.IOException;
 
-import rinde.sim.core.model.pdp.PDPModel.ParcelState;
 import rinde.sim.core.model.road.RoadModels;
 import rinde.sim.core.model.road.users.RoadUser;
+import rinde.sim.core.old.pdp.PDPModel.ParcelState;
 import rinde.sim.core.simulation.time.TimeLapse;
 import rinde.sim.problem.fabrirecht.AddVehicleEvent;
 import rinde.sim.problem.fabrirecht.FRDepot;

@@ -7,8 +7,8 @@ import java.util.Map;
 
 import rinde.sim.core.graph.Point;
 import rinde.sim.core.model.Model;
-import rinde.sim.core.model.pdp.PDPModel;
-import rinde.sim.core.model.pdp.Parcel;
+import rinde.sim.core.old.pdp.PDPModel;
+import rinde.sim.core.old.pdp.Parcel_Old;
 
 public class GradientModel implements Model<FieldEmitter>{
 
@@ -79,7 +79,7 @@ public class GradientModel implements Model<FieldEmitter>{
 			field += emitter.getStrength() / Point.distance(emitter.getPosition(),in);
 		}
 
-		for(Parcel p:pdpModel.getContents(truck)){
+		for(Parcel_Old p:pdpModel.getContents(truck)){
 			field += 2 / Point.distance(p.getDestination(), in);
 		}
 		return field;

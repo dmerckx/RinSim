@@ -1,7 +1,7 @@
 package rinde.sim.examples.fabrirecht.gradientField;
 
 import rinde.sim.core.graph.Point;
-import rinde.sim.core.model.pdp.PDPModel.ParcelState;
+import rinde.sim.core.old.pdp.PDPModel.ParcelState;
 import rinde.sim.problem.fabrirecht.FRParcel;
 import rinde.sim.problem.fabrirecht.ParcelDTO;
 

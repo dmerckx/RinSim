@@ -1,6 +1,6 @@
 package rinde.sim.core.model.communication;
 
-final class Address {
+public final class Address {
 
 	public final int id;
 	

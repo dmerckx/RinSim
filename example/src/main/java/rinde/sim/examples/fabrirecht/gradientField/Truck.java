@@ -3,11 +3,11 @@ package rinde.sim.examples.fabrirecht.gradientField;
 import java.util.Map;
 
 import rinde.sim.core.graph.Point;
-import rinde.sim.core.model.pdp.PDPModel.ParcelState;
-import rinde.sim.core.model.pdp.PDPModel.VehicleState;
-import rinde.sim.core.model.pdp.Parcel;
 import rinde.sim.core.model.road.RoadModels;
 import rinde.sim.core.model.road.users.RoadUser;
+import rinde.sim.core.old.pdp.Parcel_Old;
+import rinde.sim.core.old.pdp.PDPModel.ParcelState;
+import rinde.sim.core.old.pdp.PDPModel.VehicleState;
 import rinde.sim.core.simulation.time.TimeLapse;
 import rinde.sim.problem.fabrirecht.FRParcel;
 import rinde.sim.problem.fabrirecht.FRVehicle;
@@ -26,7 +26,7 @@ class Truck extends FRVehicle implements FieldEmitter {
 	protected void tickImpl(TimeLapse time) {
 
 		// Check if we can deliver nearby
-		final Parcel delivery = getDelivery(time, 5);
+		final Parcel_Old delivery = getDelivery(time, 5);
 
 		if (delivery != null) {
 			if (delivery.getDestination().equals(getPosition()) && pdpModel.getVehicleState(this) == VehicleState.IDLE) {
@@ -66,11 +66,11 @@ class Truck extends FRVehicle implements FieldEmitter {
 		roadModel.moveTo(this, gradientModel.getTargetFor(this), time);
 	}
 
-	public Parcel getDelivery(TimeLapse time, int distance) {
-		Parcel target = null;
+	public Parcel_Old getDelivery(TimeLapse time, int distance) {
+		Parcel_Old target = null;
 		double closest = distance;
 
-		for (final Parcel p : pdpModel.getContents(this)) {
+		for (final Parcel_Old p : pdpModel.getContents(this)) {
 
 			final double dist = Point.distance(pdpModel.getPosition(this), p.getDestination());
 			if (dist < closest

@@ -3,15 +3,15 @@
  */
 package rinde.sim.problem.fabrirecht;
 
-import rinde.sim.core.model.pdp.PDPModel;
-import rinde.sim.core.model.pdp.Vehicle;
 import rinde.sim.core.model.road.RoadModel;
+import rinde.sim.core.old.pdp.PDPModel;
+import rinde.sim.core.old.pdp.Vehicle_Old;
 
 /**
  * @author Rinde van Lon <rinde.vanlon@cs.kuleuven.be>
  * 
  */
-public abstract class FRVehicle extends Vehicle {
+public abstract class FRVehicle extends Vehicle_Old {
 
 	protected final VehicleDTO dto;
 	protected RoadModel roadModel;

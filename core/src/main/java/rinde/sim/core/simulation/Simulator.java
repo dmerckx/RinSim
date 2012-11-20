@@ -8,6 +8,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import rinde.sim.core.model.Guard;
 import rinde.sim.core.model.Model;
 import rinde.sim.core.model.ModelManager;
 import rinde.sim.core.model.ModelProvider;
@@ -19,7 +20,6 @@ import rinde.sim.core.simulation.policies.SerialInterval;
 import rinde.sim.core.simulation.time.TimeIntervalImpl;
 import rinde.sim.core.simulation.types.Agent;
 import rinde.sim.core.simulation.types.ExternalTickListener;
-import rinde.sim.core.simulation.types.AgentPort;
 import rinde.sim.core.simulation.types.PrimaryTickListener;
 import rinde.sim.event.Event;
 import rinde.sim.event.EventAPI;

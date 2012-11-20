@@ -6,22 +6,22 @@ package rinde.sim.examples.pdp;
 import java.util.Collection;
 
 import rinde.sim.core.graph.Point;
-import rinde.sim.core.model.pdp.PDPModel;
-import rinde.sim.core.model.pdp.Parcel;
-import rinde.sim.core.model.pdp.Vehicle;
 import rinde.sim.core.model.road.RoadModel;
+import rinde.sim.core.old.pdp.PDPModel;
+import rinde.sim.core.old.pdp.Parcel_Old;
+import rinde.sim.core.old.pdp.Vehicle_Old;
 import rinde.sim.core.simulation.time.TimeLapse;
 
 /**
  * @author Rinde van Lon <rinde.vanlon@cs.kuleuven.be>
  * 
  */
-public class ExampleTruck extends Vehicle {
+public class ExampleTruck extends Vehicle_Old {
 
 	protected RoadModel roadModel;
 	protected PDPModel pdpModel;
 
-	protected Parcel curr;
+	protected Parcel_Old curr;
 
 	public ExampleTruck(Point startPosition, double capacity) {
 		setStartPosition(startPosition);
@@ -38,12 +38,12 @@ public class ExampleTruck extends Vehicle {
 
 	@Override
 	protected void tickImpl(TimeLapse time) {
-		final Collection<Parcel> parcels = pdpModel.getAvailableParcels();
+		final Collection<Parcel_Old> parcels = pdpModel.getAvailableParcels();
 
 		if (pdpModel.getContents(this).isEmpty()) {
 			if (!parcels.isEmpty() && curr == null) {
 				double dist = Double.POSITIVE_INFINITY;
-				for (final Parcel p : parcels) {
+				for (final Parcel_Old p : parcels) {
 					final double d = Point.distance(roadModel.getPosition(this), roadModel.getPosition(p));
 					if (d < dist) {
 						dist = d;

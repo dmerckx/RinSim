@@ -20,11 +20,12 @@ import java.util.Set;
 import rinde.sim.core.graph.Point;
 import rinde.sim.core.model.AbstractModel;
 import rinde.sim.core.model.SimulatorModelAPI;
-import rinde.sim.core.model.road.apis.FixedRoadAPI;
-import rinde.sim.core.model.road.apis.MovingRoadAPI;
-import rinde.sim.core.model.road.ports.FixedRoadPort;
-import rinde.sim.core.model.road.ports.MovingRoadPort;
-import rinde.sim.core.model.road.ports.RoadPort;
+import rinde.sim.core.model.road.guards.FixedRoadGuard;
+import rinde.sim.core.model.road.guards.MovingRoadGuard;
+import rinde.sim.core.model.road.guards.RoadGuard;
+import rinde.sim.core.model.road.supported.FixedRoadHolder;
+import rinde.sim.core.model.road.supported.MovingRoadHolder;
+import rinde.sim.core.model.road.supported.RoadHolder;
 import rinde.sim.core.model.road.users.FixedRoadUser;
 import rinde.sim.core.model.road.users.MovingRoadUser;
 import rinde.sim.core.model.road.users.RoadUser;
@@ -49,10 +50,10 @@ import com.google.common.collect.Sets;
  * 
  * @author Rinde van Lon <rinde.vanlon@cs.kuleuven.be>
  */
-public abstract class AbstractRoadModel<T> extends AbstractModel<RoadUser>
+public abstract class AbstractRoadModel<T> extends AbstractModel<RoadHolder>
         implements RoadModel, PrimaryTickListener{
 
-    private Map<RoadUser, RoadPort> userToPortMapping;
+    private Map<RoadUser, RoadGuard> mapping;
     
     protected final SpeedConverter speedConverter;
 
@@ -74,7 +75,7 @@ public abstract class AbstractRoadModel<T> extends AbstractModel<RoadUser>
     }
     
     public double getSpeed(MovingRoadUser user){
-        return ((MovingRoadPort) userToPortMapping.get(user)).getSpeed();
+        return ((MovingRoadGuard) mapping.get(user)).getSpeed();
     }
 
     /**
@@ -91,7 +92,7 @@ public abstract class AbstractRoadModel<T> extends AbstractModel<RoadUser>
      * Create a new instance.
      */
     public AbstractRoadModel(boolean pUseSpeedConversion) {
-        super(RoadUser.class);
+        super(RoadHolder.class);
         objLocs = createObjectToLocationMap();
         objDestinations = newLinkedHashMap();
         speedConverter = new SpeedConverter();
@@ -339,33 +340,29 @@ public abstract class AbstractRoadModel<T> extends AbstractModel<RoadUser>
     }
 
     @Override
-    public void register(RoadUser user) {
-        if (user == null) {
-            throw new IllegalArgumentException("roadUser can not be null");
-        }
+    public void register(RoadHolder holder) {
+        checkArgument(holder != null, "RoadHolder can not be null");
         
-        RoadPort port;
-        if( user instanceof FixedRoadUser){
-            port = new FixedRoadPort((FixedRoadUser) user, this);
-            ((FixedRoadUser) user).initRoadUser((FixedRoadAPI) port);
+        mapping.put(holder.getElement(), holder.getRoadGuard());
+        
+        if( holder instanceof FixedRoadHolder){
+            ((FixedRoadHolder) holder).getElement().initRoadUser(((FixedRoadHolder) holder).getRoadGuard());
         }
-        else if( user instanceof MovingRoadUser){
-            port = new MovingRoadPort((MovingRoadUser) user, this);
-            ((MovingRoadUser) user).initRoadUser((MovingRoadAPI) port);
+        else if( holder instanceof MovingRoadHolder){
+            ((MovingRoadHolder) holder).getElement().initRoadUser(((MovingRoadHolder) holder).getRoadGuard());
         }
         else {
-            throw new IllegalArgumentException("Unknown type of road user: " + user);
+            throw new IllegalArgumentException("Unknown type of road holder: " + holder);
         }
-        
-        userToPortMapping.put(user, port);
     }
 
     @Override
-    public void unregister(RoadUser roadUser) {
-        checkArgument(roadUser != null, "RoadUser can not be null");
-        if (containsObject(roadUser)) {
-            removeObject(roadUser);
-            userToPortMapping.remove(roadUser);
+    public void unregister(RoadHolder holder) {
+        checkArgument(holder != null, "RoadHolder can not be null");
+        
+        if (containsObject(holder.getElement())) {
+            removeObject(holder.getElement());
+            mapping.remove(holder.getElement());
         }
     }
 
@@ -420,4 +417,17 @@ public abstract class AbstractRoadModel<T> extends AbstractModel<RoadUser>
 
     @Override
     public void tick(TimeInterval t) {}
+    
+    @Override
+    public RoadGuard makeGuard(RoadUser user) {
+        if( user instanceof FixedRoadUser){
+            return new FixedRoadGuard((FixedRoadUser) user, this);
+        }
+        else if( user instanceof MovingRoadUser){
+            return new MovingRoadGuard((MovingRoadUser) user, this);
+        }
+        else {
+            throw new IllegalArgumentException(user + " is not a supported RoadUser type");
+        }
+    }
 }

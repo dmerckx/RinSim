@@ -4,16 +4,16 @@
 package rinde.sim.examples.pdp;
 
 import rinde.sim.core.graph.Point;
-import rinde.sim.core.model.pdp.PDPModel;
-import rinde.sim.core.model.pdp.Parcel;
 import rinde.sim.core.model.road.RoadModel;
+import rinde.sim.core.old.pdp.PDPModel;
+import rinde.sim.core.old.pdp.Parcel_Old;
 import rinde.sim.util.TimeWindow;
 
 /**
  * @author Rinde van Lon <rinde.vanlon@cs.kuleuven.be>
  * 
  */
-public class ExampleParcel extends Parcel {
+public class ExampleParcel extends Parcel_Old {
 
 	public ExampleParcel(Point startPosition, Point pDestination, int pLoadingDuration, int pUnloadingDuration,
 			double magnitude) {

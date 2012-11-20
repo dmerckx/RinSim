@@ -12,11 +12,11 @@ import org.eclipse.swt.graphics.RGB;
 
 import rinde.sim.core.graph.Point;
 import rinde.sim.core.model.ModelProvider;
-import rinde.sim.core.model.pdp.PDPModel;
-import rinde.sim.core.model.pdp.PDPModel.ParcelState;
-import rinde.sim.core.model.pdp.PDPModel.VehicleState;
-import rinde.sim.core.model.pdp.Parcel;
-import rinde.sim.core.model.pdp.Vehicle;
+import rinde.sim.core.old.pdp.PDPModel;
+import rinde.sim.core.old.pdp.Parcel_Old;
+import rinde.sim.core.old.pdp.Vehicle_Old;
+import rinde.sim.core.old.pdp.PDPModel.ParcelState;
+import rinde.sim.core.old.pdp.PDPModel.VehicleState;
 
 /**
  * @author Rinde van Lon <rinde.vanlon@cs.kuleuven.be>
@@ -35,17 +35,17 @@ public class PDPModelRenderer implements ModelRenderer {
 
 	@Override
 	public void renderDynamic(GC gc, ViewPort vp, long time) {
-		final Set<Vehicle> vehicles = pdpModel.getVehicles();
+		final Set<Vehicle_Old> vehicles = pdpModel.getVehicles();
 		synchronized (vehicles) {
-			for (final Vehicle v : vehicles) {
+			for (final Vehicle_Old v : vehicles) {
 				final Point p = pdpModel.getPosition(v);
 				final double size = pdpModel.getContentsSize(v);
 
-				final Collection<Parcel> contents = pdpModel.getContents(v);
+				final Collection<Parcel_Old> contents = pdpModel.getContents(v);
 				final int x = vp.toCoordX(p.x);
 				final int y = vp.toCoordY(p.y);
 				gc.drawText("" + size, x, y);
-				for (final Parcel parcel : contents) {
+				for (final Parcel_Old parcel : contents) {
 					gc.drawLine(x, y, vp.toCoordX(parcel.getDestination().x), vp.toCoordY(parcel.getDestination().y));
 				}
 				final VehicleState state = pdpModel.getVehicleState(v);
@@ -56,9 +56,9 @@ public class PDPModelRenderer implements ModelRenderer {
 			}
 		}
 
-		final Collection<Parcel> parcels = pdpModel.getParcels(ParcelState.AVAILABLE, ParcelState.ANNOUNCED);
+		final Collection<Parcel_Old> parcels = pdpModel.getParcels(ParcelState.AVAILABLE, ParcelState.ANNOUNCED);
 		synchronized (parcels) {
-			for (final Parcel parcel : parcels) {
+			for (final Parcel_Old parcel : parcels) {
 				final Point p = pdpModel.getPosition(parcel);
 				final int x = vp.toCoordX(p.x);
 				final int y = vp.toCoordY(p.y);

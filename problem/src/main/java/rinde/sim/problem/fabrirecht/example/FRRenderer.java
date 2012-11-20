@@ -8,8 +8,8 @@ import java.util.Collection;
 import org.eclipse.swt.graphics.GC;
 
 import rinde.sim.core.model.ModelProvider;
-import rinde.sim.core.model.pdp.PDPModel;
-import rinde.sim.core.model.pdp.Parcel;
+import rinde.sim.core.old.pdp.PDPModel;
+import rinde.sim.core.old.pdp.Parcel_Old;
 import rinde.sim.problem.fabrirecht.FRParcel;
 import rinde.sim.ui.renderers.ModelRenderer;
 import rinde.sim.ui.renderers.ViewPort;
@@ -31,9 +31,9 @@ public class FRRenderer implements ModelRenderer {
 
 	@Override
 	public void renderDynamic(GC gc, ViewPort vp, long time) {
-		final Collection<Parcel> parcels = pdpModel.getAvailableParcels();
+		final Collection<Parcel_Old> parcels = pdpModel.getAvailableParcels();
 		synchronized (parcels) {
-			for (final Parcel parcel : parcels) {
+			for (final Parcel_Old parcel : parcels) {
 				final FRParcel p = ((FRParcel) parcel);
 
 				// pdpModel.

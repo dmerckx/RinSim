@@ -17,12 +17,18 @@ import rinde.sim.core.TimeLapseFactory;
 import rinde.sim.core.graph.Point;
 import rinde.sim.core.model.Model;
 import rinde.sim.core.model.ModelProvider;
-import rinde.sim.core.model.pdp.PDPModel.PDPModelEventType;
-import rinde.sim.core.model.pdp.PDPModel.ParcelState;
-import rinde.sim.core.model.pdp.PDPModel.PickupAction;
-import rinde.sim.core.model.pdp.PDPModel.VehicleState;
 import rinde.sim.core.model.road.PlaneRoadModel;
 import rinde.sim.core.model.road.RoadModel;
+import rinde.sim.core.old.pdp.Depot_Old;
+import rinde.sim.core.old.pdp.PDPModel;
+import rinde.sim.core.old.pdp.PDPObject;
+import rinde.sim.core.old.pdp.PDPType;
+import rinde.sim.core.old.pdp.Parcel_Old;
+import rinde.sim.core.old.pdp.Vehicle_Old;
+import rinde.sim.core.old.pdp.PDPModel.PDPModelEventType;
+import rinde.sim.core.old.pdp.PDPModel.ParcelState;
+import rinde.sim.core.old.pdp.PDPModel.PickupAction;
+import rinde.sim.core.old.pdp.PDPModel.VehicleState;
 import rinde.sim.core.simulation.time.TimeLapse;
 import rinde.sim.util.TimeWindow;
 
@@ -68,8 +74,8 @@ public class PDPModelTest {
 
     @Test
     public void testPickup() {
-        final Parcel pack1 = new TestParcel(new Point(2, 2), 0, 0, 2);
-        final Vehicle truck = new TestVehicle(new Point(1, 1), 10.0, 1.0);
+        final Parcel_Old pack1 = new TestParcel(new Point(2, 2), 0, 0, 2);
+        final Vehicle_Old truck = new TestVehicle(new Point(1, 1), 10.0, 1.0);
         model.register(pack1);
         model.register(truck);
         rm.register(pack1);
@@ -93,7 +99,7 @@ public class PDPModelTest {
         assertTrue(model.getContents(truck).contains(pack1));
         assertEquals(1, model.getContents(truck).size());
 
-        final Parcel pack2 = new TestParcel(new Point(2, 2), 100, 100, 2);
+        final Parcel_Old pack2 = new TestParcel(new Point(2, 2), 100, 100, 2);
         model.register(pack2);
         rm.register(pack2);
         rm.addObjectAt(pack2, new Point(1, 2));
@@ -133,8 +139,8 @@ public class PDPModelTest {
     @Test
     public void testDelayedPickup() {
 
-        final Parcel pack1 = new TestParcel(new Point(2, 2), 10, 10, 2);
-        final Vehicle truck = new TestVehicle(new Point(1, 1), 10.0, 1.0);
+        final Parcel_Old pack1 = new TestParcel(new Point(2, 2), 10, 10, 2);
+        final Vehicle_Old truck = new TestVehicle(new Point(1, 1), 10.0, 1.0);
         model.register(pack1);
         model.register(truck);
         rm.register(pack1);
@@ -154,26 +160,26 @@ public class PDPModelTest {
     @Test(expected = IllegalArgumentException.class)
     public void testPickupFail1() {
         // truck not in roadmodel
-        final Vehicle truck = new TestVehicle(new Point(1, 1), 10.0, 1.0);
+        final Vehicle_Old truck = new TestVehicle(new Point(1, 1), 10.0, 1.0);
         model.pickup(truck, null, TimeLapseFactory.create(0, 1));
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testPickupFail2() {
         // package not in roadmodel
-        final Vehicle truck = new TestVehicle(new Point(1, 1), 10.0, 1.0);
+        final Vehicle_Old truck = new TestVehicle(new Point(1, 1), 10.0, 1.0);
         rm.register(truck);
-        final Parcel pack1 = new TestParcel(new Point(2, 2), 0, 0, 2.0);
+        final Parcel_Old pack1 = new TestParcel(new Point(2, 2), 0, 0, 2.0);
         model.pickup(truck, pack1, TimeLapseFactory.create(0, 1));
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testPickupFail3A() {
         // package not in available state (it is already been picked up)
-        final Vehicle truck = new TestVehicle(new Point(1, 1), 10.0, 1.0);
+        final Vehicle_Old truck = new TestVehicle(new Point(1, 1), 10.0, 1.0);
         rm.register(truck);
         model.register(truck);
-        final Parcel pack1 = new TestParcel(new Point(2, 2), 10, 10, 2.0);
+        final Parcel_Old pack1 = new TestParcel(new Point(2, 2), 10, 10, 2.0);
         rm.register(pack1);
         model.register(pack1);
         rm.addObjectAtSamePosition(pack1, truck);
@@ -195,9 +201,9 @@ public class PDPModelTest {
     @Test(expected = IllegalArgumentException.class)
     public void testPickupFail3B() {
         // package is not registered
-        final Vehicle truck = new TestVehicle(new Point(1, 1), 10.0, 1.0);
+        final Vehicle_Old truck = new TestVehicle(new Point(1, 1), 10.0, 1.0);
         rm.register(truck);
-        final Parcel pack1 = new TestParcel(new Point(2, 2), 0, 0, 2.0);
+        final Parcel_Old pack1 = new TestParcel(new Point(2, 2), 0, 0, 2.0);
         rm.register(pack1);
         rm.addObjectAtSamePosition(pack1, truck);
         model.pickup(truck, pack1, TimeLapseFactory.create(0, 1));
@@ -205,9 +211,9 @@ public class PDPModelTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testPickupFail4() {
-        final Vehicle truck = new TestVehicle(new Point(1, 1), 10.0, 1.0);
+        final Vehicle_Old truck = new TestVehicle(new Point(1, 1), 10.0, 1.0);
         rm.register(truck);
-        final Parcel pack1 = new TestParcel(new Point(2, 2), 0, 0, 2.0);
+        final Parcel_Old pack1 = new TestParcel(new Point(2, 2), 0, 0, 2.0);
         rm.register(pack1);
         rm.addObjectAtSamePosition(pack1, truck);
         model.register(pack1);
@@ -217,10 +223,10 @@ public class PDPModelTest {
     @Test(expected = IllegalArgumentException.class)
     public void testPickupFail5() {
         // wrong position
-        final Vehicle truck = new TestVehicle(new Point(1, 1), 10.0, 1.0);
+        final Vehicle_Old truck = new TestVehicle(new Point(1, 1), 10.0, 1.0);
         rm.register(truck);
         model.register(truck);
-        final Parcel pack1 = new TestParcel(new Point(2, 2), 0, 0, 2.0);
+        final Parcel_Old pack1 = new TestParcel(new Point(2, 2), 0, 0, 2.0);
         rm.register(pack1);
         rm.addObjectAt(pack1, new Point(0, 0));
         model.register(pack1);
@@ -230,10 +236,10 @@ public class PDPModelTest {
     @Test(expected = IllegalArgumentException.class)
     public void testPickupFail6A() {
         // package does not fit in truck
-        final Vehicle truck = new TestVehicle(new Point(1, 1), 1.0, 1.0);
+        final Vehicle_Old truck = new TestVehicle(new Point(1, 1), 1.0, 1.0);
         rm.register(truck);
         model.register(truck);
-        final Parcel pack1 = new TestParcel(new Point(2, 2), 0, 0, 2.0);
+        final Parcel_Old pack1 = new TestParcel(new Point(2, 2), 0, 0, 2.0);
         rm.register(pack1);
         model.register(pack1);
         rm.addObjectAtSamePosition(pack1, truck);
@@ -244,12 +250,12 @@ public class PDPModelTest {
     @Test
     public void testPickupFail6B() {
         // last package does not fit in truck
-        final Vehicle truck = new TestVehicle(new Point(1, 1), 10.0, 1.0);
+        final Vehicle_Old truck = new TestVehicle(new Point(1, 1), 10.0, 1.0);
         rm.register(truck);
         model.register(truck);
 
         for (int i = 0; i < 9; i++) {
-            final Parcel newPack = new TestParcel(new Point(2, 2), 0, 0, 1.0);
+            final Parcel_Old newPack = new TestParcel(new Point(2, 2), 0, 0, 1.0);
             rm.register(newPack);
             model.register(newPack);
             rm.addObjectAtSamePosition(newPack, truck);
@@ -258,7 +264,7 @@ public class PDPModelTest {
         assertEquals(model.getContents(truck).size(), 9);
         assertEquals(model.getContentsSize(truck), 9.0, EPSILON);
 
-        final Parcel packTooMuch = new TestParcel(new Point(2, 2), 0, 0, 1.0);
+        final Parcel_Old packTooMuch = new TestParcel(new Point(2, 2), 0, 0, 1.0);
         rm.register(packTooMuch);
         model.register(packTooMuch);
         rm.addObjectAtSamePosition(packTooMuch, truck);
@@ -272,10 +278,10 @@ public class PDPModelTest {
 
     @Test
     public void testDeliver() {
-        final Vehicle truck = new TestVehicle(new Point(1, 1), 10.0, 1.0);
+        final Vehicle_Old truck = new TestVehicle(new Point(1, 1), 10.0, 1.0);
         rm.register(truck);
         model.register(truck);
-        final Parcel pack1 = new TestParcel(new Point(2, 2), 10, 10, 2.0);
+        final Parcel_Old pack1 = new TestParcel(new Point(2, 2), 10, 10, 2.0);
         rm.register(pack1);
         model.register(pack1);
         rm.addObjectAtSamePosition(pack1, truck);
@@ -303,7 +309,7 @@ public class PDPModelTest {
         assertEquals(VehicleState.IDLE, model.getVehicleState(truck));
         assertEquals(8, tl.getTimeLeft());
 
-        final Parcel pack2 = new TestParcel(new Point(2, 2), 10, 10, 2.0);
+        final Parcel_Old pack2 = new TestParcel(new Point(2, 2), 10, 10, 2.0);
         rm.register(pack2);
         model.register(pack2);
         rm.addObjectAtSamePosition(pack2, truck);
@@ -331,10 +337,10 @@ public class PDPModelTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testDeliverFail2() {
-        final Vehicle truck = new TestVehicle(new Point(1, 1), 10.0, 1.0);
+        final Vehicle_Old truck = new TestVehicle(new Point(1, 1), 10.0, 1.0);
         rm.register(truck);
         model.register(truck);
-        final Parcel pack1 = new TestParcel(new Point(2, 2), 10, 10, 2.0);
+        final Parcel_Old pack1 = new TestParcel(new Point(2, 2), 10, 10, 2.0);
         rm.register(pack1);
         model.register(pack1);
         rm.addObjectAtSamePosition(pack1, truck);
@@ -346,10 +352,10 @@ public class PDPModelTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testDeliverFail3() {
-        final Vehicle truck = new TestVehicle(new Point(1, 1), 10.0, 1.0);
+        final Vehicle_Old truck = new TestVehicle(new Point(1, 1), 10.0, 1.0);
         rm.register(truck);
         model.register(truck);
-        final Parcel pack1 = new TestParcel(new Point(2, 2), 10, 10, 2.0);
+        final Parcel_Old pack1 = new TestParcel(new Point(2, 2), 10, 10, 2.0);
         rm.register(pack1);
         model.register(pack1);
         rm.addObjectAtSamePosition(pack1, truck);
@@ -359,10 +365,10 @@ public class PDPModelTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testDeliverFail4() {
-        final Vehicle truck = new TestVehicle(new Point(1, 1), 10.0, 1.0);
+        final Vehicle_Old truck = new TestVehicle(new Point(1, 1), 10.0, 1.0);
         rm.register(truck);
         model.register(truck);
-        final Parcel pack1 = new TestParcel(new Point(2, 2), 10, 10, 2.0);
+        final Parcel_Old pack1 = new TestParcel(new Point(2, 2), 10, 10, 2.0);
         rm.register(pack1);
         model.register(pack1);
         rm.addObjectAtSamePosition(pack1, truck);
@@ -375,8 +381,8 @@ public class PDPModelTest {
     @Test
     public void addPackageIn() {
         assertTrue(model.getAvailableParcels().isEmpty());
-        final Depot d = new TestDepot(10);
-        final Parcel p1 = new TestParcel(new Point(0, 0), 0, 0, 1);
+        final Depot_Old d = new TestDepot(10);
+        final Parcel_Old p1 = new TestParcel(new Point(0, 0), 0, 0, 1);
         model.register(d);
         model.register(p1);
         rm.addObjectAt(d, new Point(0, 0));
@@ -388,31 +394,31 @@ public class PDPModelTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void addPackageInFail1() {
-        final Depot d = new TestDepot(10);
-        final Parcel p1 = new TestParcel(new Point(0, 0), 0, 0, 1);
+        final Depot_Old d = new TestDepot(10);
+        final Parcel_Old p1 = new TestParcel(new Point(0, 0), 0, 0, 1);
         rm.addObjectAt(p1, new Point(0, 0));
         model.addParcelIn(d, p1);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void addPackageInFail2() {
-        final Depot d = new TestDepot(10);
-        final Parcel p1 = new TestParcel(new Point(0, 0), 0, 0, 1);
+        final Depot_Old d = new TestDepot(10);
+        final Parcel_Old p1 = new TestParcel(new Point(0, 0), 0, 0, 1);
         model.addParcelIn(d, p1);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void addPackageInFail3() {
-        final Depot d = new TestDepot(10);
-        final Parcel p1 = new TestParcel(new Point(0, 0), 0, 0, 1);
+        final Depot_Old d = new TestDepot(10);
+        final Parcel_Old p1 = new TestParcel(new Point(0, 0), 0, 0, 1);
         model.register(p1);
         model.addParcelIn(d, p1);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void addPackageInFail4() {
-        final Depot d = new TestDepot(10);
-        final Parcel p1 = new TestParcel(new Point(0, 0), 0, 0, 1);
+        final Depot_Old d = new TestDepot(10);
+        final Parcel_Old p1 = new TestParcel(new Point(0, 0), 0, 0, 1);
         model.register(p1);
         model.register(d);
         model.addParcelIn(d, p1);
@@ -420,8 +426,8 @@ public class PDPModelTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void addPackageInFail5() {
-        final Depot d = new TestDepot(10);
-        final Parcel p1 = new TestParcel(new Point(0, 0), 0, 0, 11);
+        final Depot_Old d = new TestDepot(10);
+        final Parcel_Old p1 = new TestParcel(new Point(0, 0), 0, 0, 11);
         model.register(p1);
         model.register(d);
         rm.addObjectAt(d, new Point(0, 0));
@@ -430,14 +436,14 @@ public class PDPModelTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void registerFail1() {
-        final Parcel p = new TestParcel(new Point(0, 0), 0, 0, 1.0);
+        final Parcel_Old p = new TestParcel(new Point(0, 0), 0, 0, 1.0);
         model.register(p);
         model.register(p);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void registerFail2() {
-        final Depot d = new TestDepot(10);
+        final Depot_Old d = new TestDepot(10);
         model.register(d);
         model.register(d);
     }
@@ -449,7 +455,7 @@ public class PDPModelTest {
 
     @Test(expected = IllegalStateException.class)
     public void containerSetCapacityFail() {
-        final Depot d = new TestDepot(10);
+        final Depot_Old d = new TestDepot(10);
         model.register(d);
         rm.register(d);
         d.setCapacity(20);
@@ -457,7 +463,7 @@ public class PDPModelTest {
 
     @Test(expected = IllegalStateException.class)
     public void objectSetStartPositionFail() {
-        final Depot d = new TestDepot(10);
+        final Depot_Old d = new TestDepot(10);
         model.register(d);
         assertEquals(model, d.getPDPModel());
         rm.register(d);
@@ -467,19 +473,19 @@ public class PDPModelTest {
 
     @Test(expected = IllegalStateException.class)
     public void objectCheckDoubleRegistrationFail1() {
-        final Depot d = new TestDepot(10);
+        final Depot_Old d = new TestDepot(10);
         d.initPDPObject(model);
         d.initPDPObject(model);
     }
 
     @Test(expected = IllegalStateException.class)
     public void objectCheckDoubleRegistrationFail2() {
-        final Depot d = new TestDepot(10);
+        final Depot_Old d = new TestDepot(10);
         d.initRoadUser(rm);
         d.initRoadUser(rm);
     }
 
-    class TestParcel extends Parcel {
+    class TestParcel extends Parcel_Old {
 
         public TestParcel(Point pDestination, int pLoadingDuration,
                 int pUnloadingDuration, double pMagnitude) {
@@ -503,7 +509,7 @@ public class PDPModelTest {
 
     }
 
-    class TestVehicle extends Vehicle {
+    class TestVehicle extends Vehicle_Old {
 
         private final double speed;
 
@@ -531,7 +537,7 @@ public class PDPModelTest {
         public void initRoadPDP(RoadModel pRoadModel, PDPModel pPdpModel) {}
     }
 
-    class TestDepot extends Depot {
+    class TestDepot extends Depot_Old {
 
         public TestDepot(int pCapacity) {
             setCapacity(pCapacity);

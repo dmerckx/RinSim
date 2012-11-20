@@ -3,15 +3,15 @@
  */
 package rinde.sim.problem.fabrirecht;
 
-import rinde.sim.core.model.pdp.PDPModel;
-import rinde.sim.core.model.pdp.Parcel;
 import rinde.sim.core.model.road.RoadModel;
+import rinde.sim.core.old.pdp.PDPModel;
+import rinde.sim.core.old.pdp.Parcel_Old;
 
 /**
  * @author Rinde van Lon <rinde.vanlon@cs.kuleuven.be>
  * 
  */
-public class FRParcel extends Parcel {
+public class FRParcel extends Parcel_Old {
 
 	public final ParcelDTO dto;
 

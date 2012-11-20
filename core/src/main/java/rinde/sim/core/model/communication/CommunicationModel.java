@@ -5,15 +5,18 @@ import java.util.HashMap;
 import rinde.sim.core.graph.Point;
 import rinde.sim.core.model.Model;
 import rinde.sim.core.model.SimulatorModelAPI;
+import rinde.sim.core.model.communication.guards.CommunicationGuard;
+import rinde.sim.core.model.communication.supported.CommunicationHolder;
+import rinde.sim.core.model.communication.users.CommUser;
 
-public class CommunicationModel implements Model<CommunicationUser>{
+public class CommunicationModel implements Model<CommunicationHolder>{
 
-	private final HashMap<Address, CommunicationPort> comms;
+	private final HashMap<Address, CommunicationGuard> comms;
 	private int nextId = 0;
 	private SimulatorModelAPI api;
 	
 	public CommunicationModel(){
-		comms = new HashMap<Address, CommunicationPort>();
+		comms = new HashMap<Address, CommunicationGuard>();
 	}
 
 	@Override
@@ -31,7 +34,7 @@ public class CommunicationModel implements Model<CommunicationUser>{
 	
 	public void broadcast(Delivery msg){
         
-		CommunicationPort sender = comms.get(msg.address);
+		CommunicationGuard sender = comms.get(msg.address);
 		Point senderLocation = sender.getLocation();
 		
 		for(Address a: comms.keySet()){
@@ -46,18 +49,19 @@ public class CommunicationModel implements Model<CommunicationUser>{
 	}
 
 	@Override
-	public void register(CommunicationUser element) {
-		CommunicationPort comm = new CommunicationPort(element, this);
+	public void register(CommunicationHolder holder) {
+	    CommUser element = holder.getElement();
+		CommunicationGuard comm = holder.getCommunicationGuard();
 		element.setCommunicationAPI(comm);
-		api.registerPort(comm);
+		api.registerGuard(comm);
 		comms.put(comm.getAddress(), comm);
 	}
 
 	@Override
-	public void unregister(CommunicationUser element) {
+	public void unregister(CommunicationHolder element) {
 		for(Address a: comms.keySet()){
 			if( comms.get(a).getUser() == element ){
-				api.unregisterPort(comms.get(a));
+				api.unregisterGuard(comms.get(a));
 				comms.remove(a);
 				return;
 			}
@@ -65,7 +69,7 @@ public class CommunicationModel implements Model<CommunicationUser>{
 	}
 
 	@Override
-	public Class<CommunicationUser> getSupportedType() {
-		return CommunicationUser.class;
+	public Class<CommunicationHolder> getSupportedType() {
+		return CommunicationHolder.class;
 	}
 }

@@ -1,6 +1,6 @@
 package rinde.sim.problem.fabrirecht;
 
-import rinde.sim.core.model.pdp.PDPScenarioEvent;
+import rinde.sim.core.model.pdp.scenario.PDPScenarioEvent;
 import rinde.sim.scenario.TimedEvent;
 
 public class AddParcelEvent extends TimedEvent {

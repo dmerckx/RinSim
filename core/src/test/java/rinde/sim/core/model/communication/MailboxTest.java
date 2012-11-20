@@ -9,6 +9,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import rinde.sim.core.graph.Point;
+import rinde.sim.core.model.communication.apis.CommunicationAPI;
+import rinde.sim.core.model.communication.users.CommUser;
 
 public class MailboxTest {
 
@@ -53,7 +55,7 @@ public class MailboxTest {
 		assertEquals(msg, messages.iterator().next());
 	}
 
-	class TestUser implements CommunicationUser {
+	class TestUser implements CommUser {
 
 		@Override
 		public void setCommunicationAPI(CommunicationAPI api) {}

@@ -11,10 +11,10 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.apache.commons.math3.random.RandomGenerator;
 
 import rinde.sim.core.graph.Point;
-import rinde.sim.core.model.communication.CommunicationAPI;
-import rinde.sim.core.model.communication.CommunicationUser;
 import rinde.sim.core.model.communication.Mailbox;
 import rinde.sim.core.model.communication.Message;
+import rinde.sim.core.model.communication.apis.CommunicationAPI;
+import rinde.sim.core.model.communication.users.CommUser;
 import rinde.sim.core.model.road.RoadModel;
 import rinde.sim.core.model.road.users.MovingRoadUser;
 import rinde.sim.core.model.road.users.RoadUser;
@@ -28,7 +28,7 @@ import rinde.sim.examples.common.Package;
  * Example of the simple random agent with the use of simulation facilities.
  * @author Bartosz Michalik <bartosz.michalik@cs.kuleuven.be>
  */
-class RandomWalkAgent implements Agent, MovingRoadUser, SimulatorUser, CommunicationUser {
+class RandomWalkAgent implements Agent, MovingRoadUser, SimulatorUser, CommUser {
 
 	public static final String C_BLACK = "color.black";
 	public static final String C_YELLOW = "color.yellow";

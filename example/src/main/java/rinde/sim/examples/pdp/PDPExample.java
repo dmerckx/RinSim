@@ -11,9 +11,9 @@ import org.apache.commons.math3.random.RandomGenerator;
 
 import rinde.sim.core.graph.Graph;
 import rinde.sim.core.graph.MultiAttributeData;
-import rinde.sim.core.model.pdp.PDPModel;
 import rinde.sim.core.model.road.GraphRoadModel;
 import rinde.sim.core.model.road.RoadModel;
+import rinde.sim.core.old.pdp.PDPModel;
 import rinde.sim.core.simulation.Simulator;
 import rinde.sim.serializers.DotGraphSerializer;
 import rinde.sim.serializers.SelfCycleFilter;
