@@ -5,7 +5,7 @@ import java.util.List;
 import rinde.sim.core.graph.Point;
 import rinde.sim.core.simulation.TimeLapse;
 
-public abstract class Visitor<T extends ExtendedReceiver<?>, R extends Result> {
+public abstract class Visitor<T extends ExtendedReceiver, R extends Result> {
 
     public final Point location;
     public final Class<T> target; 

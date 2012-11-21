@@ -14,7 +14,7 @@ import org.apache.commons.math3.random.RandomGenerator;
 import rinde.sim.core.graph.Point;
 import rinde.sim.core.model.Model;
 import rinde.sim.core.model.road.guards.RoadGuard;
-import rinde.sim.core.model.road.supported.RoadHolder;
+import rinde.sim.core.model.road.supported.RoadUnit;
 import rinde.sim.core.model.road.users.MovingRoadUser;
 import rinde.sim.core.model.road.users.RoadUser;
 import rinde.sim.core.simulation.TimeLapse;
@@ -36,7 +36,7 @@ import com.google.common.base.Predicate;
  * {@link RoadModel}s are defined in {@link RoadModels}.
  * @author Rinde van Lon <rinde.vanlon@cs.kuleuven.be>
  */
-public interface RoadModel extends Model<RoadHolder> {
+public interface RoadModel extends Model<RoadUnit> {
 
     /**
      * Moves the specified {@link MovingRoadUser} towards the specified
@@ -306,6 +306,4 @@ public interface RoadModel extends Model<RoadHolder> {
     List<Point> getShortestPathTo(Point from, Point to);
 
     EventAPI getEventAPI();
-    
-    RoadGuard makeGuard(RoadUser user);
 }

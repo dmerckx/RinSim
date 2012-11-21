@@ -1,26 +1,15 @@
 package rinde.sim.core.model.pdp.receivers;
 
 import rinde.sim.core.graph.Point;
-import rinde.sim.core.model.interaction.ExtendedReceiver;
 import rinde.sim.core.model.interaction.Receiver;
 import rinde.sim.core.model.pdp.Parcel;
 import rinde.sim.core.model.pdp.twpolicy.TimeWindowPolicy;
 import rinde.sim.core.model.pdp.visitors.DeliveryVisitor;
 import rinde.sim.core.simulation.TimeLapse;
 
-/**
- * This class represents a {@link Receiver} publishing himself as a point that
- * {@link DeliveryVisitor}s can approach to deliver certain {@link Parcel}s.
- * 
- * As soon as a visitor delivers a parcel to this receiver it will send a
- * notification and terminate. This makes it impossible to deliver multiple
- * parcels at the same time.
- * 
- * @author dmerckx
- */
-public class DeliveryReceiver extends ExtendedReceiver {
-
-    private final Class<? extends Parcel> target;
+public class SimpleDeliveryReceiver<P extends Parcel> extends Receiver{
+    
+    private final P parcel;
     private final TimeWindowPolicy policy;
 
     /**
@@ -30,10 +19,9 @@ public class DeliveryReceiver extends ExtendedReceiver {
      * @param guard The guard from which this receiver originates.
      */
     @SuppressWarnings("hiding")
-    public DeliveryReceiver(Point location, Class<? extends Parcel> target,
-            TimeWindowPolicy policy) {
+    public SimpleDeliveryReceiver(Point location, P parcel, TimeWindowPolicy policy) {
         super(location);
-        this.target = target;
+        this.parcel = parcel;
         this.policy = policy;
     }
 
@@ -45,7 +33,7 @@ public class DeliveryReceiver extends ExtendedReceiver {
      *         parcel.
      */
     public boolean canAccept(TimeLapse time, Parcel parcel, DeliveryVisitor<?> visitor) {
-        return parcel.getClass().isAssignableFrom(target)
+        return this.parcel == parcel
                 && policy.canDeliver(parcel.deliveryTimeWindow, time.getTime(), parcel.deliveryDuration);
     }
 
@@ -53,7 +41,6 @@ public class DeliveryReceiver extends ExtendedReceiver {
      * @param parcel Deliver the specified parcel.
      */
     public void deliver(Parcel parcel) {
-        sendNotification(new DeliveryNotification(parcel));
         terminate();
     }
 }

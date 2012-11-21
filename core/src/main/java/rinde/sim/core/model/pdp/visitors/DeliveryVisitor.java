@@ -4,8 +4,8 @@ import java.util.List;
 
 import rinde.sim.core.graph.Point;
 import rinde.sim.core.model.interaction.Visitor;
+import rinde.sim.core.model.pdp.Parcel;
 import rinde.sim.core.model.pdp.receivers.DeliveryReceiver;
-import rinde.sim.core.model.pdp.supported.Parcel;
 import rinde.sim.core.simulation.TimeLapse;
 
 /**

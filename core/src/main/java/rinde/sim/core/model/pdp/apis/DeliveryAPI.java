@@ -1,7 +1,6 @@
 package rinde.sim.core.model.pdp.apis;
 
-import rinde.sim.core.model.pdp.supported.Parcel;
-import rinde.sim.core.model.pdp.users.DeliveryPoint;
+import rinde.sim.core.model.pdp.Parcel;
 import rinde.sim.core.old.pdp.Parcel_Old;
 
 public interface DeliveryAPI {

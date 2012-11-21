@@ -5,18 +5,18 @@ import java.util.HashMap;
 import rinde.sim.core.graph.Point;
 import rinde.sim.core.model.Model;
 import rinde.sim.core.model.SimulatorModelAPI;
-import rinde.sim.core.model.communication.guards.CommunicationGuard;
-import rinde.sim.core.model.communication.supported.CommunicationHolder;
+import rinde.sim.core.model.communication.guards.CommGuard;
+import rinde.sim.core.model.communication.supported.CommUnit;
 import rinde.sim.core.model.communication.users.CommUser;
 
-public class CommunicationModel implements Model<CommunicationHolder>{
+public class CommunicationModel implements Model<CommUnit>{
 
-	private final HashMap<Address, CommunicationGuard> comms;
+	private final HashMap<Address, CommGuard> comms;
 	private int nextId = 0;
 	private SimulatorModelAPI api;
 	
 	public CommunicationModel(){
-		comms = new HashMap<Address, CommunicationGuard>();
+		comms = new HashMap<Address, CommGuard>();
 	}
 
 	@Override
@@ -34,11 +34,11 @@ public class CommunicationModel implements Model<CommunicationHolder>{
 	
 	public void broadcast(Delivery msg){
         
-		CommunicationGuard sender = comms.get(msg.address);
-		Point senderLocation = sender.getLocation();
+		CommGuard sender = comms.get(msg.address);
+		Point senderLocation = sender.getLastLocation();
 		
 		for(Address a: comms.keySet()){
-			if( Point.distance(comms.get(a).getLocation(),senderLocation) < sender.getRadius()){
+			if( Point.distance(comms.get(a).getLastLocation(),senderLocation) < sender.getRadius()){
 				try {
 					comms.get(a).receive(msg.clone());
 				} catch (CloneNotSupportedException e) {
@@ -49,16 +49,16 @@ public class CommunicationModel implements Model<CommunicationHolder>{
 	}
 
 	@Override
-	public void register(CommunicationHolder holder) {
-	    CommUser element = holder.getElement();
-		CommunicationGuard comm = holder.getCommunicationGuard();
-		element.setCommunicationAPI(comm);
-		api.registerGuard(comm);
-		comms.put(comm.getAddress(), comm);
+	public void register(CommUnit unit) {
+        CommGuard guard = new CommGuard(unit.getElement(), unit.getRoadAPI(), this);
+	    unit.setCommunicationAPI(guard);
+	    
+		api.registerGuard(guard);
+		comms.put(guard.getAddress(), guard);
 	}
 
 	@Override
-	public void unregister(CommunicationHolder element) {
+	public void unregister(CommUnit element) {
 		for(Address a: comms.keySet()){
 			if( comms.get(a).getUser() == element ){
 				api.unregisterGuard(comms.get(a));
@@ -69,7 +69,7 @@ public class CommunicationModel implements Model<CommunicationHolder>{
 	}
 
 	@Override
-	public Class<CommunicationHolder> getSupportedType() {
-		return CommunicationHolder.class;
+	public Class<CommUnit> getSupportedType() {
+		return CommUnit.class;
 	}
 }

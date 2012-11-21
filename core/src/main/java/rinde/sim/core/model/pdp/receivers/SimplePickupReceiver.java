@@ -5,7 +5,7 @@ import java.util.List;
 
 import rinde.sim.core.graph.Point;
 import rinde.sim.core.model.interaction.Receiver;
-import rinde.sim.core.model.pdp.supported.Parcel;
+import rinde.sim.core.model.pdp.Parcel;
 import rinde.sim.core.model.pdp.twpolicy.TimeWindowPolicy;
 import rinde.sim.core.model.pdp.visitors.PickupVisitor;
 import rinde.sim.core.simulation.TimeLapse;

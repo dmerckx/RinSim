@@ -5,8 +5,7 @@ import java.util.List;
 import rinde.sim.core.graph.Point;
 import rinde.sim.core.model.interaction.ExtendedReceiver;
 import rinde.sim.core.model.interaction.Receiver;
-import rinde.sim.core.model.interaction.guards.InteractiveGuard;
-import rinde.sim.core.model.pdp.supported.Parcel;
+import rinde.sim.core.model.pdp.Parcel;
 import rinde.sim.core.model.pdp.twpolicy.TimeWindowPolicy;
 import rinde.sim.core.model.pdp.visitors.PickupVisitor;
 import rinde.sim.core.simulation.TimeLapse;
@@ -22,7 +21,7 @@ import rinde.sim.core.simulation.TimeLapse;
  * 
  * @author dmerckx
  */
-public class PickupReceiver extends ExtendedReceiver<PickupNotification> {
+public class PickupReceiver extends ExtendedReceiver {
 
     private final List<? extends Parcel> parcels;
     private final TimeWindowPolicy policy;
@@ -35,8 +34,8 @@ public class PickupReceiver extends ExtendedReceiver<PickupNotification> {
      */
     @SuppressWarnings("hiding")
     public PickupReceiver(Point location, List<? extends Parcel> parcels,
-            TimeWindowPolicy policy, InteractiveGuard<? super PickupNotification> guard) {
-        super(location, guard);
+            TimeWindowPolicy policy) {
+        super(location);
         this.parcels = parcels;
         this.policy = policy;
     }

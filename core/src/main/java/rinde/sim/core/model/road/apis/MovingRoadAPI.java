@@ -4,24 +4,13 @@ import java.util.Queue;
 
 import rinde.sim.core.graph.Point;
 import rinde.sim.core.model.road.InvalidLocationException;
-import rinde.sim.core.refs.Ref;
 import rinde.sim.core.simulation.TimeLapse;
 
 public interface MovingRoadAPI extends RoadAPI{
-        
-    /**
-     * Must be called when the model is set within a CommunicationUser.
-     * The value given for speed will be used throughout the simulator
-     * for this agent, changing the speed can be done by holding a copy
-     * of the speed object and modifying this when desired.
-     * @param startPosition
-     *      The starting location of this agent, further location changes
-     *      can be retrieved by observing the Position object of this agent.
-     * @param speed
-     *      The speed at which the agent advances.
-     */
-    public void init(Point startLocation, Ref<Double> speed, long seed);
-    public void init(Point startLocation, double constantSpeed, long seed);
+       
+    public void setSpeed(double speed);
+    
+    public double getSpeed();
     
     /**
      * Returns a random, reachable location on the map.

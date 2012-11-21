@@ -3,20 +3,26 @@ package rinde.sim.core.model.interaction;
 import rinde.sim.core.graph.Point;
 import rinde.sim.core.model.interaction.guards.InteractiveGuard;
 
-public abstract class ExtendedReceiver<N extends Notification> extends Receiver{
+public abstract class ExtendedReceiver extends Receiver{
 
-    private final InteractiveGuard<? super N> guard;
+    private InteractiveGuard guard;
+    private boolean set = false;
     
     /**
      * @param location The location of this receiver.
      * @param guard The guard from which this receiver originates.
      */
-    public ExtendedReceiver(Point location, InteractiveGuard<? super N> guard) {
+    public ExtendedReceiver(Point location) {
         super(location);
-        this.guard = guard;
     }
     
-    public final void sendNotification(N notification){
+    public final void sendNotification(Notification notification){
         guard.receiveNotification(notification);
+    }
+    
+    public final void setGuard(InteractiveGuard guard){
+        assert(!set);
+        this.guard = guard;
+        set = true;
     }
 }

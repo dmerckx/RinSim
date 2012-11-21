@@ -40,7 +40,6 @@ public abstract class PDPObjectImpl implements PDPObject {
         }
     }
 
-    @Override
     public final void initRoadUser(RoadModel model) {
         checkState(roadModel == null, "RoadModel can not be registered twice!");
         roadModel = model;

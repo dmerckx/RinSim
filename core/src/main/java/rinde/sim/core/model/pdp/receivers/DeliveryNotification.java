@@ -1,6 +1,6 @@
 package rinde.sim.core.model.pdp.receivers;
 
-import rinde.sim.core.model.pdp.supported.Parcel;
+import rinde.sim.core.model.pdp.Parcel;
 
 /**
  * A simple message class carrying the reference to a parcel that was

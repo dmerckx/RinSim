@@ -3,7 +3,7 @@ package rinde.sim.core.model.pdp.apis;
 import java.util.List;
 
 import rinde.sim.core.graph.Point;
-import rinde.sim.core.model.pdp.supported.Parcel;
+import rinde.sim.core.model.pdp.Parcel;
 
 public interface TruckAPI<P extends Parcel>{
     

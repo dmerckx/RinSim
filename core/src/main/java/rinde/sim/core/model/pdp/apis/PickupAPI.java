@@ -4,10 +4,7 @@ import java.awt.Container;
 
 import rinde.sim.core.model.communication.Address;
 import rinde.sim.core.model.communication.users.CommUser;
-import rinde.sim.core.model.pdp.supported.Parcel;
-import rinde.sim.core.model.pdp.users.DeliveryPoint;
-import rinde.sim.core.model.pdp.users.PickupPoint;
-import rinde.sim.core.old.pdp.Parcel_Old;
+import rinde.sim.core.model.pdp.Parcel;
 
 public interface PickupAPI {
 

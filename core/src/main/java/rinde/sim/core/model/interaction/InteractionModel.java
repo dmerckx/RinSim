@@ -8,26 +8,24 @@ import rinde.sim.core.graph.Point;
 import rinde.sim.core.model.Model;
 import rinde.sim.core.model.SimulatorModelAPI;
 import rinde.sim.core.model.interaction.guards.InteractiveGuard;
-import rinde.sim.core.model.interaction.supported.InteractiveHolder;
-import rinde.sim.core.model.interaction.supported.InteractiveReceiver;
-import rinde.sim.core.model.interaction.supported.InteractiveType;
-import rinde.sim.core.model.interaction.users.InteractiveAgent;
+import rinde.sim.core.model.interaction.supported.InteractiveUnit;
+import rinde.sim.core.model.interaction.users.InteractiveUser;
 import rinde.sim.core.simulation.TimeLapse;
 
 import com.google.common.collect.HashMultimap;
 
 
-public class InteractionModel implements Model<InteractiveType> {
+public class InteractionModel implements Model<InteractiveUnit> {
     
     private SimulatorModelAPI simAPI;
     
     private HashMultimap<Point, Receiver> receiversPos;
     
-    private HashMap<InteractiveAgent, InteractiveGuard<?>> mapping;
+    private HashMap<InteractiveUser, InteractiveGuard> mapping;
     
     public InteractionModel() {
         receiversPos = HashMultimap.create();
-        mapping = new HashMap<InteractiveAgent, InteractiveGuard<?>>();
+        mapping = new HashMap<InteractiveUser, InteractiveGuard>();
     }
     
     public <T extends ExtendedReceiver, R extends Result> R visit(TimeLapse lapse, Visitor<T, R> visitor){
@@ -42,8 +40,12 @@ public class InteractionModel implements Model<InteractiveType> {
         return visitor.visit(lapse, targets);
     }
     
-    public <N extends Notification> void advertise(Receiver receiver){
+    public void advertise(Receiver receiver){
         receiversPos.put(receiver.location, receiver);
+    }
+    
+    public void advertise(ExtendedReceiver receiver, InteractiveGuard guard){
+        receiver.setGuard(guard);
     }
     
     public void remove(Receiver receiver){
@@ -56,39 +58,18 @@ public class InteractionModel implements Model<InteractiveType> {
     }
 
     @Override
-    public void register(InteractiveType element) {
-        if(element instanceof InteractiveHolder){
-            InteractiveHolder holder = (InteractiveHolder) element;
-            mapping.put(holder.getElement(), holder.getInteractiveGuard());
-        }
-        else if(element instanceof InteractiveReceiver){
-            advertise(((InteractiveReceiver) element).receiver);
-        }
-        else{
-            throw new IllegalArgumentException(element.getClass() + " is not a supported type");
-        }
+    public void register(InteractiveUnit unit) {
+        InteractiveGuard guard = new InteractiveGuard(unit.getElement(), this);
+        unit.setInteractiveAPI(guard);
     }
 
     @Override
-    public void unregister(InteractiveType element) {
-        if(element instanceof InteractiveHolder){
-            //TODO
-            throw new UnsupportedOperationException("Not implemented yet");
-        }
-        else if(element instanceof InteractiveReceiver){
-            advertise(((InteractiveReceiver) element).receiver);
-        }
-        else{
-            throw new IllegalArgumentException(element.getClass() + " is not a supported type");
-        }
+    public void unregister(InteractiveUnit unit) {
+        mapping.remove(unit.getElement());
     }
 
     @Override
-    public Class<InteractiveType> getSupportedType() {
-        return InteractiveType.class;
-    }
- 
-    public <N extends Notification> InteractiveGuard<N> makeGuard(InteractiveAgent agent){
-        return new InteractiveGuard<N>(agent, this);
+    public Class<InteractiveUnit> getSupportedType() {
+        return InteractiveUnit.class;
     }
 }

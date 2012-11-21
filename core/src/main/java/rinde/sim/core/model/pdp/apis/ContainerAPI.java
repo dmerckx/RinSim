@@ -2,14 +2,10 @@ package rinde.sim.core.model.pdp.apis;
 
 import java.util.List;
 
-import rinde.sim.core.graph.Point;
-import rinde.sim.core.model.pdp.supported.Parcel;
+import rinde.sim.core.model.pdp.Parcel;
 import rinde.sim.core.model.pdp.users.Container;
-import rinde.sim.core.model.pdp.users.DeliveryPoint;
-import rinde.sim.core.model.pdp.users.PickupPoint;
 import rinde.sim.core.model.road.RoadModel;
 import rinde.sim.core.model.road.users.RoadUser;
-import rinde.sim.core.refs.RefBackup;
 import rinde.sim.core.simulation.TimeLapse;
 
 /**
@@ -30,12 +26,6 @@ import rinde.sim.core.simulation.TimeLapse;
  */
 public interface ContainerAPI<P extends Parcel> {
     
-    /**
-     * Initiate this container with the total capacity it can carry.
-     * @param capacity The capacity of this container.
-     * @param parcelType The type of parcel used by this container.
-     */
-    public void init(double capacity, Class<P> parcelType);
     
     /**
      * Returns all the parcels currently contained.
@@ -78,15 +68,6 @@ public interface ContainerAPI<P extends Parcel> {
      * @return True iff the given parcel is (being) picked up
      */
     public boolean tryPickupOf(TimeLapse lapse, P parcel);
-    
-    /**
-     * Scan the location for other {@link Container}s and {@link PickupPoint}s
-     * and list up all the available {@link Parcel}s.
-     * 
-     * @return A list of all available {@link Parcel}s on this location.
-     */
-    public List<Parcel> scanLocation();
-
     
     public void acceptAll(TimeLapse lapse);
     

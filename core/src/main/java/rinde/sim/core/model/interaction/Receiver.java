@@ -13,6 +13,10 @@ public abstract class Receiver{
         this.location = location;
     }
     
+    public final void setModel(InteractionModel model){
+        this.model = model;
+    }
+    
     public final void terminate(){
         model.remove(this);
     }

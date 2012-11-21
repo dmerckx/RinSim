@@ -1,8 +1,7 @@
 package rinde.sim.core.model.road.users;
 
 import rinde.sim.core.model.road.RoadModel;
-import rinde.sim.core.model.road.apis.MovingRoadAPI;
-import rinde.sim.core.model.road.apis.RoadAPI;
+import rinde.sim.core.model.road.supported.MovingRoadUnit;
 
 /**
  * Used to represent road users that want to reposition itself using the
@@ -14,5 +13,15 @@ import rinde.sim.core.model.road.apis.RoadAPI;
  */
 public interface MovingRoadUser extends RoadUser {
    
-    public void initRoadUser(MovingRoadAPI api);
+    @Override
+    public MovingRoadData initData();
+    
+    @Override
+    public MovingRoadUnit buildUnit();
+    
+    
+    public interface MovingRoadData extends RoadData {
+
+        double getSpeed();
+    }
 }

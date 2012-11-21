@@ -2,11 +2,11 @@ package rinde.sim.core.model.pdp;
 
 import rinde.sim.core.model.Model;
 import rinde.sim.core.model.SimulatorModelAPI;
-import rinde.sim.core.model.pdp.supported.Parcel;
+import rinde.sim.core.model.pdp.guards.ContainerGuard;
+import rinde.sim.core.model.pdp.supported.ContainerUnit;
 import rinde.sim.core.model.pdp.supported.PdpType;
+import rinde.sim.core.model.pdp.supported.SelfBuildParcel;
 import rinde.sim.core.model.pdp.twpolicy.TimeWindowPolicy;
-import rinde.sim.core.simulation.TimeLapse;
-import rinde.sim.util.TimeWindow;
 
 public class PdpModel implements Model<PdpType>, PdpAPI{
 
@@ -17,28 +17,9 @@ public class PdpModel implements Model<PdpType>, PdpAPI{
         this.twp = twp;
     }
     
-    // ----- PDP API ----- //
-    
-    @Override
-    public boolean canPickup(TimeLapse lapse, Parcel parcel){
-        return canPickup(parcel.pickupTimeWindow, lapse.getTime(), parcel.pickupDuration);
+    public TimeWindowPolicy getPolicy(){
+        return twp;
     }
-    
-    @Override
-    public boolean canPickup(TimeWindow tw, long time, long duration){
-        return twp.canPickup(tw, time, duration);
-    }
-    
-    @Override
-    public boolean canDeliver(TimeLapse lapse, Parcel parcel){
-        return canPickup(parcel.deliveryTimeWindow, lapse.getTime(), parcel.deliveryDuration);
-    }
-
-    @Override
-    public boolean canDeliver(TimeWindow tw, long time, long duration){
-        return twp.canDeliver(tw, time, duration);
-    }
-    
     
     // ------ MODEL ------ //
 
@@ -49,7 +30,18 @@ public class PdpModel implements Model<PdpType>, PdpAPI{
 
     @Override
     public void register(PdpType element) {
-        //TODO
+        if(element instanceof ContainerUnit){
+            registerContainerUnit((ContainerUnit<?>) element);
+        }
+        else if(element instanceof SelfBuildParcel<?>){
+            
+        }
+    }
+    
+    protected <P extends Parcel> void registerContainerUnit(ContainerUnit<P> unit){
+        ContainerGuard<P> guard = new ContainerGuard<P>(unit.getElement(),
+                unit.getRoadAPI(), unit.getInteractiveAPI(), this);
+        unit.setContainerAPI(guard);
     }
 
     @Override

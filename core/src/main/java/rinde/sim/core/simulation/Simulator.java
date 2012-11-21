@@ -13,7 +13,7 @@ import rinde.sim.core.model.Model;
 import rinde.sim.core.model.ModelManager;
 import rinde.sim.core.model.ModelProvider;
 import rinde.sim.core.model.simulator.SimulatorModel;
-import rinde.sim.core.simulation.policies.ParallelAgents;
+import rinde.sim.core.simulation.policies.ParallelUnits;
 import rinde.sim.core.simulation.policies.ParallelInterval;
 import rinde.sim.core.simulation.policies.ParallelLapse;
 import rinde.sim.core.simulation.policies.SerialInterval;
@@ -120,7 +120,7 @@ public class Simulator{
         TickPolicy<?>[] policies = new TickPolicy[3];
         
         policies[0] = new SerialInterval<PrimaryTickListener>(true, PrimaryTickListener.class);
-        policies[1] = new ParallelAgents();
+        policies[1] = new ParallelUnits();
         policies[2] = new SerialInterval<ExternalTickListener>(false, ExternalTickListener.class);
         
         return policies;

@@ -4,18 +4,30 @@ import rinde.sim.core.graph.Point;
 import rinde.sim.core.model.road.RoadModel;
 import rinde.sim.core.model.road.apis.RoadAPI;
 import rinde.sim.core.model.road.users.RoadUser;
+import rinde.sim.core.simulation.TimeInterval;
 
-public abstract class RoadGuard implements RoadAPI{
+public class RoadGuard implements RoadAPI{
 
     protected RoadModel model;
     
-    public RoadGuard(RoadModel model) {
+    protected Point location;
+    protected Point lastLocation;
+    
+    public RoadGuard(RoadUser user, RoadModel model) {
         this.model = model;
     }
 
-    protected abstract boolean isInitialised();
+    @Override
+    public Point getLocation() {
+        return location;
+    }
+
+    @Override
+    public Point getLastLocation() {
+        return lastLocation;
+    }
     
-    protected abstract RoadUser getUser();
-    
-    public abstract Point getLocation();
+    public void afterTick(TimeInterval interval){
+        lastLocation = location;
+    }
 }

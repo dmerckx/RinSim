@@ -4,6 +4,7 @@
 package rinde.sim.core.simulation.types;
 
 import rinde.sim.core.model.Model;
+import rinde.sim.core.model.Unit;
 import rinde.sim.core.simulation.Simulator;
 import rinde.sim.core.simulation.TickListener;
 import rinde.sim.core.simulation.TimeLapse;
@@ -33,4 +34,6 @@ public interface Agent extends TickListener<TimeLapse>{
      */
     @Override
     public void tick(TimeLapse time);
+    
+    public Unit buildUnit();
 }

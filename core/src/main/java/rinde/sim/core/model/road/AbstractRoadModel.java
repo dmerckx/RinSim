@@ -20,13 +20,10 @@ import java.util.Set;
 import rinde.sim.core.graph.Point;
 import rinde.sim.core.model.AbstractModel;
 import rinde.sim.core.model.SimulatorModelAPI;
-import rinde.sim.core.model.road.guards.FixedRoadGuard;
 import rinde.sim.core.model.road.guards.MovingRoadGuard;
 import rinde.sim.core.model.road.guards.RoadGuard;
-import rinde.sim.core.model.road.supported.FixedRoadHolder;
-import rinde.sim.core.model.road.supported.MovingRoadHolder;
-import rinde.sim.core.model.road.supported.RoadHolder;
-import rinde.sim.core.model.road.users.FixedRoadUser;
+import rinde.sim.core.model.road.supported.MovingRoadUnit;
+import rinde.sim.core.model.road.supported.RoadUnit;
 import rinde.sim.core.model.road.users.MovingRoadUser;
 import rinde.sim.core.model.road.users.RoadUser;
 import rinde.sim.core.simulation.TimeInterval;
@@ -50,7 +47,7 @@ import com.google.common.collect.Sets;
  * 
  * @author Rinde van Lon <rinde.vanlon@cs.kuleuven.be>
  */
-public abstract class AbstractRoadModel<T> extends AbstractModel<RoadHolder>
+public abstract class AbstractRoadModel<T> extends AbstractModel<RoadUnit>
         implements RoadModel, PrimaryTickListener{
 
     private Map<RoadUser, RoadGuard> mapping;
@@ -92,7 +89,7 @@ public abstract class AbstractRoadModel<T> extends AbstractModel<RoadHolder>
      * Create a new instance.
      */
     public AbstractRoadModel(boolean pUseSpeedConversion) {
-        super(RoadHolder.class);
+        super(RoadUnit.class);
         objLocs = createObjectToLocationMap();
         objDestinations = newLinkedHashMap();
         speedConverter = new SpeedConverter();
@@ -340,24 +337,24 @@ public abstract class AbstractRoadModel<T> extends AbstractModel<RoadHolder>
     }
 
     @Override
-    public void register(RoadHolder holder) {
-        checkArgument(holder != null, "RoadHolder can not be null");
+    public void register(RoadUnit unit) {
+        checkArgument(unit != null, "RoadHolder can not be null");
         
-        mapping.put(holder.getElement(), holder.getRoadGuard());
+        RoadGuard guard;
         
-        if( holder instanceof FixedRoadHolder){
-            ((FixedRoadHolder) holder).getElement().initRoadUser(((FixedRoadHolder) holder).getRoadGuard());
-        }
-        else if( holder instanceof MovingRoadHolder){
-            ((MovingRoadHolder) holder).getElement().initRoadUser(((MovingRoadHolder) holder).getRoadGuard());
+        if( unit instanceof MovingRoadUnit){
+            guard = new MovingRoadGuard(((MovingRoadUnit) unit).getElement(), this);
+            unit.setRoadAPI(guard);
         }
         else {
-            throw new IllegalArgumentException("Unknown type of road holder: " + holder);
+            guard = new RoadGuard(unit.getElement(), this);
+            unit.setRoadAPI(guard);
         }
+        mapping.put(unit.getElement(), guard);
     }
 
     @Override
-    public void unregister(RoadHolder holder) {
+    public void unregister(RoadUnit holder) {
         checkArgument(holder != null, "RoadHolder can not be null");
         
         if (containsObject(holder.getElement())) {
@@ -417,17 +414,4 @@ public abstract class AbstractRoadModel<T> extends AbstractModel<RoadHolder>
 
     @Override
     public void tick(TimeInterval t) {}
-    
-    @Override
-    public RoadGuard makeGuard(RoadUser user) {
-        if( user instanceof FixedRoadUser){
-            return new FixedRoadGuard((FixedRoadUser) user, this);
-        }
-        else if( user instanceof MovingRoadUser){
-            return new MovingRoadGuard((MovingRoadUser) user, this);
-        }
-        else {
-            throw new IllegalArgumentException(user + " is not a supported RoadUser type");
-        }
-    }
 }

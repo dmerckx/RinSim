@@ -11,22 +11,11 @@ import rinde.sim.core.refs.RefBackup;
 
 
 public interface CommunicationAPI {
-	
-	/**
-	 * Must be called when the model is set within a CommunicationUser.
-	 * The values given will be used throughout the simulator for this agent.
-	 * Changing the position, radius or reliability can be done by holding
-	 * your own copy of the Value object and modifying this when necessary.
-	 * @param pos
-	 * 		The position of the CommunicationUser.
-	 * @param radius
-	 * 		The radius at which the CommunicatorUser can be reached.
-	 * @param reliability
-	 * 		The reliability of messages received by the CommunicationUser.
-	 * 		Must be a value in the range of ]0,1].
-	 */
-	void init(RefBackup<Point> pos, Ref<Double> radius, Ref<Double> reliability);
-	
+
+    void setReliability(double reliability);
+    
+    void setRadius(double radius);
+    
 	/**
 	 * Send a message to the given address.
 	 */

@@ -2,7 +2,6 @@ package rinde.sim.core.model.road.guards;
 
 import java.util.Queue;
 
-import org.apache.commons.math3.random.MersenneTwister;
 import org.apache.commons.math3.random.RandomGenerator;
 
 import rinde.sim.core.graph.Point;
@@ -11,78 +10,32 @@ import rinde.sim.core.model.road.InvalidLocationException;
 import rinde.sim.core.model.road.RoadModel;
 import rinde.sim.core.model.road.apis.MovingRoadAPI;
 import rinde.sim.core.model.road.users.MovingRoadUser;
-import rinde.sim.core.refs.ConstantRef;
-import rinde.sim.core.refs.Ref;
-import rinde.sim.core.refs.RefBackup;
-import rinde.sim.core.simulation.TimeInterval;
 import rinde.sim.core.simulation.TimeLapse;
 
-public class MovingRoadGuard extends RoadGuard implements Guard, MovingRoadAPI, RefBackup<Point> {
+public class MovingRoadGuard extends RoadGuard implements Guard, MovingRoadAPI {
 
     private MovingRoadUser user;
-
-    private Point lastLoc;
     
-    private Ref<Double> speed;
-    private RandomGenerator rnd;
-    
+    private RandomGenerator rnd;//TODO
     private Queue<Point> path;
     
-    private boolean initialised = false;
+    public double speed;
     
     public MovingRoadGuard(MovingRoadUser user, RoadModel model) {
-        super(model);
+        super(user, model);
         this.user = user;
+        this.speed = user.initData().getSpeed();
+    }
+    
+    public void setSpeed(double speed){
+        this.speed = speed;
     }
 
     public double getSpeed(){
-        return speed.getValue();
+        return speed;
     }
-    
-    @Override
-    public boolean isInitialised(){
-        return initialised;
-    }
-    
-    @Override
-    public MovingRoadUser getUser() {
-        return user;
-    }
-    
-    public void tick(TimeInterval l) {
-        lastLoc = model.getPosition(user);
-    }
-
-    @Override
-    public Point getLocation() {
-        return lastLoc;
-    }
-    
-    // ------ ROAD API ------ //
-    
-    @Override
-    public RefBackup<Point> getPosition() {
-        return this;
-    }
-    
     
     // ------ MOVING ROAD API ------ //
-
-    @Override
-    public void init(Point startLocation, Ref<Double> speed, long seed) {
-        if(initialised) throw new IllegalStateException("Already initialised");
-        
-        this.lastLoc = startLocation;
-        this.rnd = new MersenneTwister(seed);
-        this.speed = speed;
-        
-        initialised = true;
-    }
-
-    @Override
-    public void init(Point startLocation, double constantSpeed, long seed) {
-        init(startLocation, new ConstantRef<Double>(constantSpeed), seed);
-    }
 
     @Override
     public Point getRandomLocation() {
@@ -110,13 +63,5 @@ public class MovingRoadGuard extends RoadGuard implements Guard, MovingRoadAPI, 
     @Override
     public boolean isDriving() {
         return !path.isEmpty();
-    }
-    
-    
-    // ----- BACKUP REF ----- //
-
-    @Override
-    public Point getLastValue() {
-        return lastLoc;
     }
 }

@@ -10,30 +10,31 @@ import rinde.sim.core.model.interaction.InteractionModel;
 import rinde.sim.core.model.interaction.Notification;
 import rinde.sim.core.model.interaction.Result;
 import rinde.sim.core.model.interaction.Visitor;
-import rinde.sim.core.model.interaction.users.InteractiveAgent;
+import rinde.sim.core.model.interaction.apis.InteractiveAPI;
+import rinde.sim.core.model.interaction.users.InteractiveUser;
 import rinde.sim.core.simulation.TimeInterval;
 import rinde.sim.core.simulation.TimeLapse;
 
-public class InteractiveGuard<N extends Notification> implements Guard {
+public class InteractiveGuard implements Guard, InteractiveAPI {
 
-    private List<N> notifications = new ArrayList<N>();
-    private List<N> notificationsInbox = new ArrayList<N>();
+    private List<Notification> notifications = new ArrayList<Notification>();
+    private List<Notification> notificationsInbox = new ArrayList<Notification>();
     
-    private final InteractiveAgent agent;
+    private final InteractiveUser agent;
     private final InteractionModel interactionModel;
     
-    private List<ExtendedReceiver<? extends N>> receivers = new ArrayList<ExtendedReceiver<? extends N>>();
+    private List<ExtendedReceiver> receivers = new ArrayList<ExtendedReceiver>();
     
-    public InteractiveGuard(InteractiveAgent agent, InteractionModel model) {
+    public InteractiveGuard(InteractiveUser agent, InteractionModel model) {
         this.agent = agent;
         this.interactionModel = model;
     }
     
-    public synchronized void receiveNotification(N notification){
+    public synchronized void receiveNotification(Notification notification){
         notifications.add(notification);
     }
     
-    public synchronized void receiveTermination(ExtendedReceiver<N> receiver){
+    public synchronized void receiveTermination(ExtendedReceiver receiver){
         receivers.remove(receiver);
     }
     
@@ -44,27 +45,32 @@ public class InteractiveGuard<N extends Notification> implements Guard {
         notificationsInbox.addAll(notifications);
     }
     
-    protected List<N> getNotifications(){
+    @Override
+    public List<Notification> getNotifications(){
         return notificationsInbox;
     }
     
+    @Override
     public <R extends Result> R visit(TimeLapse lapse, Visitor<?, R> visitor){
         return interactionModel.visit(lapse, visitor);
     }
     
-    public void advertise(ExtendedReceiver<? extends N> receiver){
+    @Override
+    public void advertise(ExtendedReceiver receiver){
         receivers.add(receiver);
     }
     
-    public void removeReceiver(ExtendedReceiver<? extends N> receiver){
+    @Override
+    public void removeReceiver(ExtendedReceiver receiver){
         interactionModel.remove(receiver);
         receivers.remove(receiver);
     }
 
+    @Override
     public void removeAll(Class<?> target) {
-        Iterator<ExtendedReceiver<? extends N>> it = receivers.iterator();
+        Iterator<ExtendedReceiver> it = receivers.iterator();
         while(it.hasNext()){
-            ExtendedReceiver<? extends N> receiver = it.next();
+            ExtendedReceiver receiver = it.next();
             if( receiver.getClass().isAssignableFrom(target)){
                 interactionModel.remove(receiver);
                 it.remove();
@@ -72,8 +78,9 @@ public class InteractiveGuard<N extends Notification> implements Guard {
         }
     }
 
+    @Override
     public void removeAll() {
-        for(ExtendedReceiver<? extends N> receiver:receivers){
+        for(ExtendedReceiver receiver:receivers){
             interactionModel.remove(receiver);
         }
         receivers.clear();
