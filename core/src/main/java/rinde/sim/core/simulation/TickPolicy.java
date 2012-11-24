@@ -20,15 +20,8 @@ package rinde.sim.core.simulation;
  * @author dmerckx
  * @param <T> The type of tick listeners accepted by this policy.
  */
-public interface TickPolicy<T extends TickListener<?>>{
+public interface TickPolicy<T>{
 
-
-    /**
-     * Get the class of objects accepted by this policy rule.
-     * 
-     * @return The class of the type supported by this model.
-     */
-    Class<T> getAcceptedType();
 
     /**
      * Add a tickListener to this policy.

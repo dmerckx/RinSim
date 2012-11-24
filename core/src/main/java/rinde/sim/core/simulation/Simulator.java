@@ -8,13 +8,15 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import rinde.sim.core.model.Agent;
 import rinde.sim.core.model.Model;
 import rinde.sim.core.model.ModelManager;
 import rinde.sim.core.model.ModelProvider;
+import rinde.sim.core.model.Unit;
+import rinde.sim.core.model.User;
 import rinde.sim.core.model.simulator.SimulatorModel;
-import rinde.sim.core.simulation.policies.ParallelUnits;
-import rinde.sim.core.simulation.policies.SerialInterval;
+import rinde.sim.core.simulation.policies.ModelPolicy;
+import rinde.sim.core.simulation.policies.ParallelUnitsPolicy;
+import rinde.sim.core.simulation.policies.TickListenerPolicy;
 import rinde.sim.core.simulation.time.TimeIntervalImpl;
 import rinde.sim.event.Event;
 import rinde.sim.event.EventAPI;
@@ -47,9 +49,12 @@ import rinde.sim.event.EventDispatcher;
  */
 public class Simulator{
 
-    private TickPolicy<?>[] policies;
+    protected final TickPolicy<Model<?>> modelPolicy;
+    protected final TickPolicy<Unit> unitsPolicy;
+    protected final TickPolicy<TickListener> externalPolicy;
     
     private TickPolicy<?> activePolicy;
+    
     
     /**
      * The logger of the simulator.
@@ -109,41 +114,22 @@ public class Simulator{
     private boolean configured;
 
     private final long timeStep;
-
-
-    public static final TickPolicy<?>[] getStdPolicies(){
-        TickPolicy<?>[] policies = new TickPolicy[3];
-        
-        policies[0] = new SerialInterval<PrimaryTickListener>(true, PrimaryTickListener.class);
-        policies[1] = new ParallelUnits();
-        policies[2] = new SerialInterval<ExternalTickListener>(false, ExternalTickListener.class);
-        
-        return policies;
-    }
     
     public Simulator(long step) {
-        this(step, getStdPolicies());
-    }
-    
-    /**
-     * @param step The stepsize used in between 2 ticks
-     * @param policies The policies used to register/unregister/execute {@link TickListener}s
-     */
-    protected <F extends TickListener<?>> Simulator(long step, TickPolicy<?>[] policies) {
+        modelPolicy = new ModelPolicy();
+        unitsPolicy = new ParallelUnitsPolicy();
+        externalPolicy = new TickListenerPolicy(false);
+        
         timeStep = step;
-        
-        this.policies = policies;
-        this.activePolicy = null;
-        
         time = 0L;
         modelManager = new ModelManager();
 
         dispatcher = new EventDispatcher(SimulatorEventType.values());
         eventAPI = dispatcher.getEventAPI();
         
-        register(new SimulatorModel());
+        register(new SimulatorModel(this));
     }
-
+    
     /**
      * This configures the {@link Model}s in the simulator. After calling this
      * method models can no longer be added, objects can only be registered
@@ -157,58 +143,37 @@ public class Simulator{
                 .dispatchEvent(new Event(SimulatorEventType.CONFIGURED, this));
     }
     
-    private void addTickListener(TickListener<?> listener) {
-        for(TickPolicy<?> rule:policies){
-            if(tryAddToPolicy(rule, listener))
-                return;
-        }
-        throw new IllegalArgumentException("No policy rule found for: " + listener);
+    private void registerModel(Model<?> model){
+        assert !configured: "cannot add model after calling configure";
+        
+        modelManager.add(model);
+        modelPolicy.register(model);
+        
+        LOGGER.debug("Model is added: " + model);
     }
     
-    private <T extends TickListener<?>> boolean tryAddToPolicy(TickPolicy<T> rule, TickListener<?> listener){
-        if( rule.getAcceptedType().isAssignableFrom(listener.getClass())){
-            rule.register((T) listener);
-            return true;
-        }
-        return false;
+    private void registerUser(User user){
+        assert configured: "cannot add users before calling configure";
+        
+        Unit unit = user.buildUnit();
+        modelManager.register(unit);
+        unitsPolicy.register(unit);
     }
     
-    private void removeTickListener(TickListener<?> listener) {
-        for(TickPolicy<?> rule:policies){
-            if(tryRemoveFromPolicy(rule, listener))
-                return;
-        }
-        throw new IllegalArgumentException("No policy rule found for: " + listener);
+    private void unregisterUser(User user){
+        //TODO
     }
     
-    private <T extends TickListener<?>> boolean tryRemoveFromPolicy(TickPolicy<T> rule, TickListener<?> listener){
-        if( rule.getAcceptedType().isAssignableFrom(listener.getClass())){
-            rule.unregister((T) listener);
-            return true;
-        }
-        return false;
+    private void registerTickListener(TickListener listener){
+        assert configured: "cannot add tick listener before calling configure";
+    
+        externalPolicy.register(listener);
     }
     
-    /**
-     * Register a model to the simulator.
-     * @param model The {@link Model} instance to register.
-     * @return true if succesful, false otherwise
-     */
-    private void registerModel(Model<?> model) {
-        if (model == null) {
-            throw new IllegalArgumentException("model can not be null");
-        }
-        if (configured) {
-            throw new IllegalStateException(
-                    "cannot add model after calling configure()");
-        }
-        final boolean result = modelManager.add(model);
-        if (result) {
-            LOGGER.info("registering model :" + model.getClass().getName()
-                    + " for type:" + model.getSupportedType().getName());
-        }
+    private void unregisterTickListener(TickListener listener){
+        //TODO
     }
-
+    
     /**
      * Register a given entity in the simulator.
      * During registration the object is provided all features it requires
@@ -220,54 +185,45 @@ public class Simulator{
      * @return <code>true</code> if object was added to at least one model
      */
     public void register(Object o) {
-        if(activePolicy != null && !activePolicy.canRegisterDuringExecution())
-            throw new IllegalStateException("Within the current policy (" + activePolicy + ")"
-                    + "it is not possible to register objects");
+        assert o!=null: "object can not be null";
+        assert activePolicy != null && !activePolicy.canRegisterDuringExecution():
+                "Within " + activePolicy + " it is not possible to register objects";
         
-        if (o == null) {
-            throw new IllegalArgumentException("parameter can not be null");
-        }
-        
-        if (o instanceof Model<?>) {    //Adding models
+        if (o instanceof Model<?>) { 
             registerModel((Model<?>) o);
         }
-        else if (!configured) {         //Adding non-models before configure
-            throw new IllegalStateException(
-                    "can not add object before calling configure()");
+        else if(o instanceof User){
+            registerUser((User) o);
         }
-        else {                          //Adding non-models
-            modelManager.register(o);
+        else if(o instanceof TickListener){
+            registerTickListener((TickListener) o);
         }
-        
-        if (o instanceof TickListener) {
-            addTickListener((TickListener) o);
+        else {
+            throw new IllegalArgumentException(o + " is of an unknown type.");
         }
     }
 
     /**
-     * Unregistration from the models is delayed until all ticks are processed.
      * Unregisters an object from the simulator.
      * @param o The object to be unregistered.
      */
     public void unregister(Object o) {
-        if(activePolicy != null && !activePolicy.canUnregisterDuringExecution())
-            throw new IllegalStateException("Within the current policy (" + activePolicy + ")"
-                    + "it is not possible to unregister objects");
+        assert o!=null: "object can not be null";
+        assert activePolicy != null && !activePolicy.canUnregisterDuringExecution():
+                "Within " + activePolicy + " it is not possible to unregister objects";
         
-        if (o == null) {
-            throw new IllegalArgumentException("parameter cannot be null");
+        if (o instanceof Model<?>) { 
+            throw new IllegalArgumentException("Cannot unregister model");
         }
-        if (o instanceof Model<?>) {
-            throw new IllegalArgumentException("can not unregister a model");
+        else if(o instanceof User){
+            unregisterUser((User) o);
         }
-        if (!configured) {
-            throw new IllegalStateException(
-                    "can not unregister object before calling configure()");
+        else if(o instanceof TickListener){
+            unregisterTickListener((TickListener) o);
         }
-        if (o instanceof TickListener) {
-            removeTickListener((Agent) o);
+        else {
+            throw new IllegalArgumentException(o + " is of an unknown type.");
         }
-        modelManager.unregister(o);
     }
 
     /**
@@ -297,13 +253,10 @@ public class Simulator{
      * Start the simulation.
      */
     public void start() {
-        if (!configured) {
-            throw new IllegalStateException(
-                    "Simulator can not be started when it is not configured.");
-        }
+        assert !configured: "Simulator can not be started when it is not configured";
+    
         if (!isPlaying) {
-            dispatcher
-                    .dispatchEvent(new Event(SimulatorEventType.STARTED, this));
+            dispatcher.dispatchEvent(new Event(SimulatorEventType.STARTED, this));
         }
         isPlaying = true;
         while (isPlaying) {
@@ -317,6 +270,12 @@ public class Simulator{
             tick();
         }
     }
+    
+    private <T> void performTicks(TickPolicy<T> policy, TimeInterval interval){
+        activePolicy = policy;
+        policy.performTicks(interval);
+        activePolicy = null;
+    } 
 
     /**
      * Advances the simulator with one step (the size is determined by the time
@@ -327,11 +286,9 @@ public class Simulator{
         
         TimeInterval interval = new TimeIntervalImpl(time, time+timeStep);
         
-        for(TickPolicy<?> rule:policies){
-            activePolicy = rule;
-            rule.performTicks(interval);
-        }
-        activePolicy = null;
+        performTicks(modelPolicy, interval);
+        performTicks(unitsPolicy, interval);
+        performTicks(externalPolicy, interval);
         
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("tick(): " + (System.currentTimeMillis() - timeS));
@@ -375,13 +332,6 @@ public class Simulator{
     public boolean isConfigured() {
         return configured;
     }
-
-//    /**
-//     * @return An unmodifiable view on the set of tick listeners.
-//     */
-//    public Collection<TickListener> getTickListeners(T rule) {
-//        return Collections.unmodifiableCollection(listeners[rule.ordinal()]);
-//    }
     
     /**
      * Reference to the {@link EventAPI} of the Simulator. Can be used to add

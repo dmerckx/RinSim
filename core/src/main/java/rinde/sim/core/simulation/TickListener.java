@@ -15,7 +15,7 @@ package rinde.sim.core.simulation;
  *      type such as a {@link TimeLapse} which can be 'consumed' by the 
  *      {@link TickListener}.
  */
-public interface TickListener<T extends TimeInterval> {
+public interface TickListener {
     
     /**
      * Is called when time has progressed a single 'tick' (time step). The
