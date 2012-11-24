@@ -4,6 +4,7 @@ import rinde.sim.core.graph.Point;
 import rinde.sim.core.model.interaction.ExtendedReceiver;
 import rinde.sim.core.model.interaction.Receiver;
 import rinde.sim.core.model.pdp.Parcel;
+import rinde.sim.core.model.pdp.receivers.ContainerNotification.NotificationType;
 import rinde.sim.core.model.pdp.twpolicy.TimeWindowPolicy;
 import rinde.sim.core.model.pdp.visitors.DeliveryVisitor;
 import rinde.sim.core.simulation.TimeLapse;
@@ -53,7 +54,7 @@ public class DeliveryReceiver extends ExtendedReceiver {
      * @param parcel Deliver the specified parcel.
      */
     public void deliver(Parcel parcel) {
-        sendNotification(new DeliveryNotification(parcel));
+        sendNotification(new ContainerNotification(NotificationType.DELIVERY, parcel));
         terminate();
     }
 }

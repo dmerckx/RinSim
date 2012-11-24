@@ -1,5 +1,6 @@
 package rinde.sim.core.model.road.supported;
 
+import rinde.sim.core.graph.Point;
 import rinde.sim.core.model.Unit;
 import rinde.sim.core.model.road.apis.RoadAPI;
 import rinde.sim.core.model.road.users.RoadUser;
@@ -12,4 +13,10 @@ public interface RoadUnit extends Unit {
     
     @Override
     public RoadUser getElement();
+
+    public RoadData getInitData();
+
+    public interface RoadData{
+        Point getStartPosition();
+    }
 }

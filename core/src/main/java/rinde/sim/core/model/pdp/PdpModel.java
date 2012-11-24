@@ -1,17 +1,16 @@
 package rinde.sim.core.model.pdp;
 
 import rinde.sim.core.model.Model;
-import rinde.sim.core.model.SimulatorModelAPI;
 import rinde.sim.core.model.pdp.guards.ContainerGuard;
 import rinde.sim.core.model.pdp.supported.ContainerUnit;
-import rinde.sim.core.model.pdp.supported.PdpType;
-import rinde.sim.core.model.pdp.supported.SelfBuildParcel;
+import rinde.sim.core.model.pdp.supported.PdpUnit;
 import rinde.sim.core.model.pdp.twpolicy.TimeWindowPolicy;
+import rinde.sim.core.simulation.TimeInterval;
 
-public class PdpModel implements Model<PdpType>, PdpAPI{
+@SuppressWarnings("rawtypes")
+public class PdpModel implements Model<PdpUnit>, PdpAPI{
 
     private final TimeWindowPolicy twp;
-    private SimulatorModelAPI simulatorAPI;
     
     public PdpModel(TimeWindowPolicy twp) {
         this.twp = twp;
@@ -24,33 +23,31 @@ public class PdpModel implements Model<PdpType>, PdpAPI{
     // ------ MODEL ------ //
 
     @Override
-    public void setSimulatorAPI(SimulatorModelAPI api) {
-        this.simulatorAPI = api;
-    }
-
-    @Override
-    public void register(PdpType element) {
-        if(element instanceof ContainerUnit){
-            registerContainerUnit((ContainerUnit<?>) element);
-        }
-        else if(element instanceof SelfBuildParcel<?>){
-            
+    public void register(PdpUnit unit) {
+        unit.setPdpAPI(this);
+        
+        if(unit instanceof ContainerUnit){
+            registerContainerUnit((ContainerUnit<?>) unit);
         }
     }
     
     protected <P extends Parcel> void registerContainerUnit(ContainerUnit<P> unit){
-        ContainerGuard<P> guard = new ContainerGuard<P>(unit.getElement(),
-                unit.getRoadAPI(), unit.getInteractiveAPI(), this);
+        ContainerGuard<P> guard = new ContainerGuard<P>(unit, this);
         unit.setContainerAPI(guard);
     }
 
     @Override
-    public void unregister(PdpType element) {
-        //TODO
+    public void unregister(PdpUnit element) {
+        
     }
 
     @Override
-    public Class<PdpType> getSupportedType() {
-        return PdpType.class;
+    public Class<PdpUnit> getSupportedType() {
+        return PdpUnit.class;
+    }
+
+    @Override
+    public void tick(TimeInterval time) {
+        
     }
 }

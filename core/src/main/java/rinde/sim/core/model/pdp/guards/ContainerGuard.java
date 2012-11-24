@@ -4,27 +4,24 @@ import java.util.ArrayList;
 import java.util.List;
 
 import rinde.sim.core.model.interaction.apis.InteractiveAPI;
-import rinde.sim.core.model.interaction.guards.InteractiveGuard;
 import rinde.sim.core.model.pdp.Parcel;
-import rinde.sim.core.model.pdp.PdpAPI;
 import rinde.sim.core.model.pdp.PdpModel;
 import rinde.sim.core.model.pdp.apis.ContainerAPI;
 import rinde.sim.core.model.pdp.receivers.DeliveryReceiver;
 import rinde.sim.core.model.pdp.receivers.DeliverySpecificReceiver;
 import rinde.sim.core.model.pdp.receivers.PickupReceiver;
-import rinde.sim.core.model.pdp.twpolicy.TimeWindowPolicy;
+import rinde.sim.core.model.pdp.supported.ContainerUnit;
 import rinde.sim.core.model.pdp.users.Container;
 import rinde.sim.core.model.pdp.visitors.PickupSpecificVisitor;
 import rinde.sim.core.model.pdp.visitors.PickupVisitor;
 import rinde.sim.core.model.road.apis.RoadAPI;
-import rinde.sim.core.model.road.guards.RoadGuard;
 import rinde.sim.core.simulation.TimeLapse;
 
-public class ContainerGuard<P extends Parcel> implements ContainerAPI<P>, PdpAPI{
+public class ContainerGuard<P extends Parcel> implements ContainerAPI<P>{
     
     private PdpModel pdpModel;
-    private RoadGuard roadGuard;
-    private InteractiveGuard interactiveGuard;
+    private RoadAPI roadAPI;
+    private InteractiveAPI interactiveAPI;
     private Container<P> container;
     
     private ContainerState state = ContainerState.AVAILABLE;
@@ -34,9 +31,13 @@ public class ContainerGuard<P extends Parcel> implements ContainerAPI<P>, PdpAPI
     
     private Class<P> parcelType;
     
-    public ContainerGuard(Container<P> container, RoadAPI roadAPI,
-            InteractiveAPI interactiveAPI, PdpModel model) {
+    public ContainerGuard(ContainerUnit<P> unit, PdpModel model) {
         this.container = container;
+        this.roadAPI = unit.getRoadAPI();
+        this.interactiveAPI = unit.getInteractiveAPI();
+        
+        this.capacity = unit.getInitData().getCapacity();
+        this.parcelType = unit.getInitData().getParcelType();
     }
     
     public void tick(TimeLapse lapse){
@@ -73,11 +74,6 @@ public class ContainerGuard<P extends Parcel> implements ContainerAPI<P>, PdpAPI
     }
 
     @Override
-    public TimeWindowPolicy getPolicy() {
-        return pdpModel.getPolicy();
-    }
-
-    @Override
     public List<P> getLoad() {
         return load;
     }
@@ -94,8 +90,8 @@ public class ContainerGuard<P extends Parcel> implements ContainerAPI<P>, PdpAPI
         if(state != ContainerState.AVAILABLE) return null;
         
         PickupVisitor<P> visitor = new PickupVisitor<P>(parcelType,
-                roadGuard.getLocation(), getCapacityLeft());
-        P result = interactiveGuard.visit(lapse, visitor);
+                roadAPI.getLocation(), getCapacityLeft());
+        P result = interactiveAPI.visit(lapse, visitor);
         if(result != null) load.add(result);
         return result;
     }
@@ -105,15 +101,15 @@ public class ContainerGuard<P extends Parcel> implements ContainerAPI<P>, PdpAPI
         if(state != ContainerState.AVAILABLE) return false;
         
         PickupVisitor<P> visitor = new PickupSpecificVisitor<P>(parcel,
-                roadGuard.getLocation(), getCapacityLeft());
-        P result = interactiveGuard.visit(lapse, visitor);
+                roadAPI.getLocation(), getCapacityLeft());
+        P result = interactiveAPI.visit(lapse, visitor);
         if(result != null) load.add(result);
         return result != null;
     }
 
     @Override
     public void acceptAll(TimeLapse lapse){
-        DeliveryReceiver rec = new DeliveryReceiver(roadGuard.getLocation(),
+        DeliveryReceiver rec = new DeliveryReceiver(roadAPI.getLocation(),
                 parcelType, pdpModel.getPolicy());
         accept(lapse, rec);
     }
@@ -121,7 +117,7 @@ public class ContainerGuard<P extends Parcel> implements ContainerAPI<P>, PdpAPI
     @Override
     public void accept(TimeLapse lapse, List<P> parcels){
         DeliveryReceiver rec = new DeliverySpecificReceiver(
-                roadGuard.getLocation(), parcels, parcelType,
+                roadAPI.getLocation(), parcels, parcelType,
                 pdpModel.getPolicy());
         accept(lapse, rec);
     }
@@ -130,10 +126,10 @@ public class ContainerGuard<P extends Parcel> implements ContainerAPI<P>, PdpAPI
     protected void accept(TimeLapse lapse, DeliveryReceiver rec){
         switch(state){
             case ACCEPTING:
-                interactiveGuard.removeAll();
+                interactiveAPI.removeAll();
                 break;
             case ACCEPTING_ADVERTISING:
-                interactiveGuard.removeAll(DeliveryReceiver.class);
+                interactiveAPI.removeAll(DeliveryReceiver.class);
                 break;
             case ADVERTISING:
                 state = ContainerState.ACCEPTING_ADVERTISING;
@@ -141,7 +137,7 @@ public class ContainerGuard<P extends Parcel> implements ContainerAPI<P>, PdpAPI
             default:
                 return;
         }
-        interactiveGuard.advertise(rec);
+        interactiveAPI.advertise(rec);
         doAction(lapse);
     }
 
@@ -154,10 +150,10 @@ public class ContainerGuard<P extends Parcel> implements ContainerAPI<P>, PdpAPI
     public void advertise(TimeLapse lapse, List<P> parcels) {
         switch(state){
             case ADVERTISING:
-                interactiveGuard.removeAll();
+                interactiveAPI.removeAll();
                 break;
             case ACCEPTING_ADVERTISING:
-                interactiveGuard.removeAll(PickupReceiver.class);
+                interactiveAPI.removeAll(PickupReceiver.class);
                 break;
             case ACCEPTING:
                 state = ContainerState.ACCEPTING_ADVERTISING;
@@ -166,9 +162,9 @@ public class ContainerGuard<P extends Parcel> implements ContainerAPI<P>, PdpAPI
                 return;
         }
 
-        PickupReceiver rec = new PickupReceiver(roadGuard.getLocation(),
+        PickupReceiver rec = new PickupReceiver(roadAPI.getLocation(),
                 parcels, pdpModel.getPolicy());
-        interactiveGuard.advertise(rec);
+        interactiveAPI.advertise(rec);
         doAction(lapse);
     }
 

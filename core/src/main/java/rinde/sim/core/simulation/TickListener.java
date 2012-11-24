@@ -27,5 +27,5 @@ public interface TickListener<T extends TimeInterval> {
      * this method is finished.
      * @param time The time that is handed to this object.
      */
-    public void tick(T time);
+    public void tick(TimeInterval time);
 }

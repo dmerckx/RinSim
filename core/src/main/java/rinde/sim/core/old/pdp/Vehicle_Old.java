@@ -3,9 +3,9 @@
  */
 package rinde.sim.core.old.pdp;
 
+import rinde.sim.core.model.Agent;
 import rinde.sim.core.model.road.users.MovingRoadUser;
 import rinde.sim.core.simulation.TimeLapse;
-import rinde.sim.core.simulation.types.Agent;
 
 /**
  * Abstract base class for vehicle concept: moving {@link Container_Old}.

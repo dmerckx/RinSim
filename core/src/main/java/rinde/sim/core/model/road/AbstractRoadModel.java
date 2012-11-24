@@ -19,7 +19,6 @@ import java.util.Set;
 
 import rinde.sim.core.graph.Point;
 import rinde.sim.core.model.AbstractModel;
-import rinde.sim.core.model.SimulatorModelAPI;
 import rinde.sim.core.model.road.guards.MovingRoadGuard;
 import rinde.sim.core.model.road.guards.RoadGuard;
 import rinde.sim.core.model.road.supported.MovingRoadUnit;
@@ -28,7 +27,6 @@ import rinde.sim.core.model.road.users.MovingRoadUser;
 import rinde.sim.core.model.road.users.RoadUser;
 import rinde.sim.core.simulation.TimeInterval;
 import rinde.sim.core.simulation.TimeLapse;
-import rinde.sim.core.simulation.types.PrimaryTickListener;
 import rinde.sim.event.EventAPI;
 import rinde.sim.event.EventDispatcher;
 import rinde.sim.util.SpeedConverter;
@@ -48,7 +46,7 @@ import com.google.common.collect.Sets;
  * @author Rinde van Lon <rinde.vanlon@cs.kuleuven.be>
  */
 public abstract class AbstractRoadModel<T> extends AbstractModel<RoadUnit>
-        implements RoadModel, PrimaryTickListener{
+        implements RoadModel{
 
     private Map<RoadUser, RoadGuard> mapping;
     
@@ -59,16 +57,9 @@ public abstract class AbstractRoadModel<T> extends AbstractModel<RoadUnit>
     // TODO event dispatching has to be tested
     protected final EventDispatcher eventDispatcher;
     protected final EventAPI eventAPI;
-    
-    protected SimulatorModelAPI simAPI;
 
     public enum RoadEvent {
         MOVE
-    }
-    
-    @Override
-    public void setSimulatorAPI(SimulatorModelAPI api){
-        this.simAPI = api;
     }
     
     public double getSpeed(MovingRoadUser user){
@@ -343,13 +334,12 @@ public abstract class AbstractRoadModel<T> extends AbstractModel<RoadUnit>
         RoadGuard guard;
         
         if( unit instanceof MovingRoadUnit){
-            guard = new MovingRoadGuard(((MovingRoadUnit) unit).getElement(), this);
-            unit.setRoadAPI(guard);
+            guard = new MovingRoadGuard((MovingRoadUnit) unit, this);
         }
         else {
-            guard = new RoadGuard(unit.getElement(), this);
-            unit.setRoadAPI(guard);
+            guard = new RoadGuard(unit, this);
         }
+        unit.setRoadAPI(guard);
         mapping.put(unit.getElement(), guard);
     }
 
@@ -413,5 +403,7 @@ public abstract class AbstractRoadModel<T> extends AbstractModel<RoadUnit>
     }
 
     @Override
-    public void tick(TimeInterval t) {}
+    public void tick(TimeInterval time) {
+        
+    }
 }

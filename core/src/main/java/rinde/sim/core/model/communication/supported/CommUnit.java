@@ -10,5 +10,15 @@ public interface CommUnit extends RoadUnit{
     
     public void setCommunicationAPI(CommunicationAPI api);
     
+    @Override
     public CommUser getElement();
+    
+    @Override
+    public CommData getInitData();
+    
+    public interface CommData extends RoadData{
+        Double getInitialRadius();
+        
+        Double getInitialReliability();
+    }
 }

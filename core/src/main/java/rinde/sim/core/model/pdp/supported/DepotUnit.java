@@ -1,17 +1,17 @@
 package rinde.sim.core.model.pdp.supported;
 
+import rinde.sim.core.graph.Point;
 import rinde.sim.core.model.UnitImpl;
 import rinde.sim.core.model.interaction.apis.InteractiveAPI;
-import rinde.sim.core.model.interaction.supported.InteractiveUnit;
 import rinde.sim.core.model.pdp.Parcel;
 import rinde.sim.core.model.pdp.PdpAPI;
 import rinde.sim.core.model.pdp.apis.ContainerAPI;
 import rinde.sim.core.model.pdp.users.Depot;
 import rinde.sim.core.model.road.apis.RoadAPI;
-import rinde.sim.core.model.road.supported.RoadUnit;
+import rinde.sim.core.simulation.TimeInterval;
 
-public class DepotUnit<P extends Parcel> extends UnitImpl implements RoadUnit, InteractiveUnit,
-        ContainerUnit<P> {
+public class DepotUnit<P extends Parcel> extends UnitImpl
+                        implements ContainerUnit<P> {
 
     private Depot<P> element;
     private RoadAPI roadAPI;
@@ -19,8 +19,16 @@ public class DepotUnit<P extends Parcel> extends UnitImpl implements RoadUnit, I
     private ContainerAPI<P> containerAPI;
     private PdpAPI pdpAPI;
     
-    public DepotUnit(Depot<P> element) {
+    //Initial data
+    public final Point initPos;
+    public final double initCap;
+    public final Class<P> parcelType;
+    
+    public DepotUnit(Depot<P> element, Point pos, double cap, Class<P> type) {
         this.element = element;
+        this.initPos = pos;
+        this.initCap = cap;
+        this.parcelType = type;
     }
 
     public void init() {
@@ -71,5 +79,25 @@ public class DepotUnit<P extends Parcel> extends UnitImpl implements RoadUnit, I
     @Override
     public void setPdpAPI(PdpAPI api) {
         this.pdpAPI = api;
+    }
+
+    @Override
+    public ContainerData<P> getInitData() {
+        return new ContainerData<P>() {
+            @Override
+            public Point getStartPosition() {
+                return initPos;
+            }
+
+            @Override
+            public double getCapacity() {
+                return initCap;
+            }
+
+            @Override
+            public Class<P> getParcelType() {
+                return parcelType;
+            }
+        };
     }
 }

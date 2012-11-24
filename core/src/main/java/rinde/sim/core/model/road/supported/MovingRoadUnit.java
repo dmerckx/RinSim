@@ -10,4 +10,11 @@ public interface MovingRoadUnit extends RoadUnit{
     
     @Override
     public MovingRoadUser getElement();
+    
+    @Override
+    public MovingRoadData getInitData();
+    
+    public interface MovingRoadData extends RoadData{
+        public Double getInitialSpeed();
+    }
 }

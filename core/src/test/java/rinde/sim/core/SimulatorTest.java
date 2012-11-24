@@ -14,11 +14,11 @@ import org.apache.commons.math3.random.MersenneTwister;
 import org.junit.Before;
 import org.junit.Test;
 
-import rinde.sim.core.model.simulator.SimulatorAPI;
+import rinde.sim.core.model.Agent;
 import rinde.sim.core.model.simulator.SimulatorUser;
+import rinde.sim.core.model.simulator.apis.SimulatorAPI;
 import rinde.sim.core.simulation.Simulator;
 import rinde.sim.core.simulation.time.TimeLapse;
-import rinde.sim.core.simulation.types.Agent;
 
 import com.google.common.collect.Sets;
 

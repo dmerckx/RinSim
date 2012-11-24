@@ -20,13 +20,12 @@ import rinde.sim.core.graph.Point;
 import rinde.sim.core.model.Model;
 import rinde.sim.core.model.ModelProvider;
 import rinde.sim.core.model.ModelReceiver;
-import rinde.sim.core.model.SimulatorModelAPI;
+import rinde.sim.core.model.pdp.Parcel;
 import rinde.sim.core.model.pdp.twpolicy.LiberalPolicy;
 import rinde.sim.core.model.pdp.twpolicy.TimeWindowPolicy;
 import rinde.sim.core.model.road.RoadModel;
 import rinde.sim.core.simulation.TimeInterval;
 import rinde.sim.core.simulation.TimeLapse;
-import rinde.sim.core.simulation.types.PrimaryTickListener;
 import rinde.sim.event.Event;
 import rinde.sim.event.EventAPI;
 import rinde.sim.event.EventDispatcher;
@@ -64,7 +63,7 @@ import com.google.common.collect.Multimap;
  * 
  * @author Rinde van Lon <rinde.vanlon@cs.kuleuven.be>
  */
-public class PDPModel implements Model<PDPObject>, ModelReceiver, PrimaryTickListener {
+public class PDPModel implements Model<PDPObject>, ModelReceiver {
 
     /**
      * {@link EventAPI} which allows adding and removing listeners to the model.
@@ -214,11 +213,6 @@ public class PDPModel implements Model<PDPObject>, ModelReceiver, PrimaryTickLis
 
         eventDispatcher = new EventDispatcher(PDPModelEventType.values());
         eventAPI = eventDispatcher.getEventAPI();
-    }
-    
-    @Override
-    public void setSimulatorAPI(SimulatorModelAPI api) {
-        
     }
 
     /**

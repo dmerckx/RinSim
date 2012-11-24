@@ -6,18 +6,16 @@ import java.util.List;
 
 import rinde.sim.core.graph.Point;
 import rinde.sim.core.model.Model;
-import rinde.sim.core.model.SimulatorModelAPI;
 import rinde.sim.core.model.interaction.guards.InteractiveGuard;
 import rinde.sim.core.model.interaction.supported.InteractiveUnit;
 import rinde.sim.core.model.interaction.users.InteractiveUser;
+import rinde.sim.core.simulation.TimeInterval;
 import rinde.sim.core.simulation.TimeLapse;
 
 import com.google.common.collect.HashMultimap;
 
 
 public class InteractionModel implements Model<InteractiveUnit> {
-    
-    private SimulatorModelAPI simAPI;
     
     private HashMultimap<Point, Receiver> receiversPos;
     
@@ -52,10 +50,8 @@ public class InteractionModel implements Model<InteractiveUnit> {
         receiversPos.remove(receiver.location, receiver);
     }
     
-    @Override
-    public void setSimulatorAPI(SimulatorModelAPI api) {
-        this.simAPI = api;
-    }
+    
+    // ----- MODEL ----- //
 
     @Override
     public void register(InteractiveUnit unit) {
@@ -71,5 +67,10 @@ public class InteractionModel implements Model<InteractiveUnit> {
     @Override
     public Class<InteractiveUnit> getSupportedType() {
         return InteractiveUnit.class;
+    }
+
+    @Override
+    public void tick(TimeInterval time) {
+        
     }
 }

@@ -1,10 +1,9 @@
 package rinde.sim.core.model;
 
-import rinde.sim.core.simulation.TickListener;
 import rinde.sim.core.simulation.TimeInterval;
 import rinde.sim.core.simulation.TimeLapse;
 
-public interface Unit extends TickListener<TimeLapse>{
+public interface Unit{
     
     public User getElement();
     
@@ -14,8 +13,7 @@ public interface Unit extends TickListener<TimeLapse>{
     
     public void registerAfterTick(AfterTick afterTicker);
     
-    @Override
-    public void tick(TimeLapse time);
+    public void tick(TimeLapse lapse);
     
     public void afterTick(TimeInterval time);
     

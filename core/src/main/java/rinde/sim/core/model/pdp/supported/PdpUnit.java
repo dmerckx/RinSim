@@ -8,7 +8,7 @@ public interface PdpUnit extends Unit{
 
     public PdpAPI getPdpAPI();
     
-    public void setPdpAPI(PdpAPI guard);
+    public void setPdpAPI(PdpAPI api);
 
     @Override
     public PdpUser getElement();

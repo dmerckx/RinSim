@@ -24,16 +24,5 @@ import rinde.sim.core.simulation.Simulator;
 public interface Container<P extends Parcel> extends RoadUser, InteractiveUser, PdpUser{
     
     @Override
-    public ContainerData<P> initData();
-    
-    @Override
     public ContainerUnit<P> buildUnit(); 
-    
-    
-    public interface ContainerData<P extends Parcel> extends RoadData{
-        
-        double getCapacity();
-        
-        Class<P> getParcelType();
-    }
 }

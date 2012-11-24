@@ -4,10 +4,10 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import rinde.sim.core.model.Guard;
 import rinde.sim.core.model.interaction.ExtendedReceiver;
 import rinde.sim.core.model.interaction.InteractionModel;
 import rinde.sim.core.model.interaction.Notification;
+import rinde.sim.core.model.interaction.Receiver;
 import rinde.sim.core.model.interaction.Result;
 import rinde.sim.core.model.interaction.Visitor;
 import rinde.sim.core.model.interaction.apis.InteractiveAPI;
@@ -15,7 +15,7 @@ import rinde.sim.core.model.interaction.users.InteractiveUser;
 import rinde.sim.core.simulation.TimeInterval;
 import rinde.sim.core.simulation.TimeLapse;
 
-public class InteractiveGuard implements Guard, InteractiveAPI {
+public class InteractiveGuard implements InteractiveAPI {
 
     private List<Notification> notifications = new ArrayList<Notification>();
     private List<Notification> notificationsInbox = new ArrayList<Notification>();
@@ -23,7 +23,7 @@ public class InteractiveGuard implements Guard, InteractiveAPI {
     private final InteractiveUser agent;
     private final InteractionModel interactionModel;
     
-    private List<ExtendedReceiver> receivers = new ArrayList<ExtendedReceiver>();
+    private List<Receiver> receivers = new ArrayList<Receiver>();
     
     public InteractiveGuard(InteractiveUser agent, InteractionModel model) {
         this.agent = agent;
@@ -56,21 +56,21 @@ public class InteractiveGuard implements Guard, InteractiveAPI {
     }
     
     @Override
-    public void advertise(ExtendedReceiver receiver){
+    public void advertise(Receiver receiver){
         receivers.add(receiver);
     }
     
     @Override
-    public void removeReceiver(ExtendedReceiver receiver){
+    public void removeReceiver(Receiver receiver){
         interactionModel.remove(receiver);
         receivers.remove(receiver);
     }
 
     @Override
     public void removeAll(Class<?> target) {
-        Iterator<ExtendedReceiver> it = receivers.iterator();
+        Iterator<Receiver> it = receivers.iterator();
         while(it.hasNext()){
-            ExtendedReceiver receiver = it.next();
+            Receiver receiver = it.next();
             if( receiver.getClass().isAssignableFrom(target)){
                 interactionModel.remove(receiver);
                 it.remove();
@@ -80,7 +80,7 @@ public class InteractiveGuard implements Guard, InteractiveAPI {
 
     @Override
     public void removeAll() {
-        for(ExtendedReceiver receiver:receivers){
+        for(Receiver receiver:receivers){
             interactionModel.remove(receiver);
         }
         receivers.clear();

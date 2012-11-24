@@ -11,6 +11,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.apache.commons.math3.random.RandomGenerator;
 
 import rinde.sim.core.graph.Point;
+import rinde.sim.core.model.Agent;
 import rinde.sim.core.model.communication.Mailbox;
 import rinde.sim.core.model.communication.Message;
 import rinde.sim.core.model.communication.apis.CommunicationAPI;
@@ -18,10 +19,9 @@ import rinde.sim.core.model.communication.users.CommUser;
 import rinde.sim.core.model.road.RoadModel;
 import rinde.sim.core.model.road.users.MovingRoadUser;
 import rinde.sim.core.model.road.users.RoadUser;
-import rinde.sim.core.model.simulator.SimulatorAPI;
 import rinde.sim.core.model.simulator.SimulatorUser;
+import rinde.sim.core.model.simulator.apis.SimulatorAPI;
 import rinde.sim.core.simulation.time.TimeLapse;
-import rinde.sim.core.simulation.types.Agent;
 import rinde.sim.examples.common.Package;
 
 /**

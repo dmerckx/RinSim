@@ -7,17 +7,17 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import rinde.sim.core.graph.Point;
-import rinde.sim.core.model.Guard;
 import rinde.sim.core.model.communication.Address;
 import rinde.sim.core.model.communication.CommunicationModel;
 import rinde.sim.core.model.communication.Delivery;
 import rinde.sim.core.model.communication.Message;
 import rinde.sim.core.model.communication.apis.CommunicationAPI;
+import rinde.sim.core.model.communication.supported.CommUnit;
 import rinde.sim.core.model.communication.users.CommUser;
 import rinde.sim.core.model.road.apis.RoadAPI;
 import rinde.sim.core.simulation.TimeInterval;
 
-public class CommGuard implements CommunicationAPI, Guard{
+public class CommGuard implements CommunicationAPI{
 	
 	private List<Delivery> mailbox;
 	private SortedSet<Delivery> tempMailbox;
@@ -34,15 +34,15 @@ public class CommGuard implements CommunicationAPI, Guard{
 	
 	private boolean isChanged;
 	
-	public CommGuard(CommUser user, RoadAPI roadGuard, CommunicationModel model){
-		this.user = user;
+	public CommGuard(CommUnit unit, CommunicationModel model){
+		this.user = unit.getElement();
 		this.model = model;
 		this.address = model.generateAddress();
 		this.mailbox = new ArrayList<Delivery>();
 		this.tempMailbox = new TreeSet<Delivery>();
 		
-		this.radius = user.initData().getRadius();
-		this.reliability = user.initData().getReliability();
+		this.radius = unit.getInitData().getInitialRadius();
+		this.reliability = unit.getInitData().getInitialReliability();
 	}
 	
 	public double getRadius(){
@@ -58,7 +58,8 @@ public class CommGuard implements CommunicationAPI, Guard{
     }
 
 	public CommUser getUser() {
-		return user;
+		return null;
+	    //return user;
 	}
 	
     public void afterTick(TimeInterval l) {

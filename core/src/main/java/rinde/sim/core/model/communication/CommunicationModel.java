@@ -4,24 +4,17 @@ import java.util.HashMap;
 
 import rinde.sim.core.graph.Point;
 import rinde.sim.core.model.Model;
-import rinde.sim.core.model.SimulatorModelAPI;
 import rinde.sim.core.model.communication.guards.CommGuard;
 import rinde.sim.core.model.communication.supported.CommUnit;
-import rinde.sim.core.model.communication.users.CommUser;
+import rinde.sim.core.simulation.TimeInterval;
 
 public class CommunicationModel implements Model<CommUnit>{
 
 	private final HashMap<Address, CommGuard> comms;
 	private int nextId = 0;
-	private SimulatorModelAPI api;
 	
 	public CommunicationModel(){
 		comms = new HashMap<Address, CommGuard>();
-	}
-
-	@Override
-	public void setSimulatorAPI(SimulatorModelAPI api) {
-		this.api = api;
 	}
 	
 	public Address generateAddress(){
@@ -47,13 +40,15 @@ public class CommunicationModel implements Model<CommUnit>{
 			}
 		}
 	}
+	
+	
+	// ----- MODEL ----- //
 
 	@Override
 	public void register(CommUnit unit) {
-        CommGuard guard = new CommGuard(unit.getElement(), unit.getRoadAPI(), this);
+        CommGuard guard = new CommGuard(unit, this);
 	    unit.setCommunicationAPI(guard);
 	    
-		api.registerGuard(guard);
 		comms.put(guard.getAddress(), guard);
 	}
 
@@ -61,7 +56,6 @@ public class CommunicationModel implements Model<CommUnit>{
 	public void unregister(CommUnit element) {
 		for(Address a: comms.keySet()){
 			if( comms.get(a).getUser() == element ){
-				api.unregisterGuard(comms.get(a));
 				comms.remove(a);
 				return;
 			}
@@ -72,4 +66,9 @@ public class CommunicationModel implements Model<CommUnit>{
 	public Class<CommUnit> getSupportedType() {
 		return CommUnit.class;
 	}
+
+    @Override
+    public void tick(TimeInterval time) {
+        
+    }
 }

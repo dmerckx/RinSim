@@ -11,8 +11,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import rinde.sim.core.simulation.Simulator;
+import rinde.sim.core.simulation.TickListener;
 import rinde.sim.core.simulation.TimeInterval;
-import rinde.sim.core.simulation.types.ExternalTickListener;
 import rinde.sim.event.Event;
 import rinde.sim.event.EventAPI;
 import rinde.sim.event.EventDispatcher;
@@ -26,7 +26,7 @@ import rinde.sim.event.Listener;
  * @author Bartosz Michalik <bartosz.michalik@cs.kuleuven.be>
  * @since 2.0
  */
-public abstract class ScenarioController implements ExternalTickListener {
+public abstract class ScenarioController implements TickListener {
 
     /**
      * Logger for this class.

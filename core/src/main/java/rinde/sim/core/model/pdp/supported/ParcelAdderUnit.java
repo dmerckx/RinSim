@@ -9,6 +9,7 @@ import rinde.sim.core.model.pdp.PdpAPI;
 import rinde.sim.core.model.pdp.receivers.SimpleDeliveryReceiver;
 import rinde.sim.core.model.pdp.receivers.SimplePickupReceiver;
 import rinde.sim.core.model.pdp.users.ParcelAdder;
+import rinde.sim.core.simulation.TimeInterval;
 import rinde.sim.core.simulation.TimeLapse;
 
 public class ParcelAdderUnit<P extends Parcel> extends UnitImpl implements InteractiveUnit, PdpUnit {

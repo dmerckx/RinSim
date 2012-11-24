@@ -1,6 +1,6 @@
 package rinde.sim.core.simulation;
 
-import rinde.sim.core.simulation.types.Agent;
+import rinde.sim.core.model.Agent;
 
 
 /**
