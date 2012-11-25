@@ -21,11 +21,12 @@ import com.google.common.collect.Multimap;
  * 
  * @author Bartosz Michalik <bartosz.michalik@cs.kuleuven.be>
  * @author Rinde van Lon <rinde.vanlon@cs.kuleuven.be>
+ * @author dmerckx
  */
 public class ModelManager implements ModelProvider {
 
-    private final Multimap<Class<? extends Object>, Model<? extends Object>> registry;
-    private final List<Model<? extends Object>> models;
+    private final Multimap<Class<?>, Model<?>> registry;
+    private final List<Model<?>> models;
     private boolean configured;
 
     /**
@@ -33,7 +34,7 @@ public class ModelManager implements ModelProvider {
      */
     public ModelManager() {
         registry = LinkedHashMultimap.create();
-        models = new LinkedList<Model<? extends Object>>();
+        models = new LinkedList<Model<? >>();
     }
 
     /**
@@ -43,10 +44,10 @@ public class ModelManager implements ModelProvider {
      * @throws IllegalStateException when method called after calling configure
      */
     public boolean add(Model<?> model) {
-        if (model == null) {
-            throw new IllegalArgumentException("model can not be null");
-        }
+        assert model!=null : "Model can not be null";
+        
         checkState(!configured, "model can not be registered after configure()");
+        
         final Class<?> supportedType = model.getSupportedType();
         checkArgument(supportedType != null, "model must implement getSupportedType() and return a non-null");
         models.add(model);
@@ -78,15 +79,10 @@ public class ModelManager implements ModelProvider {
      * @return <code>true</code> if object was added to at least one model
      */
     @SuppressWarnings("unchecked")
-    public <T> void register(T object) {
-        if (object == null) {
-            throw new IllegalArgumentException("Can not register null");
-        }
-        if (object instanceof Model) {
-            checkState(!configured, "model can not be registered after configure()");
-            add((Model<?>) object);
-            return;
-        }
+    public <T extends Unit> void register(T object) {
+        assert object!=null : "Can not register null";
+        assert !(object instanceof Model): "Can not register models";
+        
         checkState(configured, "can not register an object if configure() has not been called");
 
         final Set<Class<?>> modelSupportedTypes = registry.keySet();
@@ -111,11 +107,10 @@ public class ModelManager implements ModelProvider {
      *             configured
      */
     @SuppressWarnings("unchecked")
-    public <T> void unregister(T object) {
-        if (object == null) {
-            throw new IllegalArgumentException("can not unregister null");
-        }
-        checkArgument(!(object instanceof Model), "can not unregister a model");
+    public <T extends Unit> void unregister(T object) {
+        assert object!=null : "Can not unregister null";
+        assert !(object instanceof Model): "Can not unregister models";
+        
         checkState(configured, "can not unregister when not configured, call configure() first");
 
         final Set<Class<?>> modelSupportedTypes = registry.keySet();

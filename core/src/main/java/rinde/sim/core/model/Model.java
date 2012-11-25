@@ -7,7 +7,7 @@ import rinde.sim.core.simulation.TimeInterval;
  * @author Bartosz Michalik <bartosz.michalik@cs.kuleuven.be>
  * @param <T> basic type of element supported by model
  */
-public interface Model<T>{
+public interface Model<T extends Unit>{
     
     /**
      * Register element in a model.

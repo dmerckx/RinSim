@@ -25,6 +25,7 @@ import rinde.sim.core.model.road.GraphRoadModel;
 import rinde.sim.core.model.road.MoveProgress;
 import rinde.sim.core.model.road.RoadModel;
 import rinde.sim.core.model.road.RoadModels;
+import rinde.sim.core.model.road.supported.RoadUnit;
 import rinde.sim.core.model.road.users.MovingRoadUser;
 import rinde.sim.core.model.road.users.RoadUser;
 import rinde.sim.util.TimeUnit;
@@ -280,9 +281,9 @@ public class PathFinderTest {
 	}
 
 	class EmptyRoadUser implements RoadUser {
-		@Override
-		public void initRoadUser(RoadModel model) {
-			throw new RuntimeException("NOT meant to be executed");
-		}
+        @Override
+        public RoadUnit buildUnit() {
+            throw new RuntimeException("NOT meant to be executed");
+        }
 	}
 }

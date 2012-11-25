@@ -41,7 +41,7 @@ public interface TimeLapse extends TimeInterval{
      *         instance. When looking for the time at the start of this time
      *         lapse use {@link #getStartTime()}.
      */
-    public long getTime() ;
+    public long getCurrentTime() ;
 
     /**
      * @return The step (or length) of this time lapse.

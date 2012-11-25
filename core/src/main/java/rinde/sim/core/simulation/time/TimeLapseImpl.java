@@ -64,7 +64,7 @@ public class TimeLapseImpl extends TimeIntervalImpl implements TimeLapse{
      *         lapse use {@link #getStartTime()}.
      */
     @Override
-    public long getTime() {
+    public long getCurrentTime() {
         return endTime - timeLeft;
     }
 

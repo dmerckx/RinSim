@@ -34,9 +34,13 @@ public class TimeIntervalImpl implements TimeInterval {
     }
 
     @Override
+    public long getTimeStep() {
+        return startTime - endTime;
+    }
+
+    @Override
     public String toString() {
         return new StringBuilder("[").append(startTime).append(",")
                 .append(endTime).append(")").toString();
     }
-
 }

@@ -24,8 +24,9 @@ import rinde.sim.core.graph.MultiAttributeData;
 import rinde.sim.core.graph.Point;
 import rinde.sim.core.graph.TestMultimapGraph;
 import rinde.sim.core.graph.TestTableGraph;
+import rinde.sim.core.model.road.dummies.TrivialRoadUser;
 import rinde.sim.core.model.road.users.MovingRoadUser;
-import rinde.sim.core.simulation.time.TimeLapse;
+import rinde.sim.core.simulation.TimeLapse;
 import rinde.sim.util.TimeUnit;
 
 /**
@@ -240,20 +241,10 @@ public class SpeedLimitsTest {
         assertEquals(4, path.size());
     }
 
-    private class SpeedyRoadUser implements MovingRoadUser {
+    private class SpeedyRoadUser extends TrivialRoadUser {
 
-        private final double speedRU;
-
-        public SpeedyRoadUser(double pSpeed) {
-            speedRU = pSpeed;
-        }
-
-        @Override
-        public void initRoadUser(RoadModel pModel) {}
-
-        @Override
-        public double getSpeed() {
-            return speedRU;
+        public SpeedyRoadUser(double speed) {
+            super(speed);
         }
     }
 

@@ -50,7 +50,7 @@ class Truck extends FRVehicle implements FieldEmitter {
 		if (closest != null && Point.distance(pdpModel.getPosition(closest), getPosition()) < 10) {
 			if (roadModel.equalPosition(closest, this)
 					&& pdpModel.getTimeWindowPolicy()
-							.canPickup(closest.getPickupTimeWindow(), time.getTime(), closest.getPickupDuration())) {
+							.canPickup(closest.getPickupTimeWindow(), time.getCurrentTime(), closest.getPickupDuration())) {
 				final double newSize = getPDPModel().getContentsSize(this) + closest.getMagnitude();
 
 				if (newSize <= getCapacity()) {
@@ -75,7 +75,7 @@ class Truck extends FRVehicle implements FieldEmitter {
 			final double dist = Point.distance(pdpModel.getPosition(this), p.getDestination());
 			if (dist < closest
 					&& pdpModel.getTimeWindowPolicy()
-							.canDeliver(p.getDeliveryTimeWindow(), time.getTime(), p.getPickupDuration())) {
+							.canDeliver(p.getDeliveryTimeWindow(), time.getCurrentTime(), p.getPickupDuration())) {
 				closest = dist;
 				target = p;
 			}

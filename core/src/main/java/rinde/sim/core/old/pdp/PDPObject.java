@@ -3,6 +3,7 @@
  */
 package rinde.sim.core.old.pdp;
 
+import rinde.sim.core.model.Unit;
 import rinde.sim.core.model.road.users.RoadUser;
 
 /**
@@ -16,7 +17,7 @@ import rinde.sim.core.model.road.users.RoadUser;
  * 
  * @author Rinde van Lon <rinde.vanlon@cs.kuleuven.be>
  */
-public interface PDPObject extends RoadUser {
+public interface PDPObject extends RoadUser, Unit {
 
     /**
      * @return The type of the PDPObject.

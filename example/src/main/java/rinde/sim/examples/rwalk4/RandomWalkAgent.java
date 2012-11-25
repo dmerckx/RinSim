@@ -77,8 +77,8 @@ class RandomWalkAgent implements Agent, MovingRoadUser, SimulatorUser, CommUser 
 
 	@Override
 	public void tick(TimeLapse timeLapse) {
-		checkMsgs(timeLapse.getTime());
-		refreshList(timeLapse.getTime());
+		checkMsgs(timeLapse.getCurrentTime());
+		refreshList(timeLapse.getCurrentTime());
 
 		if (path == null || path.isEmpty()) {
 			if (currentPackage != null && rs.containsObject(currentPackage)) {

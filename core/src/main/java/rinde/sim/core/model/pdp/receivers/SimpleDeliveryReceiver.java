@@ -34,7 +34,7 @@ public class SimpleDeliveryReceiver<P extends Parcel> extends Receiver{
      */
     public boolean canAccept(TimeLapse time, Parcel parcel, DeliveryVisitor<?> visitor) {
         return this.parcel == parcel
-                && policy.canDeliver(parcel.deliveryTimeWindow, time.getTime(), parcel.deliveryDuration);
+                && policy.canDeliver(parcel.deliveryTimeWindow, time.getCurrentTime(), parcel.deliveryDuration);
     }
 
     /**

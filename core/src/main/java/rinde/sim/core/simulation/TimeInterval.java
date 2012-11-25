@@ -11,4 +11,7 @@ public interface TimeInterval {
      * @return The end time of this time lapse.
      */
     public long getEndTime();
+    
+    
+    public long getTimeStep();
 }

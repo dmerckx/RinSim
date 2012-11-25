@@ -3,7 +3,9 @@
  */
 package rinde.sim.core.simulation;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,6 +51,8 @@ import rinde.sim.event.EventDispatcher;
  */
 public class Simulator{
 
+    protected final Map<User, Unit> unitMapping = new HashMap<User, Unit>();
+    
     protected final TickPolicy<Model<?>> modelPolicy;
     protected final TickPolicy<Unit> unitsPolicy;
     protected final TickPolicy<TickListener> externalPolicy;
@@ -144,7 +148,7 @@ public class Simulator{
     }
     
     private void registerModel(Model<?> model){
-        assert !configured: "cannot add model after calling configure";
+        assert !configured: "cannot register model after calling configure";
         
         modelManager.add(model);
         modelPolicy.register(model);
@@ -153,25 +157,32 @@ public class Simulator{
     }
     
     private void registerUser(User user){
-        assert configured: "cannot add users before calling configure";
+        assert configured: "cannot register users before calling configure";
         
         Unit unit = user.buildUnit();
+        unitMapping.put(user, unit);
         modelManager.register(unit);
         unitsPolicy.register(unit);
     }
     
     private void unregisterUser(User user){
-        //TODO
+        assert configured: "cannot unregister users before calling configure";
+    
+        Unit unit = unitMapping.get(user);
+        modelManager.unregister(unit);
+        unitsPolicy.unregister(unit);
     }
     
     private void registerTickListener(TickListener listener){
-        assert configured: "cannot add tick listener before calling configure";
-    
+        assert configured: "cannot register tick listener before calling configure";
+
         externalPolicy.register(listener);
     }
     
     private void unregisterTickListener(TickListener listener){
-        //TODO
+        assert configured: "cannot unregister tick listener before calling configure";
+    
+        externalPolicy.unregister(listener);
     }
     
     /**
@@ -186,7 +197,7 @@ public class Simulator{
      */
     public void register(Object o) {
         assert o!=null: "object can not be null";
-        assert activePolicy != null && !activePolicy.canRegisterDuringExecution():
+        assert activePolicy == null || activePolicy.canRegisterDuringExecution():
                 "Within " + activePolicy + " it is not possible to register objects";
         
         if (o instanceof Model<?>) { 
@@ -209,7 +220,7 @@ public class Simulator{
      */
     public void unregister(Object o) {
         assert o!=null: "object can not be null";
-        assert activePolicy != null && !activePolicy.canUnregisterDuringExecution():
+        assert activePolicy == null || activePolicy.canUnregisterDuringExecution():
                 "Within " + activePolicy + " it is not possible to unregister objects";
         
         if (o instanceof Model<?>) { 
@@ -242,6 +253,10 @@ public class Simulator{
         return modelManager;
     }
 
+    public long getTimeStep(){
+        return timeStep;
+    }
+    
     /**
      * @return The current simulation time.
      */
@@ -253,7 +268,7 @@ public class Simulator{
      * Start the simulation.
      */
     public void start() {
-        assert !configured: "Simulator can not be started when it is not configured";
+        assert configured: "Simulator can not be started when it is not configured";
     
         if (!isPlaying) {
             dispatcher.dispatchEvent(new Event(SimulatorEventType.STARTED, this));

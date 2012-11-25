@@ -18,7 +18,6 @@ import java.util.Queue;
 import java.util.Set;
 
 import rinde.sim.core.graph.Point;
-import rinde.sim.core.model.AbstractModel;
 import rinde.sim.core.model.road.guards.MovingRoadGuard;
 import rinde.sim.core.model.road.guards.RoadGuard;
 import rinde.sim.core.model.road.supported.MovingRoadUnit;
@@ -45,8 +44,7 @@ import com.google.common.collect.Sets;
  * 
  * @author Rinde van Lon <rinde.vanlon@cs.kuleuven.be>
  */
-public abstract class AbstractRoadModel<T> extends AbstractModel<RoadUnit>
-        implements RoadModel{
+public abstract class AbstractRoadModel<T> implements RoadModel{
 
     private Map<RoadUser, RoadGuard> mapping;
     
@@ -76,11 +74,15 @@ public abstract class AbstractRoadModel<T> extends AbstractModel<RoadUnit>
      */
     protected Map<MovingRoadUser, DestinationPath> objDestinations;
 
+    @Override
+    public Class<RoadUnit> getSupportedType() {
+        return RoadUnit.class;
+    }
+    
     /**
      * Create a new instance.
      */
     public AbstractRoadModel(boolean pUseSpeedConversion) {
-        super(RoadUnit.class);
         objLocs = createObjectToLocationMap();
         objDestinations = newLinkedHashMap();
         speedConverter = new SpeedConverter();
@@ -351,6 +353,7 @@ public abstract class AbstractRoadModel<T> extends AbstractModel<RoadUnit>
             removeObject(holder.getElement());
             mapping.remove(holder.getElement());
         }
+        //TODO
     }
 
     @Override

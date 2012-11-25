@@ -45,7 +45,7 @@ public class SimplePickupReceiver<P extends Parcel> extends Receiver{
      */
     public boolean canBePickedUp(TimeLapse lapse, Parcel parcel, PickupVisitor<?> visitor){
         return this.parcel == parcel &&
-                policy.canPickup(parcel.pickupTimeWindow, lapse.getTime(), parcel.pickupDuration);
+                policy.canPickup(parcel.pickupTimeWindow, lapse.getCurrentTime(), parcel.pickupDuration);
     }
     
     /**

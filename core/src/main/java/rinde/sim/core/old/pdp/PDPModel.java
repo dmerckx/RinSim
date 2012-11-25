@@ -278,13 +278,13 @@ public class PDPModel implements Model<PDPObject>, ModelReceiver {
         /* 6 */checkArgument(newSize <= containerCapacities.get(vehicle), "parcel does not fit in vehicle");
 
         checkArgument(timeWindowPolicy.canPickup(parcel.getPickupTimeWindow(), time
-                .getTime(), parcel.getPickupDuration()), "parcel pickup is not allowed according to the time window policy: "
+                .getCurrentTime(), parcel.getPickupDuration()), "parcel pickup is not allowed according to the time window policy: "
                 + timeWindowPolicy);
 
-        checkArgument(parcel.canBePickedUp(vehicle, time.getTime()), "the parcel does not allow pickup now");
+        checkArgument(parcel.canBePickedUp(vehicle, time.getCurrentTime()), "the parcel does not allow pickup now");
 
         eventDispatcher.dispatchEvent(new PDPModelEvent(
-                PDPModelEventType.START_PICKUP, this, time.getTime(), parcel));
+                PDPModelEventType.START_PICKUP, this, time.getCurrentTime(), parcel));
 
         // remove the parcel such that it can no longer be attempted to be
         // picked up by anyone else
@@ -300,7 +300,7 @@ public class PDPModel implements Model<PDPObject>, ModelReceiver {
             time.consumeAll();
         } else {
             time.consume(parcel.getPickupDuration());
-            doPickup(vehicle, parcel, time.getTime());
+            doPickup(vehicle, parcel, time.getCurrentTime());
         }
     }
 
@@ -357,15 +357,15 @@ public class PDPModel implements Model<PDPObject>, ModelReceiver {
                 .equals(roadModel.getPosition(vehicle)), "parcel must be delivered at its destination, vehicle should move there first");
 
         checkArgument(timeWindowPolicy.canDeliver(parcel
-                .getDeliveryTimeWindow(), time.getTime(), parcel
+                .getDeliveryTimeWindow(), time.getCurrentTime(), parcel
                 .getDeliveryDuration()), "parcel delivery is not allowed according to the time window policy: "
                 + timeWindowPolicy);
 
-        checkArgument(parcel.canBeDelivered(vehicle, time.getTime()), "the parcel does not allow a delivery now");
+        checkArgument(parcel.canBeDelivered(vehicle, time.getCurrentTime()), "the parcel does not allow a delivery now");
 
         eventDispatcher
                 .dispatchEvent(new PDPModelEvent(
-                        PDPModelEventType.START_DELIVERY, this, time.getTime(),
+                        PDPModelEventType.START_DELIVERY, this, time.getCurrentTime(),
                         parcel));
         if (time.getTimeLeft() < parcel.getDeliveryDuration()) {
             vehicleState.put(vehicle, VehicleState.DELIVERING);
@@ -375,7 +375,7 @@ public class PDPModel implements Model<PDPObject>, ModelReceiver {
             time.consumeAll();
         } else {
             time.consume(parcel.getDeliveryDuration());
-            doDeliver(vehicle, parcel, time.getTime());
+            doDeliver(vehicle, parcel, time.getCurrentTime());
         }
     }
 
@@ -695,7 +695,7 @@ public class PDPModel implements Model<PDPObject>, ModelReceiver {
         @Override
         public void finish(TimeLapse time) {
             modelRef.vehicleState.put(vehicle, VehicleState.IDLE);
-            modelRef.doPickup(vehicle, parcel, time.getTime());
+            modelRef.doPickup(vehicle, parcel, time.getCurrentTime());
 
         }
     }
@@ -710,7 +710,7 @@ public class PDPModel implements Model<PDPObject>, ModelReceiver {
         @Override
         public void finish(TimeLapse time) {
             modelRef.vehicleState.put(vehicle, VehicleState.IDLE);
-            modelRef.doDeliver(vehicle, parcel, time.getTime());
+            modelRef.doDeliver(vehicle, parcel, time.getCurrentTime());
         }
     }
 }

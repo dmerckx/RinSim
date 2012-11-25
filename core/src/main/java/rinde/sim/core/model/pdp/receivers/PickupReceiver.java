@@ -56,7 +56,7 @@ public class PickupReceiver extends ExtendedReceiver {
      */
     public boolean canBePickedUp(TimeLapse lapse, Parcel parcel, PickupVisitor<?> visitor){
         return parcels.contains(parcel) &&
-                policy.canPickup(parcel.pickupTimeWindow, lapse.getTime(), parcel.pickupDuration);
+                policy.canPickup(parcel.pickupTimeWindow, lapse.getCurrentTime(), parcel.pickupDuration);
     }
     
     /**

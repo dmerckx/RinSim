@@ -1,6 +1,7 @@
 package rinde.sim.core;
 
-import rinde.sim.core.simulation.time.TimeLapse;
+import rinde.sim.core.simulation.TimeLapse;
+import rinde.sim.core.simulation.time.TimeLapseImpl;
 
 /**
  * @author Rinde van Lon (rinde.vanlon@cs.kuleuven.be)
@@ -12,7 +13,7 @@ public final class TimeLapseFactory {
 	// this should only be used in tests!
 
 	public static TimeLapse create(long start, long end) {
-		return new TimeLapse(start, end);
+		return new TimeLapseImpl(start, end);
 	}
 
 }

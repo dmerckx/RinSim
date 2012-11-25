@@ -47,7 +47,7 @@ public class DeliveryReceiver extends ExtendedReceiver {
      */
     public boolean canAccept(TimeLapse time, Parcel parcel, DeliveryVisitor<?> visitor) {
         return parcel.getClass().isAssignableFrom(target)
-                && policy.canDeliver(parcel.deliveryTimeWindow, time.getTime(), parcel.deliveryDuration);
+                && policy.canDeliver(parcel.deliveryTimeWindow, time.getCurrentTime(), parcel.deliveryDuration);
     }
 
     /**

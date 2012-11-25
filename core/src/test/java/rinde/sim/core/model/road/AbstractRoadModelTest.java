@@ -26,11 +26,12 @@ import org.junit.Test;
 
 import rinde.sim.core.TimeLapseFactory;
 import rinde.sim.core.graph.Point;
+import rinde.sim.core.model.road.dummies.TrivialRoadUnit;
+import rinde.sim.core.model.road.dummies.TrivialRoadUser;
 import rinde.sim.core.model.road.users.MovingRoadUser;
 import rinde.sim.core.model.road.users.RoadUser;
-import rinde.sim.core.simulation.time.TimeLapse;
+import rinde.sim.core.simulation.TimeLapse;
 import rinde.sim.util.SpeedConverter;
-import rinde.sim.util.TrivialRoadUser;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.HashBasedTable;
@@ -132,23 +133,13 @@ public abstract class AbstractRoadModelTest<T extends RoadModel> {
     @Test
     public void register() {
         final TestRoadUser driver = new TestRoadUser();
-        model.register(driver);
-        assertEquals(model, driver.getRoadModel());
+        model.register(driver.unit);
+        assertEquals(model, driver.roadAPI);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void unregisterNull() {
         model.unregister(null);
-    }
-
-    @Test
-    public void unregister() {
-        assertFalse(model.unregister(new TestRoadUser()));
-        final TestRoadUser driver = new TestRoadUser();
-        assertTrue(model.register(driver));
-        assertFalse(model.unregister(driver));
-        model.addObjectAt(driver, SW);
-        assertTrue(model.unregister(driver));
     }
 
     @Test(expected = NullPointerException.class)
@@ -202,12 +193,8 @@ public abstract class AbstractRoadModelTest<T extends RoadModel> {
     public void testGetObjectsAndPositions() {
         final RoadUser agent1 = new TestRoadUser();
         final RoadUser agent2 = new TestRoadUser();
-        final RoadUser agent3 = new RoadUser() {
-            @Override
-            public void initRoadUser(RoadModel pModel) {
-                // can be ignored in this test [bm]
-            }
-        };
+        final RoadUser agent3 = new TestRoadUser2();
+        
         model.addObjectAt(agent1, SW);
         model.addObjectAt(agent2, SE);
         model.addObjectAt(agent3, NE);
@@ -492,22 +479,11 @@ public abstract class AbstractRoadModelTest<T extends RoadModel> {
 
 }
 
-class SpeedyRoadUser implements MovingRoadUser {
+class SpeedyRoadUser extends TrivialRoadUser {
 
-    private final double speed;
-
-    public SpeedyRoadUser(double pSpeed) {
-        speed = pSpeed;
+    public SpeedyRoadUser(double speed) {
+        super(speed);
     }
-
-    @Override
-    public void initRoadUser(RoadModel pModel) {}
-
-    @Override
-    public double getSpeed() {
-        return speed;
-    }
-
 }
 
 class TestRoadUser extends TrivialRoadUser {}
