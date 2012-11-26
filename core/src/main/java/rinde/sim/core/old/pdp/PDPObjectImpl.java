@@ -40,17 +40,17 @@ public abstract class PDPObjectImpl implements PDPObject {
         }
     }
 
-    public final void initRoadUser(RoadModel model) {
-        checkState(roadModel == null, "RoadModel can not be registered twice!");
-        roadModel = model;
-        if (startPosition != null) {
-            model.addObjectAt(this, startPosition);
-        }
-        if (pdpModel != null) {
-            isRegistered = true;
-            initRoadPDP(roadModel, pdpModel);
-        }
-    }
+//    public final void initRoadUser(RoadModel model) {
+//        checkState(roadModel == null, "RoadModel can not be registered twice!");
+//        roadModel = model;
+//        if (startPosition != null) {
+//            model.addObjectAt(this, startPosition);
+//        }
+//        if (pdpModel != null) {
+//            isRegistered = true;
+//            initRoadPDP(roadModel, pdpModel);
+//        }
+//    }
 
     /**
      * @return <code>true</code> when this object has been registered in both

@@ -14,10 +14,6 @@ public class TrivialRoadUnit extends UnitImpl implements MovingRoadUnit{
     
     public MovingRoadAPI roadAPI;
     
-    public TrivialRoadUnit(TrivialRoadUser user) {
-        this(user, new Point(0,0), 1.0d);
-    }
-    
     public TrivialRoadUnit(TrivialRoadUser user, Point location, double speed) {
         this.user = user;
         this.location = location;

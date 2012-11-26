@@ -80,12 +80,12 @@ public class PlaneRoadModel extends AbstractRoadModel<Point> {
                 + (rnd.nextDouble() * height));
     }
 
-    @Override
-    public void addObjectAt(RoadUser obj, Point pos) {
-        checkArgument(isPointInBoundary(pos), "objects can only be added within the boundaries of the plane, "
-                + pos + " is not in the boundary.");
-        super.addObjectAt(obj, pos);
-    }
+//    @Override
+//    public void addObjectAt(RoadUser obj, Point pos) {
+//        checkArgument(isPointInBoundary(pos), "objects can only be added within the boundaries of the plane, "
+//                + pos + " is not in the boundary.");
+//        super.addObjectAt(obj, pos);
+//    }
 
     @Override
     protected MoveProgress doFollowPath(MovingRoadUser object,

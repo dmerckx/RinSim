@@ -14,8 +14,6 @@ import rinde.sim.core.simulation.TimeLapse;
 
 public class MovingRoadGuard extends RoadGuard implements MovingRoadAPI {
 
-    private MovingRoadUser user;
-    
     private RandomGenerator rnd;//TODO
     private Queue<Point> path;
     
@@ -23,7 +21,6 @@ public class MovingRoadGuard extends RoadGuard implements MovingRoadAPI {
     
     public MovingRoadGuard(MovingRoadUnit unit, RoadModel model) {
         super(unit, model);
-        this.user = user;
         this.speed = unit.getInitData().getInitialSpeed();
     }
     
@@ -57,7 +54,7 @@ public class MovingRoadGuard extends RoadGuard implements MovingRoadAPI {
     public void advance(TimeLapse time) {
         if(! isDriving() || ! time.hasTimeLeft()) return;
         
-        model.followPath(user, path, time);
+        model.followPath((MovingRoadUser) user, path, time);
     }
 
     @Override

@@ -25,11 +25,11 @@ import rinde.sim.core.model.road.GraphRoadModel;
 import rinde.sim.core.model.road.MoveProgress;
 import rinde.sim.core.model.road.RoadModel;
 import rinde.sim.core.model.road.RoadModels;
+import rinde.sim.core.model.road.dummies.TrivialRoadUser;
 import rinde.sim.core.model.road.supported.RoadUnit;
 import rinde.sim.core.model.road.users.MovingRoadUser;
 import rinde.sim.core.model.road.users.RoadUser;
 import rinde.sim.util.TimeUnit;
-import rinde.sim.util.TrivialRoadUser;
 
 import com.google.common.base.Predicate;
 
@@ -93,20 +93,20 @@ public class PathFinderTest {
 
 		graph.addConnection(g, a);
 
-		o1 = new StringRoadUser("object1");
-		o2 = new StringRoadUser("object2");
-		o3 = new StringRoadUser("object3");
-		o4 = new LongRoadUser(444L);
-		o5 = new LongRoadUser(555L);
-		o6 = new LongRoadUser(666L);
+		o1 = new StringRoadUser("object1", a);
+		o2 = new StringRoadUser("object2", b);
+		o3 = new StringRoadUser("object3", c);
+		o4 = new LongRoadUser(444L, d);
+		o5 = new LongRoadUser(555L, e);
+		o6 = new LongRoadUser(666L, f);
 		allObjects = Arrays.asList(o1, o2, o3, o4, o5, o6);
 
-		rm.addObjectAt(o1, a);
-		rm.addObjectAt(o2, b);
-		rm.addObjectAt(o3, c);
-		rm.addObjectAt(o4, d);
-		rm.addObjectAt(o5, e);
-		rm.addObjectAt(o6, f);
+		rm.register(o1.buildUnit());
+		rm.register(o2.buildUnit());
+		rm.register(o3.buildUnit());
+		rm.register(o4.buildUnit());
+		rm.register(o5.buildUnit());
+		rm.register(o6.buildUnit());
 
 	}
 
@@ -117,6 +117,11 @@ public class PathFinderTest {
 			name = pName;
 		}
 
+		public StringRoadUser(String pName, Point pos) {
+            super(pos);
+		    name = pName;
+        }
+		
 		@Override
 		public String toString() {
 			return name;
@@ -130,6 +135,11 @@ public class PathFinderTest {
 		public LongRoadUser(long pNumber) {
 			number = pNumber;
 		}
+
+        public LongRoadUser(long pNumber, Point pos) {
+            super(pos);
+            number = pNumber;
+        }
 
 		@Override
 		public String toString() {
@@ -175,8 +185,8 @@ public class PathFinderTest {
 	}
 
 	public void compatibilityCheck(List<Point> t) {
-		MovingRoadUser truck = new TrivialRoadUser();
-		rm.addObjectAt(truck, t.get(0));
+		MovingRoadUser truck = new TrivialRoadUser(t.get(0));
+		rm.register(truck.buildUnit());
 		double len = pathLength(t);
 		// speed of trivial truck is 1 len per hour thus we need to travel 'len'
 		// hours

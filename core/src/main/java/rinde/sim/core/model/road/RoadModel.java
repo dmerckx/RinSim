@@ -13,7 +13,6 @@ import org.apache.commons.math3.random.RandomGenerator;
 
 import rinde.sim.core.graph.Point;
 import rinde.sim.core.model.Model;
-import rinde.sim.core.model.road.guards.RoadGuard;
 import rinde.sim.core.model.road.supported.RoadUnit;
 import rinde.sim.core.model.road.users.MovingRoadUser;
 import rinde.sim.core.model.road.users.RoadUser;
@@ -158,7 +157,7 @@ public interface RoadModel extends Model<RoadUnit> {
      * @param pos The position on which the object is to be added. This must be
      *            a node which already exists in the model.
      */
-    void addObjectAt(RoadUser newObj, Point pos);
+//    void addObjectAt(RoadUser newObj, Point pos);
 
     /**
      * Adds an object at the same position as the existing object.
@@ -168,13 +167,13 @@ public interface RoadModel extends Model<RoadUnit> {
      *            target of the <code>newObj</code>. This object
      *            <strong>must</strong> already exist in the model.
      */
-    void addObjectAtSamePosition(RoadUser newObj, RoadUser existingObj);
+//    void addObjectAtSamePosition(RoadUser newObj, RoadUser existingObj);
 
     /**
      * Removes the specified {@link RoadUser} from this model.
      * @param roadUser the object to be removed.
      */
-    void removeObject(RoadUser roadUser);
+//    void removeObject(RoadUser roadUser);
 
     /**
      * Removes all objects on this RoadStructure instance.

@@ -7,6 +7,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import rinde.sim.core.graph.Point;
+import rinde.sim.core.model.Unit.AfterTick;
 import rinde.sim.core.model.communication.Address;
 import rinde.sim.core.model.communication.CommunicationModel;
 import rinde.sim.core.model.communication.Delivery;
@@ -17,7 +18,7 @@ import rinde.sim.core.model.communication.users.CommUser;
 import rinde.sim.core.model.road.apis.RoadAPI;
 import rinde.sim.core.simulation.TimeInterval;
 
-public class CommGuard implements CommunicationAPI{
+public class CommGuard implements CommunicationAPI, AfterTick{
 	
 	private List<Delivery> mailbox;
 	private SortedSet<Delivery> tempMailbox;
@@ -43,6 +44,8 @@ public class CommGuard implements CommunicationAPI{
 		
 		this.radius = unit.getInitData().getInitialRadius();
 		this.reliability = unit.getInitData().getInitialReliability();
+		
+		unit.registerAfterTick(this);
 	}
 	
 	public double getRadius(){

@@ -11,11 +11,19 @@ public class TrivialRoadUser implements MovingRoadUser{
     public RoadAPI roadAPI;
     
     public TrivialRoadUser() {
-        this.unit = new TrivialRoadUnit(this);
+        this(1, new Point(0,0));
     }
     
     public TrivialRoadUser(double speed){
-        this.unit = new TrivialRoadUnit(this, new Point(0,0), speed);
+        this(speed, new Point(0,0));
+    }
+    
+    public TrivialRoadUser(Point location){
+        this(1, location);
+    }
+    
+    public TrivialRoadUser(double speed, Point location){
+        this.unit = new TrivialRoadUnit(this, location, speed);
     }
     
     @Override

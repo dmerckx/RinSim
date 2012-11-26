@@ -16,6 +16,7 @@ import org.apache.commons.math3.random.RandomGenerator;
 import org.junit.Test;
 
 import rinde.sim.core.graph.Point;
+import rinde.sim.core.model.road.supported.RoadUnit;
 import rinde.sim.core.model.road.users.MovingRoadUser;
 
 /**
@@ -76,7 +77,8 @@ public class PlaneRoadModelTest extends AbstractRoadModelTest<PlaneRoadModel> {
     @Test
     public void followPath() {
         final MovingRoadUser mru = new TestRoadUser();
-        model.addObjectAt(mru, new Point(0, 0));
+        model.register(mru.buildUnit());
+        
         final Queue<Point> path = asPath(new Point(0, 0), new Point(5, 0), new Point(
                 5, 5));
 
@@ -107,15 +109,15 @@ public class PlaneRoadModelTest extends AbstractRoadModelTest<PlaneRoadModel> {
         final Queue<Point> path = asPath(new Point(0, 0), new Point(5, 0), new Point(
                 5, 5), new Point(100, 0));
         final MovingRoadUser mru = new TestRoadUser();
-        model.addObjectAt(mru, new Point(0, 0));
+        model.register(mru.buildUnit());
         model.followPath(mru, path, hour(100));
     }
 
     @Test
     public void moveTo() {
-        final MovingRoadUser agent = new SpeedyRoadUser(1);
+        final MovingRoadUser agent = new SpeedyRoadUser(1, SW);
 
-        model.addObjectAt(agent, SW);
+        model.register(agent.buildUnit());
         assertEquals(new Point(0, 0), model.getPosition(agent));
 
         model.moveTo(agent, NW, hour(9));
@@ -139,8 +141,8 @@ public class PlaneRoadModelTest extends AbstractRoadModelTest<PlaneRoadModel> {
         model.moveTo(agent, NW, hour(13));
         assertTrue(Point.distance(model.getPosition(agent), new Point(0, 10)) < EPSILON);
 
-        final MovingRoadUser agent2 = new SpeedyRoadUser(1);
-        model.addObjectAt(agent2, SW);
+        final MovingRoadUser agent2 = new SpeedyRoadUser(1, SW);
+        model.register(agent2.buildUnit());
         assertEquals(new Point(0, 0), model.getPosition(agent2));
 
         model.moveTo(agent2, agent, hour(30));
@@ -161,6 +163,5 @@ public class PlaneRoadModelTest extends AbstractRoadModelTest<PlaneRoadModel> {
     public void getShortestPathTo() {
         assertEquals(asList(new Point(0, 0), new Point(5, 5)), model
                 .getShortestPathTo(new Point(0, 0), new Point(5, 5)));
-    }
-
+    }    
 }

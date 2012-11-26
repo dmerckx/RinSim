@@ -26,8 +26,8 @@ import org.junit.Test;
 
 import rinde.sim.core.TimeLapseFactory;
 import rinde.sim.core.graph.Point;
-import rinde.sim.core.model.road.dummies.TrivialRoadUnit;
 import rinde.sim.core.model.road.dummies.TrivialRoadUser;
+import rinde.sim.core.model.road.supported.RoadUnit;
 import rinde.sim.core.model.road.users.MovingRoadUser;
 import rinde.sim.core.model.road.users.RoadUser;
 import rinde.sim.core.simulation.TimeLapse;
@@ -110,8 +110,8 @@ public abstract class AbstractRoadModelTest<T extends RoadModel> {
 
     @Test
     public void getPosition() {
-        final RoadUser ru = new TestRoadUser();
-        model.addObjectAt(ru, SW);
+        final RoadUser ru = new TestRoadUser(SW);
+        model.register(ru.buildUnit());
         assertEquals(SW, model.getPosition(ru));
     }
 
@@ -130,13 +130,6 @@ public abstract class AbstractRoadModelTest<T extends RoadModel> {
         model.register(null);
     }
 
-    @Test
-    public void register() {
-        final TestRoadUser driver = new TestRoadUser();
-        model.register(driver.unit);
-        assertEquals(model, driver.roadAPI);
-    }
-
     @Test(expected = IllegalArgumentException.class)
     public void unregisterNull() {
         model.unregister(null);
@@ -144,8 +137,8 @@ public abstract class AbstractRoadModelTest<T extends RoadModel> {
 
     @Test(expected = NullPointerException.class)
     public void followPathFailPath1() {
-        final TestRoadUser testRoadUser = new TestRoadUser();
-        model.addObjectAt(testRoadUser, SW);
+        final TestRoadUser testRoadUser = new TestRoadUser(SW);
+        model.register(testRoadUser.buildUnit());
         model.followPath(testRoadUser, null, emptyTimeLapse);
     }
 
@@ -159,31 +152,31 @@ public abstract class AbstractRoadModelTest<T extends RoadModel> {
 
     @Test(expected = IllegalArgumentException.class)
     public void followPathFailPath2() {
-        final TestRoadUser testRoadUser = new TestRoadUser();
-        model.addObjectAt(testRoadUser, SW);
+        final TestRoadUser testRoadUser = new TestRoadUser(SW);
+        model.register(testRoadUser.buildUnit());
         model.followPath(testRoadUser, new LinkedList<Point>(), emptyTimeLapse);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void followPathFailTime() {
-        final TestRoadUser testRoadUser = new TestRoadUser();
-        model.addObjectAt(testRoadUser, SW);
+        final TestRoadUser testRoadUser = new TestRoadUser(SW);
+        model.register(testRoadUser.buildUnit());
         model.followPath(testRoadUser, new LinkedList<Point>(Arrays.asList(SW)), emptyTimeLapse);
     }
 
     @Test
     public void getSupportedType() {
-        assertEquals(RoadUser.class, model.getSupportedType());
+        assertEquals(RoadUnit.class, model.getSupportedType());
     }
 
     @Test
     public void testClear() {
-        final RoadUser agent1 = new TestRoadUser();
-        final RoadUser agent2 = new TestRoadUser();
-        final RoadUser agent3 = new TestRoadUser();
-        model.addObjectAt(agent1, SW);
-        model.addObjectAt(agent2, SE);
-        model.addObjectAt(agent3, NE);
+        final RoadUser agent1 = new TestRoadUser(SW);
+        final RoadUser agent2 = new TestRoadUser(SE);
+        final RoadUser agent3 = new TestRoadUser(NE);
+        model.register(agent1.buildUnit());
+        model.register(agent2.buildUnit());
+        model.register(agent3.buildUnit());
         assertEquals(3, model.getObjects().size());
         model.clear();
         assertTrue(model.getObjects().isEmpty());
@@ -191,13 +184,13 @@ public abstract class AbstractRoadModelTest<T extends RoadModel> {
 
     @Test
     public void testGetObjectsAndPositions() {
-        final RoadUser agent1 = new TestRoadUser();
-        final RoadUser agent2 = new TestRoadUser();
-        final RoadUser agent3 = new TestRoadUser2();
+        final TestRoadUser agent1 = new TestRoadUser(SW);
+        final RoadUser agent2 = new TestRoadUser(SE);
+        final RoadUser agent3 = new TestRoadUser2(NE);
         
-        model.addObjectAt(agent1, SW);
-        model.addObjectAt(agent2, SE);
-        model.addObjectAt(agent3, NE);
+        model.register(agent1.buildUnit());
+        model.register(agent2.buildUnit());
+        model.register(agent3.buildUnit());
 
         final Map<RoadUser, Point> mapCopy = model.getObjectsAndPositions();
         final Set<RoadUser> setCopy = model.getObjects();
@@ -211,7 +204,7 @@ public abstract class AbstractRoadModelTest<T extends RoadModel> {
         assertEquals(2, subsetCopy.size());
         assertEquals(3, posCopy.size());
 
-        model.removeObject(agent1);
+        model.unregister(agent1.unit);
         assertEquals(2, model.getObjectsAndPositions().size());
         assertEquals(3, mapCopy.size());
         assertEquals(3, setCopy.size());
@@ -221,17 +214,17 @@ public abstract class AbstractRoadModelTest<T extends RoadModel> {
 
     @Test
     public void getObjectsAt() {
-        final TestRoadUser agent1 = new TestRoadUser();
-        final TestRoadUser agent2 = new TestRoadUser();
-        final TestRoadUser agent3 = new TestRoadUser();
-        final TestRoadUser agent4 = new TestRoadUser();
-        final TestRoadUser agent5 = new TestRoadUser();
+        final TestRoadUser agent1 = new TestRoadUser(SW);
+        final TestRoadUser agent2 = new TestRoadUser(NE);
+        final TestRoadUser agent3 = new TestRoadUser(SE);
+        final TestRoadUser agent4 = new TestRoadUser(NE);
+        final TestRoadUser agent5 = new TestRoadUser(SE);
 
-        model.addObjectAt(agent1, SW);
-        model.addObjectAt(agent2, NE);
-        model.addObjectAt(agent3, SE);
-        model.addObjectAt(agent4, NE);
-        model.addObjectAt(agent5, SE);
+        model.register(agent1.buildUnit());
+        model.register(agent2.buildUnit());
+        model.register(agent3.buildUnit());
+        model.register(agent4.buildUnit());
+        model.register(agent5.buildUnit());
         assertTrue(Sets
                 .difference(asSet(agent1), model.getObjectsAt(agent1, TestRoadUser.class))
                 .isEmpty());
@@ -256,23 +249,16 @@ public abstract class AbstractRoadModelTest<T extends RoadModel> {
         model.getObjectsAt(new TestRoadUser(), null);
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void addTruckTest2() {
-        final RoadUser t = new TestRoadUser();
-        model.addObjectAt(t, new Point(0, 0));
-        model.addObjectAt(t, new Point(10, 0));// object is already added
-    }
-
     @Test
-    public void removeObjectTest() {
-        final RoadUser agent1 = new TestRoadUser();
-        model.addObjectAt(agent1, new Point(0, 0));
-        model.removeObject(agent1);
+    public void unregisterTest() {
+        final TestRoadUser agent1 = new TestRoadUser();
+        model.register(agent1.buildUnit());
+        model.unregister(agent1.unit);
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void removeObjectTestFail() {
-        model.removeObject(null);
+    public void unregisterTestFail() {
+        model.unregister(null);
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -282,9 +268,10 @@ public abstract class AbstractRoadModelTest<T extends RoadModel> {
 
     @Test
     public void containsObjectAt() {
-        assertFalse(model.containsObjectAt(new TestRoadUser(), new Point(2, 3)));
-        final TestRoadUser ru = new TestRoadUser();
-        model.addObjectAt(ru, SW);
+        final TestRoadUser ru = new TestRoadUser(SW);
+        
+        assertFalse(model.containsObjectAt(ru, new Point(2, 3)));
+        model.register(ru.buildUnit());
         assertFalse(model.containsObjectAt(ru, new Point(2, 3)));
         assertTrue(model.containsObjectAt(ru, SW));
 
@@ -297,8 +284,8 @@ public abstract class AbstractRoadModelTest<T extends RoadModel> {
     public void followPathRoundingTimeCheck() {
 
         // FIXME fix this rounding time bug!
-        final MovingRoadUser ru = new SpeedyRoadUser(1);
-        model.addObjectAt(ru, SW);
+        final MovingRoadUser ru = new SpeedyRoadUser(1, SE);
+        model.register(ru.buildUnit());
 
         model.followPath(ru, newLinkedList(asList(SE)), TimeLapseFactory
                 .create(0, 36000000 - 1));
@@ -313,34 +300,6 @@ public abstract class AbstractRoadModelTest<T extends RoadModel> {
     @Test(expected = IllegalArgumentException.class)
     public void containsObjectAtNull2() {
         model.containsObjectAt(new TestRoadUser(), null);
-    }
-
-    @Test
-    public void addObjectAtSamePosition() {
-        final RoadUser agent1 = new TestRoadUser();
-        final RoadUser agent2 = new TestRoadUser();
-        model.addObjectAt(agent1, SW);
-        model.addObjectAtSamePosition(agent2, agent1);
-        assertEquals(SW, model.getPosition(agent1));
-        assertEquals(SW, model.getPosition(agent2));
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void addObjectAtSamePositionFail() {
-        final RoadUser agent1 = new TestRoadUser();
-        final RoadUser agent2 = new TestRoadUser();
-        model.addObjectAt(agent1, SW);
-        model.addObjectAt(agent2, SE);
-        model.addObjectAtSamePosition(agent2, agent1);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void addObjectAtSamePositionFail2() {
-        final RoadUser agent1 = new TestRoadUser();
-        final RoadUser agent2 = new TestRoadUser();
-        final RoadUser agent3 = new TestRoadUser();
-        model.addObjectAt(agent2, SE);
-        model.addObjectAtSamePosition(agent3, agent1);
     }
 
     /**
@@ -368,21 +327,6 @@ public abstract class AbstractRoadModelTest<T extends RoadModel> {
         }
     }
 
-    @Test
-    public void testEqualPosition() {
-        final RoadUser agent1 = new TestRoadUser();
-        final RoadUser agent2 = new TestRoadUser();
-
-        assertFalse(model.equalPosition(agent1, agent2));
-        model.addObjectAt(agent1, SW);
-        assertFalse(model.equalPosition(agent1, agent2));
-        model.addObjectAt(agent2, NE);
-        assertFalse(model.equalPosition(agent1, agent2));
-        model.removeObject(agent2);
-        model.addObjectAt(agent2, SW);
-        assertTrue(model.equalPosition(agent1, agent2));
-    }
-
     @SuppressWarnings("unused")
     @Test(expected = IllegalArgumentException.class)
     public void pathProgressConstructorFail1() {
@@ -403,17 +347,18 @@ public abstract class AbstractRoadModelTest<T extends RoadModel> {
 
     @Test
     public void testObjectOrder() {
-        final List<RoadUser> objects = new ArrayList<RoadUser>();
+
+        final List<TrivialRoadUser> objects = new ArrayList<TrivialRoadUser>();
         final List<Point> positions = Arrays.asList(NE, SE, SW, NE);
         for (int i = 0; i < 100; i++) {
-            RoadUser u;
+            TrivialRoadUser u;
             if (i % 2 == 0) {
-                u = new TestRoadUser();
+                u = new TestRoadUser(positions.get(i % positions.size()));
             } else {
-                u = new TestRoadUser2();
+                u = new TestRoadUser2(positions.get(i % positions.size()));
             }
             objects.add(u);
-            model.addObjectAt(u, positions.get(i % positions.size()));
+            model.register(u.buildUnit());
         }
 
         // checking whether the returned objects are in insertion order
@@ -424,11 +369,11 @@ public abstract class AbstractRoadModelTest<T extends RoadModel> {
             assertTrue(modelObjects.get(i) == objects.get(i));
         }
 
-        model.removeObject(objects.remove(97));
-        model.removeObject(objects.remove(67));
-        model.removeObject(objects.remove(44));
-        model.removeObject(objects.remove(13));
-        model.removeObject(objects.remove(3));
+        model.unregister(objects.remove(97).unit);
+        model.unregister(objects.remove(67).unit);
+        model.unregister(objects.remove(44).unit);
+        model.unregister(objects.remove(13).unit);
+        model.unregister(objects.remove(3).unit);
 
         // check to see if the objects are still in insertion order, event after
         // removals
@@ -474,9 +419,7 @@ public abstract class AbstractRoadModelTest<T extends RoadModel> {
             assertTrue(modelObjects5.get(i) == objects.get(j));
             j++;
         }
-
     }
-
 }
 
 class SpeedyRoadUser extends TrivialRoadUser {
@@ -484,8 +427,27 @@ class SpeedyRoadUser extends TrivialRoadUser {
     public SpeedyRoadUser(double speed) {
         super(speed);
     }
+    
+    public SpeedyRoadUser(double speed, Point location){
+        super(speed, location);
+    }
 }
 
-class TestRoadUser extends TrivialRoadUser {}
+class TestRoadUser extends TrivialRoadUser {
+    public TestRoadUser() {
+        super();
+    }
+    
+    public TestRoadUser(Point loc) {
+        super(loc);
+    }
+}
 
-class TestRoadUser2 extends TrivialRoadUser {}
+class TestRoadUser2 extends TrivialRoadUser {
+    public TestRoadUser2() {
+        super();
+    }
+    
+    public TestRoadUser2(Point loc) {
+        super(loc);
+    }}

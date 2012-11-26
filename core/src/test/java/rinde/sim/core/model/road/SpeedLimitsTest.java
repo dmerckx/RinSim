@@ -137,7 +137,7 @@ public class SpeedLimitsTest {
         TimeLapse timeLapse = TimeLapseFactory.create(0, timeNeeded);
 
         SpeedyRoadUser agent = new SpeedyRoadUser(speed);
-        model.addObjectAt(agent, new Point(0, 0));
+        model.register(agent.buildUnit());
         assertEquals(new Point(0, 0), model.getPosition(agent));
 
         assertEquals(5, path.size());
@@ -159,7 +159,7 @@ public class SpeedLimitsTest {
         assertEquals(5, path.size());
 
         MovingRoadUser agent = new SpeedyRoadUser(speed);
-        model.addObjectAt(agent, new Point(0, 0));
+        model.register(agent.buildUnit());
         assertTrue(model.getPosition(agent).equals(new Point(0, 0)));
         assertEquals(5, path.size());
 
@@ -219,6 +219,7 @@ public class SpeedLimitsTest {
     @Test
     public void maxSpeedTest() {
         SpeedyRoadUser agent = new SpeedyRoadUser(speed);
+        model.register(agent.buildUnit());
         assertEquals(speed, model.getMaxSpeed(agent, A, B), DELTA);
         assertEquals(speed > 2.5 ? 2.5 : speed, model.getMaxSpeed(agent, B, C), DELTA);
         assertEquals(speed, model.getMaxSpeed(agent, C, B), DELTA);
@@ -231,7 +232,7 @@ public class SpeedLimitsTest {
     @Test
     public void followPathStepByStep() {
         SpeedyRoadUser agent = new SpeedyRoadUser(speed);
-        model.addObjectAt(agent, new Point(0, 0));
+        model.register(agent.buildUnit());
         assertEquals(new Point(0, 0), model.getPosition(agent));
         assertEquals(5, path.size());
 

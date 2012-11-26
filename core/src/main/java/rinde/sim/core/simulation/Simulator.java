@@ -122,7 +122,7 @@ public class Simulator{
     public Simulator(long step) {
         modelPolicy = new ModelPolicy();
         unitsPolicy = new ParallelUnitsPolicy();
-        externalPolicy = new TickListenerPolicy(false);
+        externalPolicy = new TickListenerPolicy(true);
         
         timeStep = step;
         time = 0L;

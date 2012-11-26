@@ -8,6 +8,7 @@ import static com.google.common.collect.Maps.newLinkedHashMap;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -46,7 +47,7 @@ import com.google.common.collect.Sets;
  */
 public abstract class AbstractRoadModel<T> implements RoadModel{
 
-    private Map<RoadUser, RoadGuard> mapping;
+    private Map<RoadUser, RoadGuard> mapping = new HashMap<RoadUser, RoadGuard>();
     
     protected final SpeedConverter speedConverter;
 
@@ -192,14 +193,12 @@ public abstract class AbstractRoadModel<T> implements RoadModel{
     protected abstract MoveProgress doFollowPath(MovingRoadUser object,
             Queue<Point> path, TimeLapse time);
 
-    @Override
-    public void addObjectAt(RoadUser newObj, Point pos) {
+    protected void addObjectAt(RoadUser newObj, Point pos) {
         checkArgument(!objLocs.containsKey(newObj), "Object is already added");
         objLocs.put(newObj, point2LocObj(pos));
     }
 
-    @Override
-    public void addObjectAtSamePosition(RoadUser newObj, RoadUser existingObj) {
+    protected void addObjectAtSamePosition(RoadUser newObj, RoadUser existingObj) {
         checkArgument(!objLocs.containsKey(newObj), "Object " + newObj
                 + " is already added.");
         checkArgument(objLocs.containsKey(existingObj), "Object " + existingObj
@@ -207,8 +206,7 @@ public abstract class AbstractRoadModel<T> implements RoadModel{
         objLocs.put(newObj, objLocs.get(existingObj));
     }
 
-    @Override
-    public void removeObject(RoadUser roadUser) {
+    protected void removeObject(RoadUser roadUser) {
         checkArgument(roadUser != null, "RoadUser can not be null");
         checkArgument(objLocs.containsKey(roadUser), "RoadUser: " + roadUser
                 + " does not exist.");
@@ -341,6 +339,7 @@ public abstract class AbstractRoadModel<T> implements RoadModel{
         else {
             guard = new RoadGuard(unit, this);
         }
+        addObjectAt(unit.getElement(), unit.getInitData().getStartPosition());
         unit.setRoadAPI(guard);
         mapping.put(unit.getElement(), guard);
     }
@@ -353,7 +352,6 @@ public abstract class AbstractRoadModel<T> implements RoadModel{
             removeObject(holder.getElement());
             mapping.remove(holder.getElement());
         }
-        //TODO
     }
 
     @Override

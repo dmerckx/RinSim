@@ -288,7 +288,7 @@ public class PDPModel implements Model<PDPObject>, ModelReceiver {
 
         // remove the parcel such that it can no longer be attempted to be
         // picked up by anyone else
-        roadModel.removeObject(parcel);
+//        roadModel.removeObject(parcel);
         // in this case we know we cannot finish this action with the available
         // time. We must continue in the next tick.
         if (time.getTimeLeft() < parcel.getPickupDuration()) {

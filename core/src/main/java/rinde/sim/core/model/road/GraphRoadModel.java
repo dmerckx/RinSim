@@ -154,6 +154,7 @@ public class GraphRoadModel extends AbstractRoadModel<Loc> {
         // in case we start from an edge and our next destination is to go to
         // the end of the current edge then its ok. Otherwise more checks are
         // required..
+        
         if (objLoc.isOnConnection() && !nextHop.equals(objLoc.conn.to)) {
             // check if next destination is a MidPoint
             checkArgument(nextHop instanceof Loc, "Illegal path for this object, from a position on an edge we can not jump to another edge or go back.");

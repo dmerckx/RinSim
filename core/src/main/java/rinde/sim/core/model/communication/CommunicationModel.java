@@ -10,7 +10,7 @@ import rinde.sim.core.simulation.TimeInterval;
 
 public class CommunicationModel implements Model<CommUnit>{
 
-	private final HashMap<Address, CommGuard> comms;
+	protected final HashMap<Address, CommGuard> comms;
 	private int nextId = 0;
 	
 	public CommunicationModel(){
@@ -46,6 +46,8 @@ public class CommunicationModel implements Model<CommUnit>{
 
 	@Override
 	public void register(CommUnit unit) {
+	    assert unit!=null : "Unit can not be null.";
+	    
         CommGuard guard = new CommGuard(unit, this);
 	    unit.setCommunicationAPI(guard);
 	    
@@ -53,13 +55,9 @@ public class CommunicationModel implements Model<CommUnit>{
 	}
 
 	@Override
-	public void unregister(CommUnit element) {
-		for(Address a: comms.keySet()){
-			if( comms.get(a).getUser() == element ){
-				comms.remove(a);
-				return;
-			}
-		}
+	public void unregister(CommUnit unit) {
+	    Address a = unit.getCommunicationAPI().getAddress();
+		comms.remove(a);
 	}
 
 	@Override

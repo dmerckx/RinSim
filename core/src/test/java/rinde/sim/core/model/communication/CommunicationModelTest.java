@@ -5,10 +5,11 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
-import org.apache.commons.math3.random.MersenneTwister;
-import org.apache.commons.math3.random.RandomGenerator;
+import javax.security.auth.callback.Callback;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -17,8 +18,12 @@ import org.junit.runners.Parameterized.Parameters;
 
 import rinde.sim.core.TimeLapseFactory;
 import rinde.sim.core.graph.Point;
-import rinde.sim.core.model.communication.apis.CommunicationAPI;
+import rinde.sim.core.model.communication.dummies.TestCommUnit;
+import rinde.sim.core.model.communication.dummies.TestCommUser;
+import rinde.sim.core.model.communication.supported.CommUnit;
 import rinde.sim.core.model.communication.users.CommUser;
+import rinde.sim.core.simulation.TimeInterval;
+import rinde.sim.core.simulation.TimeLapse;
 
 @RunWith(Parameterized.class)
 public class CommunicationModelTest {
@@ -26,321 +31,195 @@ public class CommunicationModelTest {
 	private CommunicationModel model;
 	private final Class<? extends CommunicationModel> type;
 	private final double radius;
-
-	public CommunicationModelTest(Class<? extends CommunicationModel> clazz, double rad) {
+    private final boolean reverse;
+	
+	int time;
+	public static int STEP = 100;
+    TestCommUser sender1;
+    TestCommUser sender2;
+    TestCommUser recipient;
+    TestCommUnit sender1Unit;
+    TestCommUnit sender2Unit;
+    TestCommUnit recipientUnit;
+    
+	public CommunicationModelTest(Class<? extends CommunicationModel> clazz, double rad, boolean rev) {
 		type = clazz;
 		radius = rad;
+		reverse = rev;
 	}
 
 	@Before
 	public void setUp() throws Exception {
-		model = type.getConstructor(RandomGenerator.class).newInstance(new MersenneTwister(123));
+		model = type.getConstructor().newInstance();
+        
+        sender1 = new TestCommUser(10);
+        sender2 = new TestCommUser(10);
+        recipient = new TestCommUser(10);
+        sender1Unit = sender1.buildUnit();
+        sender2Unit = sender2.buildUnit();
+        recipientUnit = recipient.buildUnit();
+        model.register(sender1Unit);
+        model.register(sender2Unit);
+        model.register(recipientUnit);
+        sender1Unit.init();
+        sender2Unit.init();
+        recipientUnit.init();
 	}
 
 	@Parameters
 	public static List<Object[]> parameters() {
-		return Arrays.asList(new Object[][] { { CommunicationModel.class, 5 }, { CommunicationModel2.class, 5 },
-				{ CommunicationModel.class, 50 }, { CommunicationModel2.class, 50 } });
+		return Arrays.asList(new Object[][] {
+		        { CommunicationModel.class, 5, false },
+                { CommunicationModel.class, 5, true },
+                { CommunicationModel.class, 50, false },
+				{ CommunicationModel.class, 50, true }});
 		// return Arrays.asList(new Object[][]{ {CommunicationModel2.class}});
-	}
-
-	@SuppressWarnings("unused")
-	@Test(expected = IllegalArgumentException.class)
-	public void constructorFail() throws Exception {
-		new CommunicationModel(null);
 	}
 
 	@Test
 	public void testRegister() {
-
-		TestCommunicationUser user = new TestCommunicationUser(new Point(0, 10), 10, 1, null);
-		boolean register = model.register(user);
-		assertTrue(register);
-		assertTrue(model.users.contains(user));
+	    assertEquals(3, model.comms.size());
+	    model.unregister(sender1Unit);
+        model.unregister(sender2Unit);
+        assertEquals(1, model.comms.size());
+        model.unregister(recipientUnit);
+        assertEquals(0, model.comms.size());
+	    
+		TestCommUser user = new TestCommUser(new Point(0, 10), 10, 1);
+		model.register(user.buildUnit());
+		user.unit.init();
+		assertTrue(model.comms.containsKey(user.commAPI.getAddress()));
+        assertEquals(1, model.comms.size());
 	}
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test(expected = AssertionError.class)
 	public void registerFail() {
 		model.register(null);
 	}
 
 	@Test
-	public void testRegisterException() {
-
-		TestCommunicationUser user = new TestCommunicationUser(new Point(0, 10), 10, 1, null) {
-
-			@Override
-			public void setCommunicationAPI(CommunicationAPI api) {
-				throw new RuntimeException();
-			}
-
-		};
-		boolean register = model.register(user);
-		assertFalse(register);
-		assertFalse(model.users.contains(user));
-	}
-
-	@Test
 	public void testUnregister() {
-		TestCommunicationUser user = new TestCommunicationUser(new Point(0, 10), 10, 1, null);
-		boolean res = model.register(user);
-		assertTrue(res);
-		assertTrue(model.users.contains(user));
-		res = model.unregister(user);
-
-		assertTrue(res);
-		assertTrue(model.users.isEmpty());
+		TestCommUser user = new TestCommUser(new Point(0, 10), 10, 1);
+		TestCommUnit unit = user.buildUnit();
+		model.register(unit);
+		unit.init();
+		assertTrue(model.comms.containsKey(user.commAPI.getAddress()));
+		
+		model.unregister(unit);
+		assertFalse(model.comms.containsKey(user.commAPI.getAddress()));
 	}
-
+	
 	@Test
 	public void testSimpleSend() {
-		final boolean[] res = new boolean[1];
+		Message msg = new Message();
+		
+		sender1.commAPI.send(recipient.commAPI.getAddress(), msg);
 
-		TestCommunicationUser sender = new TestCommunicationUser(new Point(0, 10), 10, 1, null);
-		TestCommunicationUser recipient = new TestCommunicationUser(new Point(0, 10), 10, 1, new Callback() {
-
-			@Override
-			void callBack(Message m) {
-				res[0] = true;
-			}
-		});
-
-		model.register(sender);
-		model.register(recipient);
-
-		model.send(recipient, new Message(sender) {});
-
-		assertFalse(res[0]);
-		assertEquals(1, model.sendQueue.size());
-
-		model.tick(TimeLapseFactory.create(0, 100));
-
-		assertFalse(res[0]);
-		assertEquals(1, model.sendQueue.size());
-
-		model.afterTick(TimeLapseFactory.create(0, 100));
-
-		assertTrue(res[0]);
-		assertEquals(0, model.sendQueue.size());
+		assertFalse(recipient.commAPI.getMessages().hasNext());
+		
+        tick();
+       
+        assertTrue(recipient.commAPI.getMessages().hasNext());
+		assertEquals(msg,recipient.commAPI.getMessages().next().message);
 	}
 
+    /**
+     * When a user X sends 2 messages M1 and M2 to Z then Z will
+     * always receive the messages in the order they were send.
+     */
 	@Test
-	public void testMaxDistanceSend() {
-		final boolean[] res = new boolean[1];
+    public void testOrderedSameSender() throws Exception {
+        Message msg1 = new Message();
+        Message msg2 = new Message();
+        
+        sender1.commAPI.send(recipient.commAPI.getAddress(), msg1);
+        sender1.commAPI.send(recipient.commAPI.getAddress(), msg2);
 
-		TestCommunicationUser sender = new TestCommunicationUser(new Point(0, 0), 10, 1, null);
-		TestCommunicationUser recipient = new TestCommunicationUser(new Point(0, 5), 5, 1, new Callback() {
+        tick();
+        
+        Iterator<Delivery> it = recipient.commAPI.getMessages();
+        assertEquals(msg1, it.next().message);
+        assertEquals(msg2, it.next().message);
+        
+        setUp();
+        
+        sender1.commAPI.send(recipient.commAPI.getAddress(), msg2);
+        sender1.commAPI.send(recipient.commAPI.getAddress(), msg1);
 
-			@Override
-			void callBack(Message m) {
-				res[0] = true;
-			}
-		});
-
-		model.register(sender);
-		model.register(recipient);
-
-		model.send(recipient, new Message(sender) {});
-
-		assertFalse(res[0]);
-		assertEquals(1, model.sendQueue.size());
-
-		model.afterTick(TimeLapseFactory.create(0, 100));
-
-		assertTrue(res[0]);
-		assertEquals(0, model.sendQueue.size());
-	}
-
-	@Test
-	public void testUnsendSend() {
-		final boolean[] res = new boolean[1];
-
-		// the distance is greater than min radius
-		TestCommunicationUser sender = new TestCommunicationUser(new Point(0, 0), 10, 1, null);
-		TestCommunicationUser recipient = new TestCommunicationUser(new Point(0, 5), 4, 1, new Callback() {
-
-			@Override
-			void callBack(Message m) {
-				res[0] = true;
-			}
-		});
-
-		model.register(sender);
-		model.register(recipient);
-
-		model.send(recipient, new Message(sender) {});
-
-		assertFalse(res[0]);
-		assertEquals(0, model.sendQueue.size());
-
-		model.afterTick(TimeLapseFactory.create(0, 100));
-
-		assertFalse(res[0]);
-		assertEquals(0, model.sendQueue.size());
-	}
-
+        tick();
+        
+        it = recipient.commAPI.getMessages();
+        assertEquals(msg2, it.next().message);
+        assertEquals(msg1, it.next().message);
+    }
+	
 	/**
-	 * unregister recipient
+	 * When users X and Y both send a message to Z then Z will
+	 * always receive the message from X first OR it will
+	 * always receive the message from Y first.
+	 * The order in which the messages were send should not matter.
 	 */
 	@Test
-	public void testUnsendOnUnregister() {
-		final boolean[] res = new boolean[1];
+    public void testDeterminism2Senders() throws Exception {
+        Message msg1 = new Message();
+        Message msg2 = new Message();
+        
+        sender1.commAPI.send(recipient.commAPI.getAddress(), msg1);
+        sender2.commAPI.send(recipient.commAPI.getAddress(), msg2);
 
-		// the distance is greater than min radius
-		TestCommunicationUser sender = new TestCommunicationUser(new Point(0, 0), 10, 1, null);
-		TestCommunicationUser recipient = new TestCommunicationUser(new Point(0, 5), 15, 1, new Callback() {
+        tick();
+        
+        Iterator<Delivery> it = recipient.commAPI.getMessages();
+        Message receivedFirst = it.next().message;
+        Message receivedLast = it.next().message;
+        
+        setUp();
+        
+        sender2.commAPI.send(recipient.commAPI.getAddress(), msg2);
+        sender1.commAPI.send(recipient.commAPI.getAddress(), msg1);
 
-			@Override
-			void callBack(Message m) {
-				res[0] = true;
-			}
-		});
-
-		model.register(sender);
-		model.register(recipient);
-
-		model.send(recipient, new Message(sender) {});
-
-		assertFalse(res[0]);
-		assertEquals(1, model.sendQueue.size());
-
-		model.unregister(recipient);
-
-		assertEquals(0, model.sendQueue.size());
-
-		model.afterTick(TimeLapseFactory.create(0, 100));
-
-		assertFalse(res[0]);
-		assertEquals(0, model.sendQueue.size());
+        tick();
+        
+        it = recipient.commAPI.getMessages();
+        assertEquals(receivedFirst, it.next().message);
+        assertEquals(receivedLast, it.next().message);
 	}
 
-	/**
-	 * unregister sender
-	 */
-	@Test
-	public void testUnsendOnUnregister2() {
-		final boolean[] res = new boolean[1];
-
-		// the distance is greater than min radius
-		TestCommunicationUser sender = new TestCommunicationUser(new Point(0, 0), 10, 1, null);
-		TestCommunicationUser recipient = new TestCommunicationUser(new Point(0, 5), 15, 1, new Callback() {
-
-			@Override
-			void callBack(Message m) {
-				res[0] = true;
-			}
-		});
-
-		model.register(sender);
-		model.register(recipient);
-
-		model.send(recipient, new Message(sender) {});
-
-		assertFalse(res[0]);
-		assertEquals(1, model.sendQueue.size());
-
-		model.unregister(sender);
-
-		assertEquals(0, model.sendQueue.size());
-
-		model.afterTick(TimeLapseFactory.create(0, 100));
-
-		assertFalse(res[0]);
-		assertEquals(0, model.sendQueue.size());
-	}
-
-	@Test
-	public void broadCastPerformanceTest() {
-		// Random r = new Random(13);
-		// for(int i = 0; i < 10000; ++i) {
-		// TestCommunicationUser t = new TestCommunicationUser(new
-		// Point(r.nextDouble() * 100, r.nextDouble() * 100), r.nextDouble() *
-		// 100, 1, null);
-		// model.register(t);
-		// }
-		// TestCommunicationUser sender = new TestCommunicationUser(new
-		// Point(r.nextDouble() * 100, r.nextDouble() * 100), 200, 1, null);
-		// model.register(sender);
-		// long time = System.currentTimeMillis();
-		// model.broadcast(new Message(sender) {});
-		// model.afterTick(0, 100);
-		// time = System.currentTimeMillis() - time;
-		// System.err.println(time);
-		// assertTrue(time < 120);
-	}
-
-	@Test
-	public void broadStressTest() {
-		// List<TestCommunicationUser> users = new
-		// ArrayList<CommunicationModelTest.TestCommunicationUser>(10000);
-		//
-		// Random r = new Random(13);
-		// for(int i = 0; i < 10000; ++i) {
-		// TestCommunicationUser t = new TestCommunicationUser(new
-		// Point(r.nextDouble() * 1000, r.nextDouble() * 1000), r.nextDouble() *
-		// radius, 1, null);
-		// users.add(t);
-		// model.register(t);
-		// }
-		// long time = System.currentTimeMillis();
-		// for(int k = 0; k < 10; ++k)
-		// for (TestCommunicationUser u : users) {
-		// model.broadcast(new Message(u) {});
-		// }
-		// model.afterTick(0, 100);
-		// time = System.currentTimeMillis() - time;
-		// assertTrue(time < 20000);
-	}
+	//TODO test broadcasting
+	//TODO test reliability
 
 	@Test
 	public void testGetSupportedType() {
-		assertEquals(CommUser.class, model.getSupportedType());
+		assertEquals(CommUnit.class, model.getSupportedType());
 	}
 
-	class TestCommunicationUser implements CommUser {
-
-		Point position;
-		double radius;
-		double reliability;
-		Callback callback;
-
-		public TestCommunicationUser(Point position, double radius, double reliability, Callback c) {
-			this.position = position;
-			this.radius = radius;
-			this.reliability = reliability;
-			callback = c;
-		}
-
-		@Override
-		public void setCommunicationAPI(CommunicationAPI api) {
-
-		}
-
-		@Override
-		public Point getPosition() {
-
-			return position;
-		}
-
-		@Override
-		public double getRadius() {
-			return radius;
-		}
-
-		@Override
-		public double getReliability() {
-			return reliability;
-		}
-
-		@Override
-		public void receive(Message message) {
-			if (callback != null) {
-				callback.callBack(message);
-			}
-		}
-	}
-
-	abstract class Callback {
-		abstract void callBack(Message m);
-	}
+    private void tick(){
+        TimeLapse tl1 = TimeLapseFactory.create(time, time + STEP);
+        TimeLapse tl2 = TimeLapseFactory.create(time, time + STEP);
+        TimeLapse tl3 = TimeLapseFactory.create(time, time + STEP);
+        TimeInterval ti = TimeLapseFactory.create(time, time + STEP);
+        
+        model.tick(ti);
+        
+        if(reverse){
+            sender1Unit.tick(tl1);
+            sender2Unit.tick(tl2);
+            recipientUnit.tick(tl3);
+        }else{
+            recipientUnit.tick(tl3);
+            sender2Unit.tick(tl1);
+            sender1Unit.tick(tl2);
+        }
+        
+        if(reverse){
+            sender1Unit.afterTick(ti);
+            sender2Unit.afterTick(ti);
+            recipientUnit.afterTick(ti);
+        }else{
+            recipientUnit.afterTick(ti);
+            sender2Unit.afterTick(ti);
+            sender1Unit.afterTick(ti);
+        }
+        time += STEP;
+    }
 }
