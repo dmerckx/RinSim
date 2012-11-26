@@ -28,7 +28,7 @@ public class ModelManager implements ModelProvider {
     private final Multimap<Class<?>, Model<?>> registry;
     private final List<Model<?>> models;
     private boolean configured;
-
+    
     /**
      * Instantiate a new model manager.
      */
