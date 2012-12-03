@@ -4,9 +4,9 @@ import java.util.ArrayList;
 
 import rinde.sim.core.simulation.TimeInterval;
 
-public abstract class ConcurrentSafeSerial<T> extends Serial<T> {
+public abstract class SerialConcurrent<T> extends Serial<T> {
 
-    public ConcurrentSafeSerial(boolean register) {
+    public SerialConcurrent(boolean register) {
         super(register);
     }
 
