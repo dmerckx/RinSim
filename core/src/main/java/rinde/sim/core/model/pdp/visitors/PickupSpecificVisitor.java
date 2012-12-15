@@ -1,7 +1,7 @@
 package rinde.sim.core.model.pdp.visitors;
 
 import rinde.sim.core.graph.Point;
-import rinde.sim.core.model.pdp.Parcel;
+import rinde.sim.core.model.pdp.users.Parcel;
 
 /**
  * This class extends a {@link PickupVisitor} by only attempting to pick up
@@ -11,9 +11,9 @@ import rinde.sim.core.model.pdp.Parcel;
  *
  * @param <P> The type of parcels in which the visitor is interested.
  */
-public class PickupSpecificVisitor<P extends Parcel> extends PickupVisitor<P>{
+public class PickupSpecificVisitor extends PickupVisitor{
 
-    private final P parcel;
+    private final Parcel parcel;
     
     /**
      * @param parcel The specific parcel that should be picked up.
@@ -21,8 +21,8 @@ public class PickupSpecificVisitor<P extends Parcel> extends PickupVisitor<P>{
      * @param capacity The available capacity of this visitor.
      */
     @SuppressWarnings({ "unchecked", "hiding" })
-    public PickupSpecificVisitor(P parcel, Point location, double capacity) {
-        super((Class<? extends P>) parcel.getClass(), location, capacity);
+    public PickupSpecificVisitor(Parcel parcel, Point location, double capacity) {
+        super((Class<Parcel>) parcel.getClass(), location, capacity);
         this.parcel = parcel; 
     }
     

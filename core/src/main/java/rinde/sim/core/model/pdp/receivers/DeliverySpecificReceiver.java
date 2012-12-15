@@ -3,8 +3,8 @@ package rinde.sim.core.model.pdp.receivers;
 import java.util.List;
 
 import rinde.sim.core.graph.Point;
-import rinde.sim.core.model.pdp.Parcel;
 import rinde.sim.core.model.pdp.twpolicy.TimeWindowPolicy;
+import rinde.sim.core.model.pdp.users.Parcel;
 import rinde.sim.core.model.pdp.visitors.DeliveryVisitor;
 import rinde.sim.core.simulation.TimeLapse;
 
@@ -26,14 +26,14 @@ public class DeliverySpecificReceiver extends DeliveryReceiver {
      * @param guard The guard from which this receiver originates.
      */
     @SuppressWarnings( "hiding" )
-    public <P extends Parcel> DeliverySpecificReceiver(Point location,
-            List<P> targets, Class<P> target, TimeWindowPolicy policy) {
-        super(location, target, policy);
+    public DeliverySpecificReceiver(Point location,
+            List<? extends Parcel> targets, TimeWindowPolicy policy) {
+        super(location, Parcel.class, policy);
         this.targets = targets;
     }
 
     @Override
-    public boolean canAccept(TimeLapse time, Parcel parcel, DeliveryVisitor<?> visitor){
+    public boolean canAccept(TimeLapse time, Parcel parcel, DeliveryVisitor visitor){
         return targets.contains(parcel) &&
                  super.canAccept(time, parcel, visitor);
     }

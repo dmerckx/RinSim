@@ -69,7 +69,7 @@ public class GraphRoadModel extends AbstractRoadModel<Loc> {
 
     // TODO add unit tests for timelapse inputs
     @Override
-    protected MoveProgress doFollowPath(MovingRoadUser object,
+    protected MoveProgress doFollowPath(MovingRoadUser<?> object,
             Queue<Point> path, TimeLapse time) {
         // checkArgument(object != null, "object cannot be null");
         // checkArgument(objLocs.containsKey(object),

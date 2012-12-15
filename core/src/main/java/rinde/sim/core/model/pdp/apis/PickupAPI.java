@@ -4,12 +4,11 @@ import java.awt.Container;
 
 import rinde.sim.core.model.communication.Address;
 import rinde.sim.core.model.communication.users.CommUser;
-import rinde.sim.core.model.pdp.Parcel;
+import rinde.sim.core.model.pdp.users.Parcel;
+import rinde.sim.core.simulation.TimeInterval;
 
 public interface PickupAPI {
 
-    public void init(Parcel parcelToDeliver);
-    
     public boolean isPickedUp();
     
     /**
@@ -30,33 +29,8 @@ public interface PickupAPI {
      * 
      * @return
      */
-    public boolean canBePickedUp();
+    public boolean canBePickedUp(TimeInterval time);
     
-    /**
-     * @return Returns whether or not this point is locked for having
-     * parcels delivered.
-     */
-    public boolean isLocked();
-    
-    /**
-     * Lock this point from having its parcel being picked up.
-     * Note that this only goes into effect <b>the following tick</b>.
-     */
-    public void lock();
-    
-    /**
-     * Unlocks this point, any can pickup its parcel.
-     * Note that this only goes into effect <b>the following tick</b>. 
-     */
-    public void unlock();
-    
-    /**
-     * Reserve using this point for the specified {@link Address},
-     * only the {@link CommUser} with this specific
-     * address will be able to pickup this {@link PickupPoint}.
-     * Note that this only goes into effect <b>the following tick</b>.
-     */
-    public void lockForAddress(Address address);
     
     /**
      * The possible states a {@link Container} can be in.

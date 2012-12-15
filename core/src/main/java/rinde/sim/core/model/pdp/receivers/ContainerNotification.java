@@ -1,7 +1,7 @@
 package rinde.sim.core.model.pdp.receivers;
 
 import rinde.sim.core.model.interaction.Notification;
-import rinde.sim.core.model.pdp.Parcel;
+import rinde.sim.core.model.pdp.users.Parcel;
 
 /**
  * A simple superclass for {@link DeliveryNotification} and

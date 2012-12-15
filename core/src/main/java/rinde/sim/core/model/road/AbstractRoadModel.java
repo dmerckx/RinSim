@@ -21,10 +21,11 @@ import java.util.Set;
 import rinde.sim.core.graph.Point;
 import rinde.sim.core.model.road.guards.MovingRoadGuard;
 import rinde.sim.core.model.road.guards.RoadGuard;
-import rinde.sim.core.model.road.supported.MovingRoadUnit;
-import rinde.sim.core.model.road.supported.RoadUnit;
+import rinde.sim.core.model.road.users.MovingRoadData;
 import rinde.sim.core.model.road.users.MovingRoadUser;
+import rinde.sim.core.model.road.users.RoadData;
 import rinde.sim.core.model.road.users.RoadUser;
+import rinde.sim.core.simulation.SimulatorToModelAPI;
 import rinde.sim.core.simulation.TimeInterval;
 import rinde.sim.core.simulation.TimeLapse;
 import rinde.sim.event.EventAPI;
@@ -47,7 +48,7 @@ import com.google.common.collect.Sets;
  */
 public abstract class AbstractRoadModel<T> implements RoadModel{
 
-    private Map<RoadUser, RoadGuard> mapping = new HashMap<RoadUser, RoadGuard>();
+    private Map<RoadUser<?>, RoadGuard> mapping = new HashMap<RoadUser<?>, RoadGuard>();
     
     protected final SpeedConverter speedConverter;
 
@@ -61,23 +62,23 @@ public abstract class AbstractRoadModel<T> implements RoadModel{
         MOVE
     }
     
-    public double getSpeed(MovingRoadUser user){
+    public double getSpeed(MovingRoadUser<?> user){
         return ((MovingRoadGuard) mapping.get(user)).getSpeed();
     }
 
     /**
-     * A mapping of {@link RoadUser} to location.
+     * A mapping of {@link RoadUser<?>} to location.
      */
-    protected volatile Map<RoadUser, T> objLocs;
+    protected volatile Map<RoadUser<?>, T> objLocs;
 
     /**
-     * A mapping of {@link MovingRoadUser}s to {@link DestinationPath}s.
+     * A mapping of {@link MovingRoadUser<?>}s to {@link DestinationPath}s.
      */
-    protected Map<MovingRoadUser, DestinationPath> objDestinations;
+    protected Map<MovingRoadUser<?>, DestinationPath> objDestinations;
 
     @Override
-    public Class<RoadUnit> getSupportedType() {
-        return RoadUnit.class;
+    public Class<RoadUser<?>> getSupportedType() {
+        return (Class) RoadUser.class;
     }
     
     /**
@@ -110,8 +111,8 @@ public abstract class AbstractRoadModel<T> implements RoadModel{
      * locations.
      * @return The map instance.
      */
-    protected Map<RoadUser, T> createObjectToLocationMap() {
-        return Collections.synchronizedMap(new LinkedHashMap<RoadUser, T>());
+    protected Map<RoadUser<?>, T> createObjectToLocationMap() {
+        return Collections.synchronizedMap(new LinkedHashMap<RoadUser<?>, T>());
     }
 
     /**
@@ -147,7 +148,7 @@ public abstract class AbstractRoadModel<T> implements RoadModel{
     }
 
     @Override
-    public final MoveProgress followPath(MovingRoadUser object,
+    public final MoveProgress followPath(MovingRoadUser<?> object,
             Queue<Point> path, TimeLapse time) {
         checkArgument(objLocs.containsKey(object), "object must have a location");
         checkArgument(path.peek() != null, "path can not be empty");
@@ -159,7 +160,7 @@ public abstract class AbstractRoadModel<T> implements RoadModel{
     }
 
     @Override
-    public MoveProgress moveTo(MovingRoadUser object, Point destination,
+    public MoveProgress moveTo(MovingRoadUser<?> object, Point destination,
             TimeLapse time) {
         Queue<Point> path;
         if (objDestinations.containsKey(object)
@@ -176,29 +177,29 @@ public abstract class AbstractRoadModel<T> implements RoadModel{
     }
 
     @Override
-    public MoveProgress moveTo(MovingRoadUser object, RoadUser destination,
+    public MoveProgress moveTo(MovingRoadUser<?> object, RoadUser<?> destination,
             TimeLapse time) {
         return moveTo(object, getPosition(destination), time);
     }
 
     /**
      * Should be overriden by subclasses to define actual
-     * {@link RoadModel#followPath(MovingRoadUser, Queue, TimeLapse)} behavior.
+     * {@link RoadModel#followPath(MovingRoadUser<?>, Queue, TimeLapse)} behavior.
      * @param object The object that is moved.
      * @param path The path that is followed.
      * @param time The time that is available for travel.
      * @return A {@link MoveProgress} instance containing the actual travel
      *         details.
      */
-    protected abstract MoveProgress doFollowPath(MovingRoadUser object,
+    protected abstract MoveProgress doFollowPath(MovingRoadUser<?> object,
             Queue<Point> path, TimeLapse time);
 
-    protected void addObjectAt(RoadUser newObj, Point pos) {
+    protected void addObjectAt(RoadUser<?> newObj, Point pos) {
         checkArgument(!objLocs.containsKey(newObj), "Object is already added");
         objLocs.put(newObj, point2LocObj(pos));
     }
 
-    protected void addObjectAtSamePosition(RoadUser newObj, RoadUser existingObj) {
+    protected void addObjectAtSamePosition(RoadUser<?> newObj, RoadUser<?> existingObj) {
         checkArgument(!objLocs.containsKey(newObj), "Object " + newObj
                 + " is already added.");
         checkArgument(objLocs.containsKey(existingObj), "Object " + existingObj
@@ -206,9 +207,9 @@ public abstract class AbstractRoadModel<T> implements RoadModel{
         objLocs.put(newObj, objLocs.get(existingObj));
     }
 
-    protected void removeObject(RoadUser roadUser) {
-        checkArgument(roadUser != null, "RoadUser can not be null");
-        checkArgument(objLocs.containsKey(roadUser), "RoadUser: " + roadUser
+    protected void removeObject(RoadUser<?> roadUser) {
+        checkArgument(roadUser != null, "RoadUser<?> can not be null");
+        checkArgument(objLocs.containsKey(roadUser), "RoadUser<?>: " + roadUser
                 + " does not exist.");
         objLocs.remove(roadUser);
         objDestinations.remove(roadUser);
@@ -221,13 +222,13 @@ public abstract class AbstractRoadModel<T> implements RoadModel{
     }
 
     @Override
-    public boolean containsObject(RoadUser obj) {
+    public boolean containsObject(RoadUser<?> obj) {
         checkArgument(obj != null, "obj can not be null");
         return objLocs.containsKey(obj);
     }
 
     @Override
-    public boolean containsObjectAt(RoadUser obj, Point p) {
+    public boolean containsObjectAt(RoadUser<?> obj, Point p) {
         checkArgument(p != null, "point can not be null");
         if (containsObject(obj)) {
             return objLocs.get(obj).equals(p);
@@ -236,21 +237,21 @@ public abstract class AbstractRoadModel<T> implements RoadModel{
     }
 
     @Override
-    public boolean equalPosition(RoadUser obj1, RoadUser obj2) {
+    public boolean equalPosition(RoadUser<?> obj1, RoadUser<?> obj2) {
         return containsObject(obj1) && containsObject(obj2)
                 && getPosition(obj1).equals(getPosition(obj2));
     }
 
     @Override
-    public Map<RoadUser, Point> getObjectsAndPositions() {
-        Map<RoadUser, T> copiedMap;
+    public Map<RoadUser<?>, Point> getObjectsAndPositions() {
+        Map<RoadUser<?>, T> copiedMap;
         synchronized (objLocs) {
-            copiedMap = new LinkedHashMap<RoadUser, T>();
+            copiedMap = new LinkedHashMap<RoadUser<?>, T>();
             copiedMap.putAll(objLocs);
         } // it is save to release the lock now
 
-        final Map<RoadUser, Point> theMap = new LinkedHashMap<RoadUser, Point>();
-        for (final java.util.Map.Entry<RoadUser, T> entry : copiedMap
+        final Map<RoadUser<?>, Point> theMap = new LinkedHashMap<RoadUser<?>, Point>();
+        for (final java.util.Map.Entry<RoadUser<?>, T> entry : copiedMap
                 .entrySet()) {
             theMap.put(entry.getKey(), locObj2point(entry.getValue()));
         }
@@ -258,9 +259,9 @@ public abstract class AbstractRoadModel<T> implements RoadModel{
     }
 
     @Override
-    public Point getPosition(RoadUser roadUser) {
+    public Point getPosition(RoadUser<?> roadUser) {
         checkArgument(roadUser != null, "object can not be null");
-        checkArgument(containsObject(roadUser), "RoadUser does not exist");
+        checkArgument(containsObject(roadUser), "RoadUser<?> does not exist");
         return locObj2point(objLocs.get(roadUser));
     }
 
@@ -270,27 +271,27 @@ public abstract class AbstractRoadModel<T> implements RoadModel{
     }
 
     @Override
-    public Set<RoadUser> getObjects() {
+    public Set<RoadUser<?>> getObjects() {
         synchronized (objLocs) {
-            final Set<RoadUser> copy = new LinkedHashSet<RoadUser>();
+            final Set<RoadUser<?>> copy = new LinkedHashSet<RoadUser<?>>();
             copy.addAll(objLocs.keySet());
             return copy;
         }
     }
 
     @Override
-    public Set<RoadUser> getObjects(Predicate<RoadUser> predicate) {
+    public Set<RoadUser<?>> getObjects(Predicate<RoadUser<?>> predicate) {
         return Sets.filter(getObjects(), predicate);
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public <Y extends RoadUser> Set<Y> getObjectsAt(RoadUser roadUser,
+    public <Y extends RoadUser<?>> Set<Y> getObjectsAt(RoadUser<?> roadUser,
             Class<Y> type) {
         checkArgument(roadUser != null, "roadUser can not be null");
         checkArgument(type != null, "type can not be null");
         final Set<Y> result = new HashSet<Y>();
-        for (final RoadUser ru : getObjects(new SameLocationPredicate(roadUser,
+        for (final RoadUser<?> ru : getObjects(new SameLocationPredicate(roadUser,
                 type, this))) {
             result.add((Y) ru);
         }
@@ -299,20 +300,20 @@ public abstract class AbstractRoadModel<T> implements RoadModel{
 
     @Override
     @SuppressWarnings("unchecked")
-    public <Y extends RoadUser> Set<Y> getObjectsOfType(final Class<Y> type) {
+    public <Y extends RoadUser<?>> Set<Y> getObjectsOfType(final Class<Y> type) {
         if (type == null) {
             throw new IllegalArgumentException("type can not be null");
         }
-        return (Set<Y>) getObjects(new Predicate<RoadUser>() {
+        return (Set<Y>) getObjects(new Predicate<RoadUser<?>>() {
             @Override
-            public boolean apply(RoadUser input) {
+            public boolean apply(RoadUser<?> input) {
                 return type.isInstance(input);
             }
         });
     }
 
     @Override
-    public List<Point> getShortestPathTo(RoadUser fromObj, RoadUser toObj) {
+    public List<Point> getShortestPathTo(RoadUser<?> fromObj, RoadUser<?> toObj) {
         checkArgument(fromObj != null, "fromObj can not be null");
         checkArgument(objLocs.containsKey(toObj), " to object should be in RoadModel. "
                 + toObj);
@@ -320,7 +321,7 @@ public abstract class AbstractRoadModel<T> implements RoadModel{
     }
 
     @Override
-    public List<Point> getShortestPathTo(RoadUser fromObj, Point to) {
+    public List<Point> getShortestPathTo(RoadUser<?> fromObj, Point to) {
         checkArgument(fromObj != null, "fromObj can not be null");
         checkArgument(objLocs.containsKey(fromObj), " from object should be in RoadModel. "
                 + fromObj);
@@ -328,29 +329,36 @@ public abstract class AbstractRoadModel<T> implements RoadModel{
     }
 
     @Override
-    public void register(RoadUnit unit) {
-        checkArgument(unit != null, "RoadHolder can not be null");
+    public void register(SimulatorToModelAPI sim, RoadUser<?> user, RoadData data) {
+        assert sim!=null: "Sim can not be null.";
+        assert user!=null : "User can not be null.";
+        assert data!=null : "Data can not be null.";
         
         RoadGuard guard;
         
-        if( unit instanceof MovingRoadUnit){
-            guard = new MovingRoadGuard((MovingRoadUnit) unit, this);
+        if( user instanceof MovingRoadUser<?>){
+            assert data instanceof MovingRoadData: "Data must fit user";
+            
+            guard = new MovingRoadGuard((MovingRoadUser<?>) user, (MovingRoadData) data, this);
         }
         else {
-            guard = new RoadGuard(unit, this);
+            
+            guard = new RoadGuard(user, data, this);
         }
-        addObjectAt(unit.getElement(), unit.getInitData().getStartPosition());
-        unit.setRoadAPI(guard);
-        mapping.put(unit.getElement(), guard);
+        addObjectAt(user, data.getStartPosition());
+        user.setRoadAPI(guard);
+        sim.registerUser(guard);
+        
+        mapping.put(user, guard);
     }
 
     @Override
-    public void unregister(RoadUnit holder) {
-        checkArgument(holder != null, "RoadHolder can not be null");
+    public void unregister(RoadUser<?> user) {
+        assert user!=null : "User can not be null.";
         
-        if (containsObject(holder.getElement())) {
-            removeObject(holder.getElement());
-            mapping.remove(holder.getElement());
+        if (containsObject(user)) {
+            removeObject(user);
+            mapping.remove(user);
         }
     }
 
@@ -359,12 +367,12 @@ public abstract class AbstractRoadModel<T> implements RoadModel{
         return eventAPI;
     }
 
-    private static class SameLocationPredicate implements Predicate<RoadUser> {
-        private final RoadUser reference;
+    private static class SameLocationPredicate implements Predicate<RoadUser<?>> {
+        private final RoadUser<?> reference;
         private final RoadModel model;
         private final Class<?> type;
 
-        public SameLocationPredicate(final RoadUser pReference,
+        public SameLocationPredicate(final RoadUser<?> pReference,
                 final Class<?> pType, final RoadModel pModel) {
             reference = pReference;
             type = pType;
@@ -372,7 +380,7 @@ public abstract class AbstractRoadModel<T> implements RoadModel{
         }
 
         @Override
-        public boolean apply(RoadUser input) {
+        public boolean apply(RoadUser<?> input) {
             return type.isInstance(input)
                     && model.equalPosition(input, reference);
         }

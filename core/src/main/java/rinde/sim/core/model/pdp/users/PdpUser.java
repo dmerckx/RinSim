@@ -1,10 +1,8 @@
 package rinde.sim.core.model.pdp.users;
 
+import rinde.sim.core.model.Data;
 import rinde.sim.core.model.User;
-import rinde.sim.core.model.pdp.supported.PdpUnit;
 
-public interface PdpUser extends User {
+public interface PdpUser<D extends Data> extends User<D> {
 
-    @Override
-    public PdpUnit buildUnit();
 }

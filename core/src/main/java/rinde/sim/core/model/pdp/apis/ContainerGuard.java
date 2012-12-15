@@ -1,43 +1,48 @@
-package rinde.sim.core.model.pdp.guards;
+package rinde.sim.core.model.pdp.apis;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import rinde.sim.core.model.interaction.apis.InteractiveAPI;
-import rinde.sim.core.model.pdp.Parcel;
+import rinde.sim.core.model.Data;
+import rinde.sim.core.model.interaction.apis.InteractionAPI;
+import rinde.sim.core.model.interaction.users.InteractionUser;
 import rinde.sim.core.model.pdp.PdpModel;
-import rinde.sim.core.model.pdp.apis.ContainerAPI;
 import rinde.sim.core.model.pdp.receivers.DeliveryReceiver;
 import rinde.sim.core.model.pdp.receivers.DeliverySpecificReceiver;
 import rinde.sim.core.model.pdp.receivers.PickupReceiver;
-import rinde.sim.core.model.pdp.supported.ContainerUnit;
 import rinde.sim.core.model.pdp.users.Container;
+import rinde.sim.core.model.pdp.users.ContainerData;
+import rinde.sim.core.model.pdp.users.Parcel;
 import rinde.sim.core.model.pdp.visitors.PickupSpecificVisitor;
 import rinde.sim.core.model.pdp.visitors.PickupVisitor;
 import rinde.sim.core.model.road.apis.RoadAPI;
 import rinde.sim.core.simulation.TimeLapse;
 
-public class ContainerGuard<P extends Parcel> implements ContainerAPI<P>{
+public class ContainerGuard implements ContainerAPI, InteractionUser<Data>{
     
     private PdpModel pdpModel;
     private RoadAPI roadAPI;
-    private InteractiveAPI interactiveAPI;
-    private Container<P> container;
+    private InteractionAPI interactiveAPI;
+    private Container<?> container;
     
     private ContainerState state = ContainerState.AVAILABLE;
     private long actionTime = 0;
     private double capacity;
-    private List<P> load = new ArrayList<P>();
+    private List<Parcel> load = new ArrayList<Parcel>();
     
-    private Class<P> parcelType;
+    private Class<? extends Parcel> parcelType;
     
-    public ContainerGuard(ContainerUnit<P> unit, PdpModel model) {
-        this.container = container;
-        this.roadAPI = unit.getRoadAPI();
-        this.interactiveAPI = unit.getInteractiveAPI();
+    public ContainerGuard(Container<?> user, ContainerData data, PdpModel model, RoadAPI roadAPI) {
+        this.container = user;
+        this.roadAPI = roadAPI;
         
-        this.capacity = unit.getInitData().getCapacity();
-        this.parcelType = unit.getInitData().getParcelType();
+        this.capacity = data.getCapacity();
+        this.parcelType = data.getParcelType();
+    }
+
+    @Override
+    public void setInteractionAPi(InteractionAPI api) {
+        this.interactiveAPI = api;
     }
     
     public void tick(TimeLapse lapse){
@@ -47,7 +52,7 @@ public class ContainerGuard<P extends Parcel> implements ContainerAPI<P>{
     }
     
     @SuppressWarnings("javadoc")
-    protected void load(TimeLapse lapse, P parcel){
+    protected void load(TimeLapse lapse, Parcel parcel){
         state = ContainerState.PICKING_UP;
         actionTime = parcel.pickupDuration;
         doAction(lapse);
@@ -74,35 +79,35 @@ public class ContainerGuard<P extends Parcel> implements ContainerAPI<P>{
     }
 
     @Override
-    public List<P> getLoad() {
+    public List<Parcel> getLoad() {
         return load;
     }
     
     @Override
     public double getCapacityLeft() {
         double result = capacity;
-        for(P parcel:load) result -= parcel.magnitude;
+        for(Parcel parcel:load) result -= parcel.magnitude;
         return result;
     }
 
     @Override
-    public P tryPickup(TimeLapse lapse) {
+    public Parcel tryPickup(TimeLapse lapse) {
         if(state != ContainerState.AVAILABLE) return null;
         
-        PickupVisitor<P> visitor = new PickupVisitor<P>(parcelType,
+        PickupVisitor visitor = new PickupVisitor(parcelType,
                 roadAPI.getLocation(), getCapacityLeft());
-        P result = interactiveAPI.visit(lapse, visitor);
+        Parcel result = interactiveAPI.visit(lapse, visitor);
         if(result != null) load.add(result);
         return result;
     }
 
     @Override
-    public boolean tryPickupOf(TimeLapse lapse, P parcel) {
+    public boolean tryPickupOf(TimeLapse lapse, Parcel parcel) {
         if(state != ContainerState.AVAILABLE) return false;
         
-        PickupVisitor<P> visitor = new PickupSpecificVisitor<P>(parcel,
+        PickupVisitor visitor = new PickupSpecificVisitor(parcel,
                 roadAPI.getLocation(), getCapacityLeft());
-        P result = interactiveAPI.visit(lapse, visitor);
+        Parcel result = interactiveAPI.visit(lapse, visitor);
         if(result != null) load.add(result);
         return result != null;
     }
@@ -115,7 +120,7 @@ public class ContainerGuard<P extends Parcel> implements ContainerAPI<P>{
     }
     
     @Override
-    public void accept(TimeLapse lapse, List<P> parcels){
+    public void accept(TimeLapse lapse, List<Parcel> parcels){
         DeliveryReceiver rec = new DeliverySpecificReceiver(
                 roadAPI.getLocation(), parcels, parcelType,
                 pdpModel.getPolicy());
@@ -147,7 +152,7 @@ public class ContainerGuard<P extends Parcel> implements ContainerAPI<P>{
     }
     
     @Override
-    public void advertise(TimeLapse lapse, List<P> parcels) {
+    public void advertise(TimeLapse lapse, List<Parcel> parcels) {
         switch(state){
             case ADVERTISING:
                 interactiveAPI.removeAll();

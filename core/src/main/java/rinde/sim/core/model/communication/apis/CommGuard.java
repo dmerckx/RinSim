@@ -1,4 +1,4 @@
-package rinde.sim.core.model.communication.guards;
+package rinde.sim.core.model.communication.apis;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -7,24 +7,23 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import rinde.sim.core.graph.Point;
-import rinde.sim.core.model.Unit.AfterTick;
+import rinde.sim.core.model.AfterTickGuard;
 import rinde.sim.core.model.communication.Address;
 import rinde.sim.core.model.communication.CommunicationModel;
 import rinde.sim.core.model.communication.Delivery;
 import rinde.sim.core.model.communication.Message;
-import rinde.sim.core.model.communication.apis.CommunicationAPI;
-import rinde.sim.core.model.communication.supported.CommUnit;
+import rinde.sim.core.model.communication.users.CommData;
 import rinde.sim.core.model.communication.users.CommUser;
 import rinde.sim.core.model.road.apis.RoadAPI;
 import rinde.sim.core.simulation.TimeInterval;
 
-public class CommGuard implements CommunicationAPI, AfterTick{
+public class CommGuard implements CommunicationAPI, AfterTickGuard{
 	
 	private List<Delivery> mailbox;
 	private SortedSet<Delivery> tempMailbox;
 	private Address address;
 	private final CommunicationModel model;
-	private final CommUser user;
+	private final CommUser<?> user;
 	
 	private RoadAPI roadAPI;
 	
@@ -35,17 +34,17 @@ public class CommGuard implements CommunicationAPI, AfterTick{
 	
 	private boolean isChanged;
 	
-	public CommGuard(CommUnit unit, CommunicationModel model){
-		this.user = unit.getElement();
+	public CommGuard(CommUser<?> user, CommData data, CommunicationModel model, RoadAPI roadAPI){
+		this.user = user;
 		this.model = model;
 		this.address = model.generateAddress();
 		this.mailbox = new ArrayList<Delivery>();
 		this.tempMailbox = new TreeSet<Delivery>();
 		
-		this.radius = unit.getInitData().getInitialRadius();
-		this.reliability = unit.getInitData().getInitialReliability();
-		
-		unit.registerAfterTick(this);
+		this.radius = data.getInitialRadius();
+		this.lastRadius = radius;
+        this.reliability = data.getInitialReliability();
+        this.lastReliability = reliability;
 	}
 	
 	public double getRadius(){

@@ -4,8 +4,8 @@ import java.util.List;
 
 import rinde.sim.core.graph.Point;
 import rinde.sim.core.model.interaction.Visitor;
-import rinde.sim.core.model.pdp.Parcel;
 import rinde.sim.core.model.pdp.receivers.PickupReceiver;
+import rinde.sim.core.model.pdp.users.Parcel;
 import rinde.sim.core.simulation.TimeLapse;
 
 /**
@@ -20,10 +20,10 @@ import rinde.sim.core.simulation.TimeLapse;
  *
  * @param <P> The type of parcels in which the visitor is interested.
  */
-public class PickupVisitor<P extends Parcel> extends Visitor<PickupReceiver, P>{
+public class PickupVisitor extends Visitor<PickupReceiver, Parcel>{
 
     private final double capacity;
-    private final Class<? extends P> parcelType;
+    private final Class<? extends Parcel> parcelType;
     
     /**
      * @param parcelType The type of parcel that this visitor will attempt to pick up.
@@ -31,16 +31,16 @@ public class PickupVisitor<P extends Parcel> extends Visitor<PickupReceiver, P>{
      * @param capacity The available capacity of this visitor.
      */
     @SuppressWarnings("hiding")
-    public PickupVisitor(Class<? extends P> parcelType, Point location, double capacity) {
+    public PickupVisitor(Class<? extends Parcel> parcelType, Point location, double capacity) {
         super(PickupReceiver.class, location);
         this.capacity = capacity;
         this.parcelType = parcelType;
     }
      
     @Override
-    public P visit(TimeLapse lapse, List<PickupReceiver> targets) {
+    public Parcel visit(TimeLapse lapse, List<PickupReceiver> targets) {
         for(PickupReceiver r:targets){
-            P p = tryPickup(lapse, r);
+            Parcel p = tryPickup(lapse, r);
             if( p != null) return p;
         }
         
@@ -53,11 +53,11 @@ public class PickupVisitor<P extends Parcel> extends Visitor<PickupReceiver, P>{
      * @return Returns the picked up parcel if successful, <code>null</code> otherwise.
      */
     @SuppressWarnings("unchecked")
-    protected P tryPickup(TimeLapse lapse, PickupReceiver receiver){
+    protected Parcel tryPickup(TimeLapse lapse, PickupReceiver receiver){
         for(Parcel p:receiver.getParcels()){
             if(canPickup(p) && receiver.canBePickedUp(lapse, p, this)){
                 receiver.pickup(p);
-                return (P) p;
+                return p;
             }
         }
         

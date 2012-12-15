@@ -3,17 +3,15 @@ package rinde.sim.core.model.pdp.apis;
 import java.util.List;
 
 import rinde.sim.core.graph.Point;
-import rinde.sim.core.model.pdp.Parcel;
+import rinde.sim.core.model.Data;
+import rinde.sim.core.model.User;
+import rinde.sim.core.model.pdp.users.Parcel;
 
-public interface TruckAPI<P extends Parcel>{
+public interface TruckAPI extends User<Data>{
     
-    public List<Parcel> scanLocation();
+    //public List<Parcel> scanLocation();
     
-    public P findClosestAvailableParcel();
+    public Parcel findClosestAvailableParcel();
     
-    public List<Point> locateTrucks();
-    
-    public List<Point> locateDepots();
-    
-    public List<P> locateAvailableParcels();
+    public List<Parcel> locateAvailableParcels();
 }

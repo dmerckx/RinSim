@@ -1,21 +1,25 @@
 package rinde.sim.core.model.road.guards;
 
 import rinde.sim.core.graph.Point;
+import rinde.sim.core.model.AfterTickGuard;
 import rinde.sim.core.model.road.RoadModel;
 import rinde.sim.core.model.road.apis.RoadAPI;
-import rinde.sim.core.model.road.supported.RoadUnit;
+import rinde.sim.core.model.road.users.RoadData;
 import rinde.sim.core.model.road.users.RoadUser;
 import rinde.sim.core.simulation.TimeInterval;
 
-public class RoadGuard implements RoadAPI{
+public class RoadGuard implements RoadAPI, AfterTickGuard{
 
     protected RoadModel model;
     protected RoadUser user;
     
     protected Point lastLocation;
     
-    public RoadGuard(RoadUnit unit, RoadModel model) {
+    public RoadGuard(RoadUser<?> user, RoadData data, RoadModel model) {
+        this.user = user;
         this.model = model;
+       
+        this.lastLocation = data.getStartPosition();
     }
 
     @Override

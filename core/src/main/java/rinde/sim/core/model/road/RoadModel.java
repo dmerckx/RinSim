@@ -13,8 +13,8 @@ import org.apache.commons.math3.random.RandomGenerator;
 
 import rinde.sim.core.graph.Point;
 import rinde.sim.core.model.Model;
-import rinde.sim.core.model.road.supported.RoadUnit;
 import rinde.sim.core.model.road.users.MovingRoadUser;
+import rinde.sim.core.model.road.users.RoadData;
 import rinde.sim.core.model.road.users.RoadUser;
 import rinde.sim.core.simulation.TimeLapse;
 import rinde.sim.event.EventAPI;
@@ -35,7 +35,7 @@ import com.google.common.base.Predicate;
  * {@link RoadModel}s are defined in {@link RoadModels}.
  * @author Rinde van Lon <rinde.vanlon@cs.kuleuven.be>
  */
-public interface RoadModel extends Model<RoadUnit> {
+public interface RoadModel extends Model<RoadData, RoadUser<?>> {
 
     /**
      * Moves the specified {@link MovingRoadUser} towards the specified
@@ -68,7 +68,7 @@ public interface RoadModel extends Model<RoadUnit> {
      * @see #moveTo(MovingRoadUser, RoadUser, TimeLapse)
      * @see #followPath(MovingRoadUser, Queue, TimeLapse)
      */
-    MoveProgress moveTo(MovingRoadUser object, Point destination, TimeLapse time);
+    MoveProgress moveTo(MovingRoadUser<?> object, Point destination, TimeLapse time);
 
     /**
      * Moves the specified {@link MovingRoadUser} towards the specified
@@ -101,7 +101,7 @@ public interface RoadModel extends Model<RoadUnit> {
      * @see #moveTo(MovingRoadUser, Point, TimeLapse)
      * @see #followPath(MovingRoadUser, Queue, TimeLapse)
      */
-    MoveProgress moveTo(MovingRoadUser object, RoadUser destination,
+    MoveProgress moveTo(MovingRoadUser<?> object, RoadUser<?> destination,
             TimeLapse time);
 
     /**
@@ -147,7 +147,7 @@ public interface RoadModel extends Model<RoadUnit> {
      * @see #moveTo(MovingRoadUser, Point, TimeLapse)
      * @see #moveTo(MovingRoadUser, RoadUser, TimeLapse)
      */
-    MoveProgress followPath(MovingRoadUser object, Queue<Point> path,
+    MoveProgress followPath(MovingRoadUser<?> object, Queue<Point> path,
             TimeLapse time);
 
     /**
@@ -187,7 +187,7 @@ public interface RoadModel extends Model<RoadUnit> {
      * @return <code>true</code> if <code>obj</code> exists in the model,
      *         <code>false</code> otherwise.
      */
-    boolean containsObject(RoadUser obj);
+    boolean containsObject(RoadUser<?> obj);
 
     /**
      * Checks if the specified {@link RoadUser} exists at the specified
@@ -197,7 +197,7 @@ public interface RoadModel extends Model<RoadUnit> {
      * @return <code>true</code> if <code>obj</code> exists at position
      *         <code>p</code>, <code>false</code> otherwise.
      */
-    boolean containsObjectAt(RoadUser obj, Point p);
+    boolean containsObjectAt(RoadUser<?> obj, Point p);
 
     /**
      * Checks if the positions of the <code>obj1</code> and <code>obj2</code>
@@ -207,7 +207,7 @@ public interface RoadModel extends Model<RoadUnit> {
      * @return <code>true</code> if the positions are equal, <code>false</code>
      *         otherwise.
      */
-    boolean equalPosition(RoadUser obj1, RoadUser obj2);
+    boolean equalPosition(RoadUser<?> obj1, RoadUser<?> obj2);
 
     /**
      * This method returns a mapping of {@link RoadUser} to {@link Point}
@@ -216,7 +216,7 @@ public interface RoadModel extends Model<RoadUnit> {
      * @return A map of {@link RoadUser} to {@link Point} objects.
      */
     // TODO add tests to check that this map really is not a live view
-    Map<RoadUser, Point> getObjectsAndPositions();
+    Map<RoadUser<?>, Point> getObjectsAndPositions();
 
     /**
      * Method to retrieve the location of an object.
@@ -224,7 +224,7 @@ public interface RoadModel extends Model<RoadUnit> {
      * @return The position (as a {@link Point} object) for the specified
      *         <code>obj</code> object.
      */
-    Point getPosition(RoadUser roadUser);
+    Point getPosition(RoadUser<?> roadUser);
 
     /**
      * Searches a random position in the space which is defined by this model.
@@ -248,7 +248,7 @@ public interface RoadModel extends Model<RoadUnit> {
      * created copy.
      * @return The set of {@link RoadUser} objects.
      */
-    Set<RoadUser> getObjects();
+    Set<RoadUser<?>> getObjects();
 
     /**
      * This method returns a set of {@link RoadUser} objects which exist in this
@@ -257,7 +257,7 @@ public interface RoadModel extends Model<RoadUnit> {
      * @param predicate The predicate that decides which objects to return.
      * @return A set of {@link RoadUser} objects.
      */
-    Set<RoadUser> getObjects(Predicate<RoadUser> predicate);
+    Set<RoadUser<?>> getObjects(Predicate<RoadUser<?>> predicate);
 
     /**
      * Returns all objects of the given type located in the same position as the
@@ -266,7 +266,7 @@ public interface RoadModel extends Model<RoadUnit> {
      * @param type The type of the objects to be returned.
      * @return A set of objects of type <code>type</code>.
      */
-    <Y extends RoadUser> Set<Y> getObjectsAt(RoadUser roadUser, Class<Y> type);
+    <Y extends RoadUser<?>> Set<Y> getObjectsAt(RoadUser<?> roadUser, Class<Y> type);
 
     /**
      * This method returns a set of {@link RoadUser} objects which exist in this
@@ -275,7 +275,7 @@ public interface RoadModel extends Model<RoadUnit> {
      * @param type The type of returned objects.
      * @return A set of {@link RoadUser} objects.
      */
-    <Y extends RoadUser> Set<Y> getObjectsOfType(final Class<Y> type);
+    <Y extends RoadUser<?>> Set<Y> getObjectsOfType(final Class<Y> type);
 
     /**
      * Convenience method for {@link #getShortestPathTo(Point, Point)}.
@@ -283,7 +283,7 @@ public interface RoadModel extends Model<RoadUnit> {
      * @param toObj The object which is used as the path destination
      * @return The shortest path from 'fromObj' to 'toObj'.
      */
-    List<Point> getShortestPathTo(RoadUser fromObj, RoadUser toObj);
+    List<Point> getShortestPathTo(RoadUser<?> fromObj, RoadUser<?> toObj);
 
     /**
      * Convenience method for {@link #getShortestPathTo(Point, Point)}.
@@ -291,7 +291,7 @@ public interface RoadModel extends Model<RoadUnit> {
      * @param to The path destination
      * @return The shortest path from 'fromObj' to 'to'
      */
-    List<Point> getShortestPathTo(RoadUser fromObj, Point to);
+    List<Point> getShortestPathTo(RoadUser<?> fromObj, Point to);
 
     /**
      * Finds the shortest between <code>from</code> and <code>to</code>. The

@@ -1,31 +1,31 @@
-package rinde.sim.core.model.interaction.guards;
+package rinde.sim.core.model.interaction.apis;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import rinde.sim.core.model.Data;
 import rinde.sim.core.model.interaction.ExtendedReceiver;
 import rinde.sim.core.model.interaction.InteractionModel;
 import rinde.sim.core.model.interaction.Notification;
 import rinde.sim.core.model.interaction.Receiver;
 import rinde.sim.core.model.interaction.Result;
 import rinde.sim.core.model.interaction.Visitor;
-import rinde.sim.core.model.interaction.apis.InteractiveAPI;
-import rinde.sim.core.model.interaction.users.InteractiveUser;
+import rinde.sim.core.model.interaction.users.InteractionUser;
 import rinde.sim.core.simulation.TimeInterval;
 import rinde.sim.core.simulation.TimeLapse;
 
-public class InteractiveGuard implements InteractiveAPI {
+public class InteractiveGuard<D extends Data> implements InteractionAPI {
 
     private List<Notification> notifications = new ArrayList<Notification>();
     private List<Notification> notificationsInbox = new ArrayList<Notification>();
     
-    private final InteractiveUser agent;
+    private final InteractionUser agent;
     private final InteractionModel interactionModel;
     
     private List<Receiver> receivers = new ArrayList<Receiver>();
     
-    public InteractiveGuard(InteractiveUser agent, InteractionModel model) {
+    public InteractiveGuard(InteractionUser agent, InteractionModel model) {
         this.agent = agent;
         this.interactionModel = model;
     }

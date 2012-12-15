@@ -5,25 +5,26 @@ import java.util.HashMap;
 import java.util.List;
 
 import rinde.sim.core.graph.Point;
+import rinde.sim.core.model.Data;
 import rinde.sim.core.model.Model;
-import rinde.sim.core.model.interaction.guards.InteractiveGuard;
-import rinde.sim.core.model.interaction.supported.InteractiveUnit;
-import rinde.sim.core.model.interaction.users.InteractiveUser;
+import rinde.sim.core.model.interaction.apis.InteractiveGuard;
+import rinde.sim.core.model.interaction.users.InteractionUser;
+import rinde.sim.core.simulation.SimulatorToModelAPI;
 import rinde.sim.core.simulation.TimeInterval;
 import rinde.sim.core.simulation.TimeLapse;
 
 import com.google.common.collect.HashMultimap;
 
 
-public class InteractionModel implements Model<InteractiveUnit> {
+public class InteractionModel implements Model<Data, InteractionUser<?>> {
     
     private HashMultimap<Point, Receiver> receiversPos;
     
-    private HashMap<InteractiveUser, InteractiveGuard> mapping;
+    private HashMap<InteractionUser, InteractiveGuard> mapping;
     
     public InteractionModel() {
         receiversPos = HashMultimap.create();
-        mapping = new HashMap<InteractiveUser, InteractiveGuard>();
+        mapping = new HashMap<InteractionUser, InteractiveGuard>();
     }
     
     public <T extends ExtendedReceiver, R extends Result> R visit(TimeLapse lapse, Visitor<T, R> visitor){
@@ -54,19 +55,27 @@ public class InteractionModel implements Model<InteractiveUnit> {
     // ----- MODEL ----- //
 
     @Override
-    public void register(InteractiveUnit unit) {
-        InteractiveGuard guard = new InteractiveGuard(unit.getElement(), this);
-        unit.setInteractiveAPI(guard);
+    public void register(SimulatorToModelAPI sim, InteractionUser<?> user, Data d) {
+        assert sim!=null: "Sim can not be null.";
+        assert user!=null : "User can not be null.";
+        
+        InteractiveGuard guard = new InteractiveGuard(user, this);
+        sim.registerUser(guard);
+        user.setInteractionAPi(guard);
+        
+        mapping.put(user, guard);
     }
 
     @Override
-    public void unregister(InteractiveUnit unit) {
-        mapping.remove(unit.getElement());
+    public void unregister(InteractionUser<?> user) {
+        assert user!=null : "User can not be null.";
+        
+        mapping.remove(user);
     }
 
     @Override
-    public Class<InteractiveUnit> getSupportedType() {
-        return InteractiveUnit.class;
+    public Class<InteractionUser<?>> getSupportedType() {
+        return (Class) InteractionUser.class;
     }
 
     @Override

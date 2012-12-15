@@ -8,20 +8,20 @@ import rinde.sim.core.graph.Point;
 import rinde.sim.core.model.road.InvalidLocationException;
 import rinde.sim.core.model.road.RoadModel;
 import rinde.sim.core.model.road.apis.MovingRoadAPI;
-import rinde.sim.core.model.road.supported.MovingRoadUnit;
+import rinde.sim.core.model.road.users.MovingRoadData;
 import rinde.sim.core.model.road.users.MovingRoadUser;
 import rinde.sim.core.simulation.TimeLapse;
 
-public class MovingRoadGuard extends RoadGuard implements MovingRoadAPI {
+public class MovingRoadGuard extends RoadGuard implements MovingRoadAPI{
 
     private RandomGenerator rnd;//TODO
     private Queue<Point> path;
     
     public double speed;
     
-    public MovingRoadGuard(MovingRoadUnit unit, RoadModel model) {
-        super(unit, model);
-        this.speed = unit.getInitData().getInitialSpeed();
+    public MovingRoadGuard(MovingRoadUser<?> user, MovingRoadData data, RoadModel model) {
+        super(user, data, model);
+        this.speed = data.getInitialSpeed();
     }
     
     public void setSpeed(double speed){

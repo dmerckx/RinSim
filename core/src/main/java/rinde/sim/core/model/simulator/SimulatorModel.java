@@ -3,18 +3,20 @@ package rinde.sim.core.model.simulator;
 import java.util.ArrayList;
 import java.util.List;
 
+import rinde.sim.core.model.Data;
 import rinde.sim.core.model.Model;
 import rinde.sim.core.model.User;
 import rinde.sim.core.model.simulator.apis.SimulatorAPI;
-import rinde.sim.core.model.simulator.supported.SimulatorUnit;
+import rinde.sim.core.model.simulator.users.SimulatorUser;
 import rinde.sim.core.simulation.Simulator;
+import rinde.sim.core.simulation.SimulatorToModelAPI;
 import rinde.sim.core.simulation.TimeInterval;
 
 /**
  * @author dmerckx
  *
  */
-public class SimulatorModel implements Model<SimulatorUnit>, SimulatorAPI{
+public class SimulatorModel implements Model<Data, SimulatorUser<?>>, SimulatorAPI{
     
     public final List<Object> objectsToAdd;
     public final List<Object> objectsToRemove;
@@ -42,18 +44,21 @@ public class SimulatorModel implements Model<SimulatorUnit>, SimulatorAPI{
     // ----- MODEL ----- //
     
     @Override
-    public void register(SimulatorUnit unit) {
-        unit.setSimulatorAPI(this);
+    public void register(SimulatorToModelAPI sim2, SimulatorUser<?> user, Data data) {
+        assert sim!=null: "Sim can not be null.";
+        assert user!=null : "User can not be null.";
+        
+        user.setSimulatorAPI(this);
     }
 
     @Override
-    public void unregister(SimulatorUnit unit) {
+    public void unregister(SimulatorUser<?> user) {
         
     }
 
     @Override
-    public Class<SimulatorUnit> getSupportedType() {
-        return SimulatorUnit.class;
+    public Class<SimulatorUser<?>> getSupportedType() {
+        return (Class) SimulatorUser.class;
     }
 
     @Override

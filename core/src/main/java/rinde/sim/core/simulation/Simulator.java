@@ -3,21 +3,28 @@
  */
 package rinde.sim.core.simulation;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.Multimap;
+import com.google.common.collect.TreeMultiset;
+import com.google.common.collect.HashMultimap;
+
+import rinde.sim.core.graph.Point;
+import rinde.sim.core.model.Agent;
+import rinde.sim.core.model.Data;
 import rinde.sim.core.model.Model;
 import rinde.sim.core.model.ModelManager;
 import rinde.sim.core.model.ModelProvider;
-import rinde.sim.core.model.Unit;
+import rinde.sim.core.model.TimeUser;
 import rinde.sim.core.model.User;
+import rinde.sim.core.model.road.users.RoadData;
+import rinde.sim.core.model.road.users.RoadUser;
 import rinde.sim.core.model.simulator.SimulatorModel;
 import rinde.sim.core.simulation.policies.ModelPolicy;
-import rinde.sim.core.simulation.policies.ParallelUnitsPolicy;
+import rinde.sim.core.simulation.policies.ParallelTimeUserPolicy;
 import rinde.sim.core.simulation.policies.TickListenerPolicy;
 import rinde.sim.core.simulation.time.TimeIntervalImpl;
 import rinde.sim.event.Event;
@@ -51,10 +58,11 @@ import rinde.sim.event.EventDispatcher;
  */
 public class Simulator{
 
-    protected final Map<User, Unit> unitMapping = new HashMap<User, Unit>();
+    //protected final Map<User, Unit> unitMapping = new HashMap<User, Unit>();
+    protected Multimap<User<?>, User<?>> userToAPI = HashMultimap.create();
     
-    protected final TickPolicy<Model<?>> modelPolicy;
-    protected final TickPolicy<Unit> unitsPolicy;
+    protected final TickPolicy<Model<?,?>> modelPolicy;
+    protected final TickPolicy<TimeUser> timeUserPolicy;
     protected final TickPolicy<TickListener> externalPolicy;
     
     private TickPolicy<?> activePolicy;
@@ -121,7 +129,7 @@ public class Simulator{
     
     public Simulator(long step) {
         modelPolicy = new ModelPolicy();
-        unitsPolicy = new ParallelUnitsPolicy();
+        timeUserPolicy = new ParallelTimeUserPolicy();
         externalPolicy = new TickListenerPolicy(true);
         
         timeStep = step;
@@ -131,7 +139,7 @@ public class Simulator{
         dispatcher = new EventDispatcher(SimulatorEventType.values());
         eventAPI = dispatcher.getEventAPI();
         
-        register(new SimulatorModel(this));
+        registerModel(new SimulatorModel(this));
     }
     
     /**
@@ -156,21 +164,12 @@ public class Simulator{
         LOGGER.debug("Model is added: " + model);
     }
     
-    private void registerUser(User user){
-        assert configured: "cannot register users before calling configure";
-        
-        Unit unit = user.buildUnit();
-        unitMapping.put(user, unit);
-        modelManager.register(unit);
-        unitsPolicy.register(unit);
-    }
-    
     private void unregisterUser(User user){
         assert configured: "cannot unregister users before calling configure";
     
         Unit unit = unitMapping.get(user);
         modelManager.unregister(unit);
-        unitsPolicy.unregister(unit);
+        timeUserPolicy.unregister(unit);
     }
     
     private void registerTickListener(TickListener listener){
@@ -183,34 +182,36 @@ public class Simulator{
         assert configured: "cannot unregister tick listener before calling configure";
     
         externalPolicy.unregister(listener);
+        
+        register(new RoadUser<RoadData>() {}, new RoadData() {
+            
+            @Override
+            public Point getStartPosition() {
+                // TODO Auto-generated method stub
+                return null;
+            }
+        });
     }
     
-    /**
-     * Register a given entity in the simulator.
-     * During registration the object is provided all features it requires
-     * (declared by interfaces) and bound to the required models
-     * (if they were registered in the simulator before).
-     * @param o object to register
-     * @throws IllegalStateException when simulator is not configured (by
-     *             calling {@link Simulator#configure()}
-     * @return <code>true</code> if object was added to at least one model
-     */
-    public void register(Object o) {
-        assert o!=null: "object can not be null";
+    
+    public void registerUser(User<Data> user){
+        
+    }
+    
+    
+    public <D> void registerUser(User<D> user, D data) {
+        assert user!=null: "object can not be null";
+        assert data!=null: "data can not be null";
+        assert configured: "cannot register users before calling configure";
         assert activePolicy == null || activePolicy.canRegisterDuringExecution():
                 "Within " + activePolicy + " it is not possible to register objects";
+        assert(!(user instanceof Model) && !(user instanceof TickListener)):
+                "A user can not be a model or ticklistener";
+       
+        modelManager.register(user);
         
-        if (o instanceof Model<?>) { 
-            registerModel((Model<?>) o);
-        }
-        else if(o instanceof User){
-            registerUser((User) o);
-        }
-        else if(o instanceof TickListener){
-            registerTickListener((TickListener) o);
-        }
-        else {
-            throw new IllegalArgumentException(o + " is of an unknown type.");
+        if(user instanceof TimeUser){
+            timeUserPolicy.register((TimeUser) user);
         }
     }
 
@@ -302,7 +303,7 @@ public class Simulator{
         TimeInterval interval = new TimeIntervalImpl(time, time+timeStep);
         
         performTicks(modelPolicy, interval);
-        performTicks(unitsPolicy, interval);
+        performTicks(timeUserPolicy, interval);
         performTicks(externalPolicy, interval);
         
         if (LOGGER.isDebugEnabled()) {

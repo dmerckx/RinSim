@@ -2,8 +2,10 @@ package rinde.sim.core.model.pdp.apis;
 
 import java.util.List;
 
-import rinde.sim.core.model.pdp.Parcel;
+import rinde.sim.core.model.Data;
+import rinde.sim.core.model.User;
 import rinde.sim.core.model.pdp.users.Container;
+import rinde.sim.core.model.pdp.users.Parcel;
 import rinde.sim.core.model.road.RoadModel;
 import rinde.sim.core.model.road.users.RoadUser;
 import rinde.sim.core.simulation.TimeLapse;
@@ -24,14 +26,14 @@ import rinde.sim.core.simulation.TimeLapse;
  *
  * @param <P> The type of parcels contained.
  */
-public interface ContainerAPI<P extends Parcel> {
+public interface ContainerAPI extends User<Data>{
     
     
     /**
      * Returns all the parcels currently contained.
      * @return The list of contained parcels.
      */
-    public List<P> getLoad();
+    public List<Parcel> getLoad();
     
     
     /**
@@ -53,7 +55,7 @@ public interface ContainerAPI<P extends Parcel> {
      * @return Returns the parcel that is being picked up or null if
      * none were available
      */
-    public P tryPickup(TimeLapse lapse);
+    public Parcel tryPickup(TimeLapse lapse);
     
     /**
      * Try to pickup the given parcel on the current location, from
@@ -67,11 +69,11 @@ public interface ContainerAPI<P extends Parcel> {
      * @param parcel The parcel to be picked up
      * @return True iff the given parcel is (being) picked up
      */
-    public boolean tryPickupOf(TimeLapse lapse, P parcel);
+    public boolean tryPickupOf(TimeLapse lapse, Parcel parcel);
     
     public void acceptAll(TimeLapse lapse);
     
-    public void accept(TimeLapse lapse, List<P> parcels);
+    public void accept(TimeLapse lapse, List<Parcel> parcels);
     
     /**
      * Advertises all parcels contained by this object at this location.
@@ -90,7 +92,7 @@ public interface ContainerAPI<P extends Parcel> {
      * @param lapse The time to perform this action (will be fully consumed)
      * @param parcels The parcels to advertise
      */
-    public void advertise(TimeLapse lapse, List<P> parcels);
+    public void advertise(TimeLapse lapse, List<Parcel> parcels);
     
     
     /**

@@ -88,7 +88,7 @@ public class PlaneRoadModel extends AbstractRoadModel<Point> {
 //    }
 
     @Override
-    protected MoveProgress doFollowPath(MovingRoadUser object,
+    protected MoveProgress doFollowPath(MovingRoadUser<?> object,
             Queue<Point> path, TimeLapse time) {
         Point loc = objLocs.get(object);
 

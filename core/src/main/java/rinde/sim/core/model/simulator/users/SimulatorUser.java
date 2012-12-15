@@ -1,10 +1,10 @@
 package rinde.sim.core.model.simulator.users;
 
+import rinde.sim.core.model.Data;
 import rinde.sim.core.model.User;
-import rinde.sim.core.model.simulator.supported.SimulatorUnit;
+import rinde.sim.core.model.simulator.apis.SimulatorAPI;
 
-public interface SimulatorUser extends User{
+public interface SimulatorUser<D extends Data> extends User<D>{
 
-    @Override
-    public SimulatorUnit buildUnit();
+    void setSimulatorAPI(SimulatorAPI api);
 }

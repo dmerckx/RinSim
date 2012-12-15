@@ -1,6 +1,6 @@
 package rinde.sim.core.model;
 
-public interface User {
+public interface User<D extends Data> {
 
-    public Unit buildUnit();
+    
 }

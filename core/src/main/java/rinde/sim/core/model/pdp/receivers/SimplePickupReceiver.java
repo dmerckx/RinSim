@@ -5,8 +5,8 @@ import java.util.List;
 
 import rinde.sim.core.graph.Point;
 import rinde.sim.core.model.interaction.Receiver;
-import rinde.sim.core.model.pdp.Parcel;
 import rinde.sim.core.model.pdp.twpolicy.TimeWindowPolicy;
+import rinde.sim.core.model.pdp.users.Parcel;
 import rinde.sim.core.model.pdp.visitors.PickupVisitor;
 import rinde.sim.core.simulation.TimeLapse;
 
@@ -43,7 +43,7 @@ public class SimplePickupReceiver<P extends Parcel> extends Receiver{
      * @param visitor The approaching visitor.
      * @return Whether or not the visitor is allowed to pick up the given parcel.
      */
-    public boolean canBePickedUp(TimeLapse lapse, Parcel parcel, PickupVisitor<?> visitor){
+    public boolean canBePickedUp(TimeLapse lapse, Parcel parcel, PickupVisitor visitor){
         return this.parcel == parcel &&
                 policy.canPickup(parcel.pickupTimeWindow, lapse.getCurrentTime(), parcel.pickupDuration);
     }

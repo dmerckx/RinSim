@@ -51,9 +51,9 @@ public final class RoadModels {
      *         satisfies the <code>predicate</code>.
      * @see Graphs#findClosestObject
      */
-    public static RoadUser findClosestObject(Point pos, RoadModel rm,
-            Predicate<RoadUser> predicate) {
-        final Collection<RoadUser> filtered = Collections2.filter(rm
+    public static RoadUser<?> findClosestObject(Point pos, RoadModel rm,
+            Predicate<RoadUser<?>> predicate) {
+        final Collection<RoadUser<?>> filtered = Collections2.filter(rm
                 .getObjects(), predicate);
         return findClosestObject(pos, rm, filtered);
     }
@@ -128,9 +128,9 @@ public final class RoadModels {
      *         is ordered such that the closest object appears first. An empty
      *         list is returned when <code>objects</code> is empty.
      */
-    public static List<RoadUser> findClosestObjects(Point pos, RoadModel rm,
-            Predicate<RoadUser> predicate, int n) {
-        final Collection<RoadUser> filtered = Collections2.filter(rm
+    public static List<RoadUser<?>> findClosestObjects(Point pos, RoadModel rm,
+            Predicate<RoadUser<?>> predicate, int n) {
+        final Collection<RoadUser<?>> filtered = Collections2.filter(rm
                 .getObjects(), predicate);
         return RoadModels.findClosestObjects(pos, rm, filtered, n);
     }
@@ -147,7 +147,7 @@ public final class RoadModels {
      *         is ordered such that the closest object appears first. An empty
      *         list is returned when <code>objects</code> is empty.
      */
-    public static <T extends RoadUser> List<T> findClosestObjects(Point pos,
+    public static <T extends RoadUser<?>> List<T> findClosestObjects(Point pos,
             RoadModel rm, Class<T> type, int n) {
         return RoadModels
                 .findClosestObjects(pos, rm, rm.getObjectsOfType(type), n);
@@ -182,7 +182,7 @@ public final class RoadModels {
      *            <code>position</code> are included.
      * @return A collection of {@link RoadUser}s.
      */
-    public static Collection<RoadUser> findObjectsWithinRadius(
+    public static Collection<RoadUser<?>> findObjectsWithinRadius(
             final Point position, final RoadModel model, final double radius) {
         return RoadModels
                 .findObjectsWithinRadius(position, model, radius, model

@@ -10,6 +10,6 @@ package rinde.sim.core.model;
  */
 public interface ModelProvider {
 
-	<T extends Model<?>> T getModel(Class<T> clazz);
+	<T extends Model<?,?>> T getModel(Class<T> clazz);
 
 }

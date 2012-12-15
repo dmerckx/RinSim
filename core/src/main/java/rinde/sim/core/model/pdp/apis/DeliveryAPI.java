@@ -1,12 +1,9 @@
 package rinde.sim.core.model.pdp.apis;
 
-import rinde.sim.core.model.pdp.Parcel;
-import rinde.sim.core.old.pdp.Parcel_Old;
+import rinde.sim.core.model.pdp.users.Parcel;
 
 public interface DeliveryAPI {
 
-    public void init(Parcel_Old expectedParcel);
-    
     public boolean isDelivered();
     
     public Parcel getParcel();

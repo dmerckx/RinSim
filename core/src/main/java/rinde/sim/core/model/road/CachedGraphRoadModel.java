@@ -32,7 +32,7 @@ public class CachedGraphRoadModel extends GraphRoadModel {
     // TODO add cache specific unit tests
 
     private Table<Point, Point, List<Point>> pathTable;
-    private final Multimap<Class<?>, RoadUser> classObjectMap;
+    private final Multimap<Class<?>, RoadUser<?>> classObjectMap;
 
     /**
      * Create a new instance using the specified {@link Graph}.
@@ -94,7 +94,7 @@ public class CachedGraphRoadModel extends GraphRoadModel {
      */
     @SuppressWarnings("unchecked")
     @Override
-    public <Y extends RoadUser> Set<Y> getObjectsOfType(final Class<Y> type) {
+    public <Y extends RoadUser<?>> Set<Y> getObjectsOfType(final Class<Y> type) {
         checkArgument(type != null, "type can not be null");
         final Set<Y> set = new LinkedHashSet<Y>();
         set.addAll((Set<Y>) classObjectMap.get(type));

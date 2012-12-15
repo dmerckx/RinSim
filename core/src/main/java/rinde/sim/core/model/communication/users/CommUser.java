@@ -1,10 +1,11 @@
 package rinde.sim.core.model.communication.users;
 
-import rinde.sim.core.model.communication.supported.CommUnit;
+import rinde.sim.core.model.communication.apis.CommunicationAPI;
 import rinde.sim.core.model.road.users.RoadUser;
 
 
-public interface CommUser extends RoadUser{
+public interface CommUser<D extends CommData> extends RoadUser<D>{
 
-	public CommUnit buildUnit();
+	public void SetCommunicationAPI(CommunicationAPI api);
+	
 }

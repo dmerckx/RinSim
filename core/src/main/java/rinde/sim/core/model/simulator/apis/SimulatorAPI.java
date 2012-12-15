@@ -23,11 +23,11 @@ public interface SimulatorAPI {
      * @throws IllegalStateException when simulator is not configured (by
      *             calling {@link Simulator#configure()}
      */
-    void registerUser(User o);
+    void registerUser(User<?> o);
 
     /**
      * Attempts to unregister an object from simulator at the end of this tick.
      * @param o The object to be unregistered.
      */
-    void unregisterUser(User o);
+    void unregisterUser(User<?> o);
 }

@@ -1,14 +1,23 @@
 package rinde.sim.core.model.pdp;
 
+import rinde.sim.core.model.Data;
 import rinde.sim.core.model.Model;
-import rinde.sim.core.model.pdp.guards.ContainerGuard;
-import rinde.sim.core.model.pdp.supported.ContainerUnit;
-import rinde.sim.core.model.pdp.supported.PdpUnit;
+import rinde.sim.core.model.pdp.apis.ContainerAPI;
+import rinde.sim.core.model.pdp.apis.ContainerGuard;
 import rinde.sim.core.model.pdp.twpolicy.TimeWindowPolicy;
+import rinde.sim.core.model.pdp.users.Container;
+import rinde.sim.core.model.pdp.users.ContainerData;
+import rinde.sim.core.model.pdp.users.Depot;
+import rinde.sim.core.model.pdp.users.Parcel;
+import rinde.sim.core.model.pdp.users.PdpUser;
+import rinde.sim.core.model.pdp.users.Truck;
+import rinde.sim.core.model.pdp.users.TruckData;
+import rinde.sim.core.model.road.apis.RoadAPI;
+import rinde.sim.core.simulation.SimulatorToModelAPI;
 import rinde.sim.core.simulation.TimeInterval;
 
 @SuppressWarnings("rawtypes")
-public class PdpModel implements Model<PdpUnit>, PdpAPI{
+public class PdpModel implements Model<Data, PdpUser<?>>, PdpAPI{
 
     private final TimeWindowPolicy twp;
     
@@ -23,27 +32,35 @@ public class PdpModel implements Model<PdpUnit>, PdpAPI{
     // ------ MODEL ------ //
 
     @Override
-    public void register(PdpUnit unit) {
-        unit.setPdpAPI(this);
+    public void register(SimulatorToModelAPI sim, PdpUser<?> user, Data data) {
         
-        if(unit instanceof ContainerUnit){
-            registerContainerUnit((ContainerUnit<?>) unit);
+        if(user instanceof Container){
+            Container cont = (Container) user;
+            ContainerData contData = (ContainerData) data;
+            
+            ContainerGuard guard =
+                    new ContainerGuard(cont, contData, this, sim.getApi(user, RoadAPI.class));
+        }
+        if(user instanceof Truck){
+            Truck tr = (Truck) user;
+            TruckData trData = (TruckData) data;
+            
+            TruckGuard guard = ...;
+        }
+        if(user instanceof Depot){
+            registerDepot((Depot) user, (ContainerData) data);
         }
     }
-    
-    protected <P extends Parcel> void registerContainerUnit(ContainerUnit<P> unit){
-        ContainerGuard<P> guard = new ContainerGuard<P>(unit, this);
-        unit.setContainerAPI(guard);
-    }
+
 
     @Override
-    public void unregister(PdpUnit element) {
+    public void unregister(PdpUser<?> user) {
         
     }
 
     @Override
-    public Class<PdpUnit> getSupportedType() {
-        return PdpUnit.class;
+    public Class<PdpUser<?>> getSupportedType() {
+        return (Class) PdpUser.class;
     }
 
     @Override

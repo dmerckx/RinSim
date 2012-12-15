@@ -1,7 +1,7 @@
 package rinde.sim.core.model.interaction;
 
 import rinde.sim.core.graph.Point;
-import rinde.sim.core.model.interaction.guards.InteractiveGuard;
+import rinde.sim.core.model.interaction.apis.InteractiveGuard;
 
 public abstract class ExtendedReceiver extends Receiver{
 

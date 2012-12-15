@@ -12,6 +12,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import rinde.sim.core.simulation.SimulatorToModelAPI;
+
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
 
@@ -25,16 +27,17 @@ import com.google.common.collect.Multimap;
  */
 public class ModelManager implements ModelProvider {
 
-    private final Multimap<Class<?>, Model<?>> registry;
-    private final List<Model<?>> models;
+    private final Multimap<Class<?>, Model<?,?>> registry;
+    private final List<Model<?,?>> models;
     private boolean configured;
+    private SimulatorToModelAPI sim;
     
     /**
      * Instantiate a new model manager.
      */
     public ModelManager() {
         registry = LinkedHashMultimap.create();
-        models = new LinkedList<Model<? >>();
+        models = new LinkedList<Model<?,?>>();
     }
 
     /**
@@ -43,7 +46,7 @@ public class ModelManager implements ModelProvider {
      * @return true when the addition was sucessful, false otherwise.
      * @throws IllegalStateException when method called after calling configure
      */
-    public boolean add(Model<?> model) {
+    public boolean add(Model<?,?> model) {
         assert model!=null : "Model can not be null";
         
         checkState(!configured, "model can not be registered after configure()");
@@ -64,7 +67,7 @@ public class ModelManager implements ModelProvider {
      * registered in the manager.
      */
     public void configure() {
-        for (final Model<?> m : models) {
+        for (final Model<?,?> m : models) {
             if (m instanceof ModelReceiver) {
                 ((ModelReceiver) m).registerModelProvider(this);
             }
@@ -79,19 +82,19 @@ public class ModelManager implements ModelProvider {
      * @return <code>true</code> if object was added to at least one model
      */
     @SuppressWarnings("unchecked")
-    public <T extends Unit> void register(T object) {
-        assert object!=null : "Can not register null";
-        assert !(object instanceof Model): "Can not register models";
+    public <D extends Data> void register(User<D> user, D data) {
+        assert user!=null : "Can not register null";
+        assert !(user instanceof Model): "Can not register models";
         
         checkState(configured, "can not register an object if configure() has not been called");
 
         final Set<Class<?>> modelSupportedTypes = registry.keySet();
         for (final Class<?> modelSupportedType : modelSupportedTypes) {
-            if (modelSupportedType.isAssignableFrom(object.getClass())) {
-                final Collection<Model<?>> assignableModels = registry
+            if (modelSupportedType.isAssignableFrom(user.getClass())) {
+                final Collection<Model<?,?>> assignableModels = registry
                         .get(modelSupportedType);
-                for (final Model<?> m : assignableModels) {
-                    ((Model<T>) m).register(object);
+                for (final Model<?,?> m : assignableModels) {
+                    ((Model<D,User<D>>) m).register(sim, user, data);
                 }
             }
         }
@@ -99,7 +102,7 @@ public class ModelManager implements ModelProvider {
 
     /**
      * Unregister an object from all models it was attached to.
-     * @param object object to unregister
+     * @param user object to unregister
      * @param <T> the type of object to unregister
      * @return <code>true</code> when the unregistration succeeded in at least
      *         one model
@@ -107,20 +110,20 @@ public class ModelManager implements ModelProvider {
      *             configured
      */
     @SuppressWarnings("unchecked")
-    public <T extends Unit> void unregister(T object) {
-        assert object!=null : "Can not unregister null";
-        assert !(object instanceof Model): "Can not unregister models";
+    public <U extends User<?>> void unregister(U user) {
+        assert user!=null : "Can not unregister null";
+        assert !(user instanceof Model): "Can not unregister models";
         
         checkState(configured, "can not unregister when not configured, call configure() first");
 
         final Set<Class<?>> modelSupportedTypes = registry.keySet();
         for (final Class<?> modelSupportedType : modelSupportedTypes) {
             // check if object is from a known type
-            if (modelSupportedType.isAssignableFrom(object.getClass())) {
-                final Collection<Model<?>> assignableModels = registry
+            if (modelSupportedType.isAssignableFrom(user.getClass())) {
+                final Collection<Model<?,?>> assignableModels = registry
                         .get(modelSupportedType);
-                for (final Model<?> m : assignableModels) {
-                    ((Model<T>) m).unregister(object);
+                for (final Model<?,?> m : assignableModels) {
+                    ((Model<?,U>) m).unregister(user);
                 }
             }
         }
@@ -129,14 +132,14 @@ public class ModelManager implements ModelProvider {
     /**
      * @return An unmodifiable view on all registered models.
      */
-    public List<Model<?>> getModels() {
+    public List<Model<?,?>> getModels() {
         return Collections.unmodifiableList(models);
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public <T extends Model<?>> T getModel(Class<T> clazz) {
-        for (final Model<?> model : models) {
+    public <T extends Model<?,?>> T getModel(Class<T> clazz) {
+        for (final Model<?,?> model : models) {
             if (clazz.isInstance(model)) {
                 return (T) model;
             }

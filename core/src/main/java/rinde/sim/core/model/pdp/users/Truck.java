@@ -1,30 +1,29 @@
 package rinde.sim.core.model.pdp.users;
 
-import rinde.sim.core.model.pdp.Parcel;
 import rinde.sim.core.model.pdp.apis.ContainerAPI;
 import rinde.sim.core.model.pdp.apis.TruckAPI;
-import rinde.sim.core.model.pdp.supported.TruckUnit;
 import rinde.sim.core.model.road.apis.MovingRoadAPI;
+import rinde.sim.core.model.road.apis.RoadAPI;
 import rinde.sim.core.model.road.users.MovingRoadUser;
 
-public abstract class Truck<P extends Parcel> implements Container<P>, MovingRoadUser{
+public abstract class Truck
+            implements Container<TruckData>, MovingRoadUser<TruckData>, PdpUser<TruckData>{
    
     protected MovingRoadAPI roadAPI;
-    protected ContainerAPI<P> containerAPI;
-    protected TruckAPI<P> truckAPI;
+    protected ContainerAPI containerAPI;
+    protected TruckAPI truckAPI;
     
-    public void setContainerAPI(ContainerAPI<P> api){
+    @Override
+    public void setRoadAPI(RoadAPI roadAPI) {
+        this.roadAPI = (MovingRoadAPI) roadAPI;
+    }
+    
+    @Override
+    public void setContainerAPI(ContainerAPI api) {
         this.containerAPI = api;
     }
     
     public void setTruckAPI(TruckAPI api){
         this.truckAPI = api;
     }
-    
-    public void setMovingRoadAPI(MovingRoadAPI api){
-        this.roadAPI = api;
-    }
-    
-    @Override
-    public abstract TruckUnit<P> buildUnit();
 }
