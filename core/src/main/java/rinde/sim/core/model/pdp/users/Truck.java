@@ -1,29 +1,41 @@
 package rinde.sim.core.model.pdp.users;
 
 import rinde.sim.core.model.pdp.apis.ContainerAPI;
+import rinde.sim.core.model.pdp.apis.ContainerState;
 import rinde.sim.core.model.pdp.apis.TruckAPI;
 import rinde.sim.core.model.road.apis.MovingRoadAPI;
-import rinde.sim.core.model.road.apis.RoadAPI;
+import rinde.sim.core.model.road.apis.RoadState;
 import rinde.sim.core.model.road.users.MovingRoadUser;
 
-public abstract class Truck
-            implements Container<TruckData>, MovingRoadUser<TruckData>, PdpUser<TruckData>{
+public class Truck<D extends TruckData> implements Container<D>, MovingRoadUser<D>{
    
     protected MovingRoadAPI roadAPI;
     protected ContainerAPI containerAPI;
     protected TruckAPI truckAPI;
     
+    public final void setTruckAPI(TruckAPI api){
+        this.truckAPI = api;
+    }
+    
     @Override
-    public void setRoadAPI(RoadAPI roadAPI) {
-        this.roadAPI = (MovingRoadAPI) roadAPI;
+    public final void setRoadAPI(MovingRoadAPI api) {
+        this.roadAPI = api;
+    }
+    
+    @Override
+    public RoadState getRoadState() {
+        return roadAPI.getState();
     }
     
     @Override
     public void setContainerAPI(ContainerAPI api) {
+        api.init(roadAPI);
         this.containerAPI = api;
     }
     
-    public void setTruckAPI(TruckAPI api){
-        this.truckAPI = api;
+    @Override
+    public ContainerState getContainerState() {
+        return containerAPI.getState();
     }
+    
 }

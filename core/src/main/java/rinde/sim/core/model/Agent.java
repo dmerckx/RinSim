@@ -1,7 +1,5 @@
-/**
- * 
- */
 package rinde.sim.core.model;
+
 
 import rinde.sim.core.simulation.Simulator;
 import rinde.sim.core.simulation.TickListener;

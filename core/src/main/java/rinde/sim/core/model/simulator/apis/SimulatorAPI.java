@@ -1,5 +1,7 @@
 package rinde.sim.core.model.simulator.apis;
 
+
+import rinde.sim.core.model.Data;
 import rinde.sim.core.model.User;
 import rinde.sim.core.simulation.Simulator;
 
@@ -23,11 +25,11 @@ public interface SimulatorAPI {
      * @throws IllegalStateException when simulator is not configured (by
      *             calling {@link Simulator#configure()}
      */
-    void registerUser(User<?> o);
+    <D extends Data> void registerUser(User<D> user, D data);
 
     /**
      * Attempts to unregister an object from simulator at the end of this tick.
      * @param o The object to be unregistered.
      */
-    void unregisterUser(User<?> o);
+    void unregisterUser(User<?> user);
 }

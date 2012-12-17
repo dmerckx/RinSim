@@ -1,22 +1,9 @@
 package rinde.sim.core.dummies;
 
+import rinde.sim.core.model.Data;
 import rinde.sim.core.model.User;
 
-public class DummyUser implements User{
-    
-    private final DummyUnit unit;
+public class DummyUser implements User<Data>{
     
     
-    public DummyUser() {
-        this.unit = new DummyUnit(this);
-    }
-    
-    public DummyUnit getUnit(){
-        return unit;
-    }
-
-    @Override
-    public DummyUnit buildUnit() {
-        return unit;
-    }
 }

@@ -5,7 +5,7 @@ import java.util.List;
 import rinde.sim.core.graph.Point;
 import rinde.sim.core.model.Data;
 import rinde.sim.core.model.User;
-import rinde.sim.core.model.pdp.users.Parcel;
+import rinde.sim.core.model.pdp.Parcel;
 
 public interface TruckAPI extends User<Data>{
     

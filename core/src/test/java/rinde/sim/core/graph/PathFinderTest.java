@@ -26,7 +26,7 @@ import rinde.sim.core.model.road.MoveProgress;
 import rinde.sim.core.model.road.RoadModel;
 import rinde.sim.core.model.road.RoadModels;
 import rinde.sim.core.model.road.dummies.TrivialRoadUser;
-import rinde.sim.core.model.road.supported.RoadUnit;
+import rinde.sim.core.model.road.users.MovingRoadData;
 import rinde.sim.core.model.road.users.MovingRoadUser;
 import rinde.sim.core.model.road.users.RoadUser;
 import rinde.sim.util.TimeUnit;
@@ -93,21 +93,52 @@ public class PathFinderTest {
 
 		graph.addConnection(g, a);
 
-		o1 = new StringRoadUser("object1", a);
-		o2 = new StringRoadUser("object2", b);
-		o3 = new StringRoadUser("object3", c);
-		o4 = new LongRoadUser(444L, d);
-		o5 = new LongRoadUser(555L, e);
-		o6 = new LongRoadUser(666L, f);
+		o1 = new StringRoadUser("object1");
+		o2 = new StringRoadUser("object2");
+		o3 = new StringRoadUser("object3");
+		o4 = new LongRoadUser(444L);
+		o5 = new LongRoadUser(555L);
+		o6 = new LongRoadUser(666L);
 		allObjects = Arrays.asList(o1, o2, o3, o4, o5, o6);
 
-		rm.register(o1.buildUnit());
-		rm.register(o2.buildUnit());
-		rm.register(o3.buildUnit());
-		rm.register(o4.buildUnit());
-		rm.register(o5.buildUnit());
-		rm.register(o6.buildUnit());
+		rm.register(o1, new StdRoadData(a));
+		rm.register(o2, new StdRoadData(b));
+		rm.register(o3, new StdRoadData(c));
+		rm.register(o4, new StdRoadData(d));
+		rm.register(o5, new StdRoadData(e));
+		rm.register(o6, new StdRoadData(f));
 
+	}
+	
+	class StdRoadData implements MovingRoadData{
+
+	    private final double speed;
+	    private final Point pos;
+	    
+	    public StdRoadData() {
+	        this(1.0, new Point(0,0));
+        }
+	    public StdRoadData(Point pos) {
+	        this(1.0, pos);
+        }
+	    public StdRoadData(double speed) {
+            this(speed, new Point(0,0));
+        }
+	    public StdRoadData(double speed, Point pos) {
+	        this.speed = speed;
+	        this.pos = pos;
+        }
+	    
+        @Override
+        public Point getStartPosition() {
+            return pos;
+        }
+
+        @Override
+        public double getInitialSpeed() {
+            return speed;
+        }
+	    
 	}
 
 	class StringRoadUser extends TrivialRoadUser {
@@ -116,11 +147,6 @@ public class PathFinderTest {
 		public StringRoadUser(String pName) {
 			name = pName;
 		}
-
-		public StringRoadUser(String pName, Point pos) {
-            super(pos);
-		    name = pName;
-        }
 		
 		@Override
 		public String toString() {
@@ -135,11 +161,6 @@ public class PathFinderTest {
 		public LongRoadUser(long pNumber) {
 			number = pNumber;
 		}
-
-        public LongRoadUser(long pNumber, Point pos) {
-            super(pos);
-            number = pNumber;
-        }
 
 		@Override
 		public String toString() {
@@ -185,8 +206,8 @@ public class PathFinderTest {
 	}
 
 	public void compatibilityCheck(List<Point> t) {
-		MovingRoadUser truck = new TrivialRoadUser(t.get(0));
-		rm.register(truck.buildUnit());
+		MovingRoadUser truck = new TrivialRoadUser();
+		rm.register(truck, new StdRoadData(t.get(0)));
 		double len = pathLength(t);
 		// speed of trivial truck is 1 len per hour thus we need to travel 'len'
 		// hours
@@ -222,7 +243,7 @@ public class PathFinderTest {
 
 		assertEquals(o6, RoadModels.findClosestObject(new Point(5, 5), rm, LongRoadUser.class));
 
-		assertEquals(null, RoadModels.findClosestObject(new Point(5, 5), rm, new Predicate<RoadUser>() {
+		assertEquals(null, RoadModels.findClosestObject(new Point(5, 5), rm, new Predicate<RoadUser<?>>() {
 			@Override
 			public boolean apply(RoadUser input) {
 				return false;
@@ -237,7 +258,7 @@ public class PathFinderTest {
 		assertEquals(Arrays.asList(o6, o5, o4), RoadModels.findClosestObjects(new Point(5, 5), rm, LongRoadUser.class, 300));
 		assertEquals(Arrays.asList(), RoadModels.findClosestObjects(new Point(5, 5), rm, EmptyRoadUser.class, 1));
 
-		assertEquals(Arrays.asList(o3, o6, o4, o5), RoadModels.findClosestObjects(new Point(8, 8), rm, new Predicate<RoadUser>() {
+		assertEquals(Arrays.asList(o3, o6, o4, o5), RoadModels.findClosestObjects(new Point(8, 8), rm, new Predicate<RoadUser<?>>() {
 			@Override
 			public boolean apply(RoadUser input) {
 				return input instanceof LongRoadUser || rm.getPosition(input).equals(new Point(15, 15));
@@ -289,11 +310,8 @@ public class PathFinderTest {
 				.toArray());
 
 	}
-
-	class EmptyRoadUser implements RoadUser {
-        @Override
-        public RoadUnit buildUnit() {
-            throw new RuntimeException("NOT meant to be executed");
-        }
+	
+	class EmptyRoadUser extends TrivialRoadUser{
+	    
 	}
 }

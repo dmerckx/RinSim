@@ -19,21 +19,26 @@ import java.util.Queue;
 import java.util.Set;
 
 import rinde.sim.core.graph.Point;
-import rinde.sim.core.model.road.guards.MovingRoadGuard;
-import rinde.sim.core.model.road.guards.RoadGuard;
+import rinde.sim.core.model.User;
+import rinde.sim.core.model.road.apis.MovingRoadAPI;
+import rinde.sim.core.model.road.apis.MovingRoadGuard;
+import rinde.sim.core.model.road.apis.RoadAPI;
+import rinde.sim.core.model.road.apis.RoadGuard;
+import rinde.sim.core.model.road.users.FixedRoadUser;
 import rinde.sim.core.model.road.users.MovingRoadData;
 import rinde.sim.core.model.road.users.MovingRoadUser;
 import rinde.sim.core.model.road.users.RoadData;
 import rinde.sim.core.model.road.users.RoadUser;
-import rinde.sim.core.simulation.SimulatorToModelAPI;
 import rinde.sim.core.simulation.TimeInterval;
 import rinde.sim.core.simulation.TimeLapse;
+import rinde.sim.core.simulation.UserInit;
 import rinde.sim.event.EventAPI;
 import rinde.sim.event.EventDispatcher;
 import rinde.sim.util.SpeedConverter;
 import rinde.sim.util.TimeUnit;
 
 import com.google.common.base.Predicate;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 /**
@@ -329,37 +334,56 @@ public abstract class AbstractRoadModel<T> implements RoadModel{
     }
 
     @Override
-    public void register(SimulatorToModelAPI sim, RoadUser<?> user, RoadData data) {
-        assert sim!=null: "Sim can not be null.";
+    public List<UserInit<?>> register(RoadUser<?> user, RoadData data) {
         assert user!=null : "User can not be null.";
         assert data!=null : "Data can not be null.";
         
-        RoadGuard guard;
+        List<UserInit<?>> result = Lists.newArrayList();
         
         if( user instanceof MovingRoadUser<?>){
             assert data instanceof MovingRoadData: "Data must fit user";
             
-            guard = new MovingRoadGuard((MovingRoadUser<?>) user, (MovingRoadData) data, this);
+            MovingRoadGuard guard = new MovingRoadGuard((MovingRoadUser<?>) user, (MovingRoadData) data, this);
+            ((MovingRoadUser<?>) user).setRoadAPI(guard);
+            mapping.put(user, guard);
+            
+            //MovingRoadGuard functions as a FullGuard (after tick implemented)
+            //and is therefore added to the resulting list
+            result.add(UserInit.create(guard));
+        }
+        else if( user instanceof FixedRoadUser<?>){
+            
+            RoadGuard guard = new RoadGuard(user, data, this);
+            ((FixedRoadUser<?>) user).setRoadAPI(guard);
+            mapping.put(user, guard);
         }
         else {
-            
-            guard = new RoadGuard(user, data, this);
+            throw new IllegalArgumentException("The user " + user + " has not a valid type known by this road model");
         }
         addObjectAt(user, data.getStartPosition());
-        user.setRoadAPI(guard);
-        sim.registerUser(guard);
         
-        mapping.put(user, guard);
+        return result;
     }
 
     @Override
-    public void unregister(RoadUser<?> user) {
+    public List<User<?>> unregister(RoadUser<?> user) {
         assert user!=null : "User can not be null.";
+        assert containsObject(user) : "The user has to be present in this model";
         
-        if (containsObject(user)) {
-            removeObject(user);
-            mapping.remove(user);
+        RoadGuard g = mapping.get(user);
+        
+        removeObject(user);
+        mapping.remove(user);
+        
+
+        List<User<?>> result = Lists.newArrayList();
+        
+        if(g instanceof MovingRoadGuard){
+            //MovingRoadGuards were added during registration
+            result.add((MovingRoadGuard) g);
         }
+        
+        return result;
     }
 
     @Override

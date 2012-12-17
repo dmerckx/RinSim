@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import rinde.sim.FullGuard;
 import rinde.sim.core.model.Data;
+import rinde.sim.core.model.User;
 import rinde.sim.core.model.interaction.ExtendedReceiver;
 import rinde.sim.core.model.interaction.InteractionModel;
 import rinde.sim.core.model.interaction.Notification;
@@ -15,7 +17,7 @@ import rinde.sim.core.model.interaction.users.InteractionUser;
 import rinde.sim.core.simulation.TimeInterval;
 import rinde.sim.core.simulation.TimeLapse;
 
-public class InteractiveGuard<D extends Data> implements InteractionAPI {
+public class InteractiveGuard implements InteractionAPI, FullGuard, User<Data>{
 
     private List<Notification> notifications = new ArrayList<Notification>();
     private List<Notification> notificationsInbox = new ArrayList<Notification>();
@@ -36,13 +38,6 @@ public class InteractiveGuard<D extends Data> implements InteractionAPI {
     
     public synchronized void receiveTermination(ExtendedReceiver receiver){
         receivers.remove(receiver);
-    }
-    
-    public void afterTick(TimeInterval time) {
-        if(notifications.size() == 0)
-            return;
-        
-        notificationsInbox.addAll(notifications);
     }
     
     @Override
@@ -85,4 +80,18 @@ public class InteractiveGuard<D extends Data> implements InteractionAPI {
         }
         receivers.clear();
     }
+
+    @Override
+    public void tick(TimeLapse time) {
+        // TODO Auto-generated method stub
+        
+    }
+    
+    public void afterTick(TimeInterval time) {
+        if(notifications.size() == 0)
+            return;
+        
+        notificationsInbox.addAll(notifications);
+    }
+    
 }

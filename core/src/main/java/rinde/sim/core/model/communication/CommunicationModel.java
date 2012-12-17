@@ -1,16 +1,18 @@
 package rinde.sim.core.model.communication;
 
 import java.util.HashMap;
+import java.util.List;
 
 import rinde.sim.core.graph.Point;
 import rinde.sim.core.model.Model;
+import rinde.sim.core.model.User;
 import rinde.sim.core.model.communication.apis.CommGuard;
 import rinde.sim.core.model.communication.users.CommData;
 import rinde.sim.core.model.communication.users.CommUser;
-import rinde.sim.core.model.road.RoadModel;
-import rinde.sim.core.model.road.apis.RoadAPI;
-import rinde.sim.core.simulation.SimulatorToModelAPI;
 import rinde.sim.core.simulation.TimeInterval;
+import rinde.sim.core.simulation.UserInit;
+
+import com.google.common.collect.Lists;
 
 public class CommunicationModel implements Model<CommData, CommUser<?>>{
 
@@ -48,23 +50,35 @@ public class CommunicationModel implements Model<CommData, CommUser<?>>{
 	// ----- MODEL ----- //
 
 	@Override
-	public void register(SimulatorToModelAPI sim, CommUser<?> user, CommData data) {
-        assert sim!=null: "Sim can not be null.";
+	public List<UserInit<?>> register(CommUser<?> user, CommData data) {
         assert user!=null : "User can not be null.";
 	    assert data!=null : "Data can not be null.";
 	    
-        CommGuard guard = new CommGuard(user, data, this, sim.getApi(user, RoadAPI.class));
+        CommGuard guard = new CommGuard(user, data, this);
 	    user.SetCommunicationAPI(guard);
 	    
-	    sim.registerUser(guard);
-	    
 		comms.put(guard.getAddress(), guard);
+
+		List<UserInit<?>> result = Lists.newArrayList();
+        result.add(UserInit.create(guard));
+        
+        return result;
 	}
 
 	@Override
-	public void unregister(CommUser<?> user) {
+	public List<User<?>> unregister(CommUser<?> user) {
         assert user!=null : "User can not be null.";
 	   
+        Address a = user.getCommunicationState().getAddress();
+        
+        assert comms.containsKey(a);
+        
+        List<User<?>> result = Lists.newArrayList();
+        result.add(comms.get(a));
+        
+        comms.remove(a);
+        
+        return result;
 	}
 
 	@Override

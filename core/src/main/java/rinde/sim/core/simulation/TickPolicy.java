@@ -20,22 +20,7 @@ package rinde.sim.core.simulation;
  * @author dmerckx
  * @param <T> The type of tick listeners accepted by this policy.
  */
-public interface TickPolicy<T>{
-
-
-    /**
-     * Add a tickListener to this policy.
-     * 
-     * @param listener The tick listener to be added.
-     */
-    public void register(T listener); 
-
-    /**
-     * Remove a tickListener from this policy.
-     * 
-     * @param listener The tick listener to be removed
-     */
-    public void unregister(T listener);
+public interface TickPolicy{
 
     /**
      * Perform the tick operation of all the tick listeners

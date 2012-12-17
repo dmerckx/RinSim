@@ -2,14 +2,12 @@ package rinde.sim.core.model.communication.apis;
 
 import java.util.Iterator;
 
-import rinde.sim.core.model.Data;
-import rinde.sim.core.model.User;
 import rinde.sim.core.model.communication.Address;
 import rinde.sim.core.model.communication.Delivery;
 import rinde.sim.core.model.communication.Message;
 
 
-public interface CommunicationAPI extends User<Data>{
+public interface CommunicationAPI{
 
     void setReliability(double reliability);
     
@@ -35,4 +33,6 @@ public interface CommunicationAPI extends User<Data>{
      * Returns your address.
      */
     Address getAddress();
+    
+    CommunicationState getState();
 }

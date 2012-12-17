@@ -3,9 +3,9 @@ package rinde.sim.core.model.pdp.receivers;
 import rinde.sim.core.graph.Point;
 import rinde.sim.core.model.interaction.ExtendedReceiver;
 import rinde.sim.core.model.interaction.Receiver;
+import rinde.sim.core.model.pdp.Parcel;
 import rinde.sim.core.model.pdp.receivers.ContainerNotification.NotificationType;
 import rinde.sim.core.model.pdp.twpolicy.TimeWindowPolicy;
-import rinde.sim.core.model.pdp.users.Parcel;
 import rinde.sim.core.model.pdp.visitors.DeliveryVisitor;
 import rinde.sim.core.simulation.TimeLapse;
 

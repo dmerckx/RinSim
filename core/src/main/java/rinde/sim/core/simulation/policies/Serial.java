@@ -14,7 +14,7 @@ import rinde.sim.core.simulation.TimeInterval;
  * @author dmerckx
  * @param <T> The type of tick listeners accepted by this policy.
  */
-public abstract class Serial<T> implements TickPolicy<T>{
+public abstract class Serial<T> implements TickPolicy{
 
     private boolean register;
     private Class<T> acceptedClass;
@@ -37,12 +37,10 @@ public abstract class Serial<T> implements TickPolicy<T>{
     
     public abstract void doTick(T obj, TimeInterval interval);
     
-    @Override
     public void register(T listener) {
         listeners.add(listener);
     }
     
-    @Override
     public void unregister(T listener) {
         listeners.remove(listener);
     }

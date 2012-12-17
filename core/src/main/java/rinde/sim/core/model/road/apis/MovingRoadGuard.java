@@ -1,18 +1,21 @@
-package rinde.sim.core.model.road.guards;
+package rinde.sim.core.model.road.apis;
 
 import java.util.Queue;
 
 import org.apache.commons.math3.random.RandomGenerator;
 
+import rinde.sim.FullGuard;
 import rinde.sim.core.graph.Point;
+import rinde.sim.core.model.Data;
+import rinde.sim.core.model.User;
 import rinde.sim.core.model.road.InvalidLocationException;
 import rinde.sim.core.model.road.RoadModel;
-import rinde.sim.core.model.road.apis.MovingRoadAPI;
 import rinde.sim.core.model.road.users.MovingRoadData;
 import rinde.sim.core.model.road.users.MovingRoadUser;
+import rinde.sim.core.simulation.TimeInterval;
 import rinde.sim.core.simulation.TimeLapse;
 
-public class MovingRoadGuard extends RoadGuard implements MovingRoadAPI{
+public class MovingRoadGuard extends RoadGuard implements MovingRoadAPI, FullGuard, User<Data>{
 
     private RandomGenerator rnd;//TODO
     private Queue<Point> path;
@@ -33,6 +36,11 @@ public class MovingRoadGuard extends RoadGuard implements MovingRoadAPI{
     }
     
     // ------ MOVING ROAD API ------ //
+
+    @Override
+    public Point getCurrentLocation() {
+        return model.getPosition(user);
+    }
 
     @Override
     public Point getRandomLocation() {
@@ -60,5 +68,18 @@ public class MovingRoadGuard extends RoadGuard implements MovingRoadAPI{
     @Override
     public boolean isDriving() {
         return !path.isEmpty();
+    }
+
+    
+    // ----- FULL GUARD ----- //
+
+    @Override
+    public void tick(TimeLapse time) {
+        
+    }
+    
+    @Override
+    public void afterTick(TimeInterval interval){
+        lastLocation = getCurrentLocation();
     }
 }

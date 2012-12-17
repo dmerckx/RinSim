@@ -1,10 +1,8 @@
 package rinde.sim.core.model;
 
 import static java.util.Arrays.asList;
-import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static rinde.sim.core.model.DebugModel.Action.ALLOW;
 import static rinde.sim.core.model.DebugModel.Action.REJECT;
 
@@ -17,33 +15,27 @@ import org.junit.Test;
 
 import rinde.sim.core.dummies.DummyAbstrModel;
 import rinde.sim.core.dummies.DummyModel;
-import rinde.sim.core.dummies.DummyUnit;
 import rinde.sim.core.dummies.DummyUser;
-import rinde.sim.core.graph.ConnectionData;
-import rinde.sim.core.graph.Graph;
-import rinde.sim.core.graph.LengthData;
-import rinde.sim.core.graph.MultimapGraph;
-import rinde.sim.core.model.road.GraphRoadModel;
-import rinde.sim.core.model.road.RoadModel;
-import rinde.sim.core.model.road.users.RoadUser;
 import rinde.sim.core.simulation.TimeInterval;
+import rinde.sim.core.simulation.UserInit;
+import rinde.sim.core.model.User;
+
+import com.google.common.collect.Lists;
 
 public class ModelManagerTest {
 
 	protected ModelManager manager;
 	protected DummyUser user;
-	protected DummyUnit unit;
 	
 	@Before
 	public void setUp() {
 		manager = new ModelManager();
 		user = new DummyUser();
-		unit = new DummyUnit(user);
 	}
 
 	@Test(expected = IllegalStateException.class)
 	public void notConfigured() {
-		manager.register(unit);
+		manager.register(user, new Data(){});
 	}
 
 	@Test
@@ -51,8 +43,8 @@ public class ModelManagerTest {
 		FooModel model = new FooModel();
 		manager.add(model);
 		manager.configure();
-		manager.register(new Foo());
-		manager.register(new Bar());
+		manager.register(new Foo(), new FooData());
+		manager.register(new Bar(), new BarData());
 		assertEquals(1, model.calledRegister);
 		assertEquals(1, model.calledTypes);
 	}
@@ -66,15 +58,15 @@ public class ModelManagerTest {
 		manager.add(model2);
 		manager.configure();
 		
-		manager.register(new Foo());
-		manager.register(new Bar());
-		manager.register(new Foo());
+		manager.register(new Foo(), new FooData());
+		manager.register(new Bar(), new BarData());
+		manager.register(new Foo(), new FooData());
 		
 		assertEquals(2, model.calledRegister);
 		assertEquals(1, model.calledTypes);
 		assertEquals(1, model2.calledRegister);
 
-		assertArrayEquals(new Model<?>[] { model, model2 }, manager.getModels().toArray(new Model<?>[2]));
+		assertArrayEquals(new Model<?,?>[] { model, model2 }, manager.getModels().toArray(new Model<?,?>[2]));
 	}
 
 	@Test
@@ -98,8 +90,18 @@ public class ModelManagerTest {
 
 	@Test(expected = AssertionError.class)
 	public void registerNull() {
-		manager.register(null);
+		manager.register(null, null);
 	}
+	
+	@Test(expected = AssertionError.class)
+    public void registerNull2() {
+        manager.register(new User<Data>() {}, null);
+    }
+	
+	@Test(expected = AssertionError.class)
+    public void registerNull3() {
+        manager.register(null, new Data() {});
+    }
 
 	@Test(expected = IllegalStateException.class)
 	public void addModelTooLate() {
@@ -111,14 +113,14 @@ public class ModelManagerTest {
 	public void registerWithBrokenModel() {
 		manager.add(new BrokenModel());
 		manager.configure();
-		manager.register(unit);
+		manager.register(user, new Data() {});
 	}
 
 	@Test
 	public void registerWithoutModels() {
 		manager.configure();
 		assertEquals(0, manager.getModels().size());
-		manager.register(new Foo());
+		manager.register(new Foo(), new FooData());
         assertEquals(0, manager.getModels().size());
 		manager.unregister(new Foo());
         assertEquals(0, manager.getModels().size());
@@ -146,7 +148,7 @@ public class ModelManagerTest {
 	public void unregisterWithBrokenModel() {
 		manager.add(new BrokenModel());
 		manager.configure();
-		manager.unregister(new Foo());
+		manager.unregister(new DummyUser());
 	}
 
 	public void unregisterRegistered() {
@@ -159,8 +161,8 @@ public class ModelManagerTest {
 		final Foo foo = new Foo();
 		final Bar bar = new Bar();
 
-		manager.register(foo);
-		manager.register(bar);
+		manager.register(foo, new FooData());
+		manager.register(bar, new BarData());
 		manager.unregister(foo);
 
 		assertEquals(1, model.calledRegister);
@@ -192,30 +194,30 @@ public class ModelManagerTest {
 		manager.configure();
 
 		ObjectA a1 = new ObjectA();
-		manager.register(a1);
+		manager.register(a1, new FooData());
 		assertEquals(asList(a1), mA.getRegisteredElements());
 		assertEquals(asList(a1), mAA.getRegisteredElements());
 
 		mA.setRegisterAction(REJECT);
 		ObjectA a2 = new ObjectA();
-		manager.register(a2);
+		manager.register(a2, new FooData());
 		assertEquals(asList(a1, a2), mA.getRegisteredElements());
 		assertEquals(asList(a1, a2), mAA.getRegisteredElements());
 
 		mAA.setRegisterAction(REJECT);
 		ObjectA a3 = new ObjectA();
-		manager.register(a3);
+		manager.register(a3, new FooData());
 		assertEquals(asList(a1, a2, a3), mA.getRegisteredElements());
 		assertEquals(asList(a1, a2, a3), mAA.getRegisteredElements());
 
 		mA.setRegisterAction(ALLOW);
 		mAA.setRegisterAction(ALLOW);
-		manager.register(a1);// allow duplicates
+		manager.register(a1, new FooData());// allow duplicates
 		assertEquals(asList(a1, a2, a3, a1), mA.getRegisteredElements());
 		assertEquals(asList(a1, a2, a3, a1), mAA.getRegisteredElements());
 
 		ObjectB b1 = new ObjectB();
-		manager.register(b1);
+		manager.register(b1, new FooData());
 		assertEquals(asList(b1), mB.getRegisteredElements());
 		assertEquals(asList(b1), mB2.getRegisteredElements());
 		assertEquals(asList(b1), mBB.getRegisteredElements());
@@ -225,7 +227,7 @@ public class ModelManagerTest {
 		// subclass of B is registerd in all general models and its subclass
 		// model
 		SpecialB s1 = new SpecialB();
-		manager.register(s1);
+		manager.register(s1, new FooData());
 		assertEquals(asList(b1, s1), mB.getRegisteredElements());
 		assertEquals(asList(b1, s1), mB2.getRegisteredElements());
 		assertEquals(asList(b1, s1), mBB.getRegisteredElements());
@@ -264,49 +266,45 @@ public class ModelManagerTest {
 	}
 }
 
-class Foo extends DummyUnit{
-
-    public Foo(){
-        super(null);
-    }
+class Foo implements User<FooData>{
     
-    public Foo(DummyUser user) {
-        super(user);
-    }
 }
 
-class Bar extends DummyUnit{
-
-    public Bar(){
-        super(null);
-    }
+class FooData implements Data{
     
-    public Bar(DummyUser user) {
-        super(user);
-    }
+}
+
+class Bar implements User<BarData>{
+
+}
+
+class BarData implements Data{
+    
 }
 
 class BrokenModel extends DummyModel {
 	
     @Override
-	public void register(DummyUnit obj) {
+	public List<UserInit<?>> register(DummyUser user, Data data) {
 		throw new RuntimeException("intended failure");
 	}
 
 	@Override
-	public void unregister(DummyUnit obj) {
+	public List<User<?>> unregister(DummyUser obj) {
 		throw new RuntimeException("intended failure");
 	}
 }
 
-class FooModel extends DummyAbstrModel<Foo>{
+class FooModel extends DummyAbstrModel<FooData, Foo>{
     int calledTypes;
 	int calledRegister;
 	int calledUnregister;
 
 	@Override
-	public void register(Foo element) {
+	public List<UserInit<?>> register(Foo element, FooData data) {
 		calledRegister += 1;
+		
+		return Lists.newArrayList();
 	}
 
 	@Override
@@ -316,25 +314,33 @@ class FooModel extends DummyAbstrModel<Foo>{
 	}
 
 	@Override
-	public void unregister(Foo element) {
+	public List<User<?>> unregister(Foo element) {
 		calledUnregister += 1;
+		
+        return Lists.newArrayList();
 	}
 }
 
-class BarModel extends DummyAbstrModel<Bar> {
+class BarModel extends DummyAbstrModel<BarData, Bar> {
     int calledTypes;
     int calledRegister;
     int calledUnregister;
 
-	@Override
-	public void register(Bar element) {
-		calledRegister += 1;
-	}
 
-	@Override
-	public void unregister(Bar element) {
+    @Override
+    public List<UserInit<?>> register(Bar element, BarData data) {
+        calledRegister += 1;
+        
+        return Lists.newArrayList();
+    }
+
+
+    @Override
+    public List<User<?>> unregister(Bar element) {
         calledUnregister += 1;
-	}
+        
+        return Lists.newArrayList();
+    }
 
     @Override
     public Class<Bar> getSupportedType() {
@@ -393,7 +399,7 @@ class ModelC extends DebugModel<ObjectC> {
 	}
 }
 
-class DebugModel<T extends Unit> implements Model<T> {
+class DebugModel<T extends User<?>> implements Model<Data, T> {
 
 	enum Action {
 		ALLOW, REJECT, FAIL
@@ -426,15 +432,18 @@ class DebugModel<T extends Unit> implements Model<T> {
 	}
 
 	@Override
-	public void register(T element) {
+	public List<UserInit<?>> register(T element, Data data) {
 		registeredElements.add(element);
 		actionResponse(registerAction);
+		
+		return Lists.newArrayList();
 	}
 
 	@Override
-	public void unregister(T element) {
+	public List<User<?>> unregister(T element) {
 		unregisteredElements.add(element);
 		actionResponse(unregisterAction);
+        return Lists.newArrayList();
 	}
 
 	public List<T> getRegisteredElements() {

@@ -1,7 +1,9 @@
 package rinde.sim.core.model;
 
-import rinde.sim.core.simulation.SimulatorToModelAPI;
+import java.util.List;
+
 import rinde.sim.core.simulation.TimeInterval;
+import rinde.sim.core.simulation.UserInit;
 
 
 /**
@@ -15,13 +17,13 @@ public interface Model<D extends Data, T extends User<? extends D>>{
      * 
      * @param element the <code>! null</code> should be imposed
      */
-    public void register(SimulatorToModelAPI sim, T user, D data);
+    List<UserInit<?>> register(T user, D data);
     
     /**
      * Unregister element from a model.
      * @param element the <code>! null</code> should be imposed
      */
-    void unregister(T user);
+    List<User<?>> unregister(T user);
     
     /**
      * @return The class of the type supported by this model.

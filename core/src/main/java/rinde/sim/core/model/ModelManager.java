@@ -12,9 +12,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import rinde.sim.core.simulation.SimulatorToModelAPI;
+import rinde.sim.core.simulation.UserInit;
 
 import com.google.common.collect.LinkedHashMultimap;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 
 /**
@@ -30,7 +31,6 @@ public class ModelManager implements ModelProvider {
     private final Multimap<Class<?>, Model<?,?>> registry;
     private final List<Model<?,?>> models;
     private boolean configured;
-    private SimulatorToModelAPI sim;
     
     /**
      * Instantiate a new model manager.
@@ -82,22 +82,28 @@ public class ModelManager implements ModelProvider {
      * @return <code>true</code> if object was added to at least one model
      */
     @SuppressWarnings("unchecked")
-    public <D extends Data> void register(User<D> user, D data) {
+    public <D extends Data> List<UserInit<?>> register(User<D> user, D data) {
         assert user!=null : "Can not register null";
+        assert data!=null : "Data can not be null";
         assert !(user instanceof Model): "Can not register models";
         
         checkState(configured, "can not register an object if configure() has not been called");
 
         final Set<Class<?>> modelSupportedTypes = registry.keySet();
+        
+        List<UserInit<?>> result = Lists.newArrayList();
+        
         for (final Class<?> modelSupportedType : modelSupportedTypes) {
             if (modelSupportedType.isAssignableFrom(user.getClass())) {
                 final Collection<Model<?,?>> assignableModels = registry
                         .get(modelSupportedType);
                 for (final Model<?,?> m : assignableModels) {
-                    ((Model<D,User<D>>) m).register(sim, user, data);
+                    result.addAll(((Model<D,User<D>>) m).register(user, data));
                 }
             }
         }
+        
+        return result;
     }
 
     /**

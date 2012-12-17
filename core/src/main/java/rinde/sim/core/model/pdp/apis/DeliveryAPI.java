@@ -1,6 +1,6 @@
 package rinde.sim.core.model.pdp.apis;
 
-import rinde.sim.core.model.pdp.users.Parcel;
+import rinde.sim.core.model.pdp.Parcel;
 
 public interface DeliveryAPI {
 
@@ -8,7 +8,9 @@ public interface DeliveryAPI {
     
     public Parcel getParcel();
     
-    public DeliveryState getState();
+    public DeliveryState getDeliveryState();
+    
+    public DeliveryPointState getState();
     
     /**
      * The possible states a {@link DeliveryPoint} can be in.

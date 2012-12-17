@@ -3,31 +3,39 @@ package rinde.sim.core.dummies;
 import java.util.ArrayList;
 import java.util.List;
 
+import rinde.sim.core.model.Data;
 import rinde.sim.core.model.Model;
-import rinde.sim.core.model.Unit;
+import rinde.sim.core.model.User;
 import rinde.sim.core.simulation.TimeInterval;
+import rinde.sim.core.simulation.UserInit;
 
-public abstract class DummyAbstrModel<U extends Unit> implements Model<U> {
+import com.google.common.collect.Lists;
+
+public abstract class DummyAbstrModel<D extends Data, U extends User<? extends D>> implements Model<D, U> {
     private int count = 0;
 
     public int getTickCount() {
         return count;
     }
 
-    private final List<U> objs;
+    public final List<U> objs;
 
     public DummyAbstrModel() {
         objs = new ArrayList<U>();
     }
 
     @Override
-    public void register(U unit) {
+    public List<UserInit<?>> register(U unit, D data) {
         objs.add(unit);
+        
+        return Lists.newArrayList();
     }
 
     @Override
-    public void unregister(U unit) {
+    public List<User<?>> unregister(U unit) {
         objs.remove(unit);
+
+        return Lists.newArrayList();
     }
     
     @Override

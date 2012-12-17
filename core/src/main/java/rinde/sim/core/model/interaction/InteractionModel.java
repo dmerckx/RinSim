@@ -7,13 +7,15 @@ import java.util.List;
 import rinde.sim.core.graph.Point;
 import rinde.sim.core.model.Data;
 import rinde.sim.core.model.Model;
+import rinde.sim.core.model.User;
 import rinde.sim.core.model.interaction.apis.InteractiveGuard;
 import rinde.sim.core.model.interaction.users.InteractionUser;
-import rinde.sim.core.simulation.SimulatorToModelAPI;
 import rinde.sim.core.simulation.TimeInterval;
 import rinde.sim.core.simulation.TimeLapse;
+import rinde.sim.core.simulation.UserInit;
 
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Lists;
 
 
 public class InteractionModel implements Model<Data, InteractionUser<?>> {
@@ -55,22 +57,30 @@ public class InteractionModel implements Model<Data, InteractionUser<?>> {
     // ----- MODEL ----- //
 
     @Override
-    public void register(SimulatorToModelAPI sim, InteractionUser<?> user, Data d) {
-        assert sim!=null: "Sim can not be null.";
+    public List<UserInit<?>> register(InteractionUser<?> user, Data d) {
         assert user!=null : "User can not be null.";
         
         InteractiveGuard guard = new InteractiveGuard(user, this);
-        sim.registerUser(guard);
         user.setInteractionAPi(guard);
         
         mapping.put(user, guard);
+        
+        List<UserInit<?>> result = Lists.newArrayList();
+        result.add(UserInit.create(guard));
+        
+        return result;
     }
 
     @Override
-    public void unregister(InteractionUser<?> user) {
+    public List<User<?>> unregister(InteractionUser<?> user) {
         assert user!=null : "User can not be null.";
         
+        List<User<?>> result = Lists.newArrayList();
+        result.add(mapping.get(user));
+        
         mapping.remove(user);
+        
+        return result;
     }
 
     @Override

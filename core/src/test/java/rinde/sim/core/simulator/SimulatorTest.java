@@ -3,33 +3,26 @@
  */
 package rinde.sim.core.simulator;
 
+import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertThat;
-import static org.hamcrest.CoreMatchers.*;
-
-import java.util.Arrays;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Before;
 import org.junit.Test;
 
+import rinde.sim.core.dummies.Dummy2Data;
+import rinde.sim.core.dummies.Dummy2Model;
+import rinde.sim.core.dummies.Dummy2User;
 import rinde.sim.core.dummies.DummyModel;
-import rinde.sim.core.dummies.DummyObject;
 import rinde.sim.core.dummies.DummyTickListener;
-import rinde.sim.core.dummies.DummyUnit;
 import rinde.sim.core.dummies.DummyUser;
-import rinde.sim.core.model.Agent;
+import rinde.sim.core.dummies.DummyUserAgent;
 import rinde.sim.core.model.simulator.SimulatorModel;
-import rinde.sim.core.model.simulator.apis.SimulatorAPI;
-import rinde.sim.core.model.simulator.users.SimulatorUser;
 import rinde.sim.core.simulation.Simulator;
 import rinde.sim.core.simulation.TickListener;
 import rinde.sim.core.simulation.TimeInterval;
-import rinde.sim.core.simulation.TimeLapse;
-
-import com.google.common.collect.Sets;
 
 /**
  * Make sure you run this test suite with assertions enabled !! (argument -ea to VM)
@@ -55,50 +48,71 @@ public class SimulatorTest {
 
     @Test(expected = AssertionError.class)
     public void testRegisterNull() {
-        simulator.register(null);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testRegisterUnknowType() {
-        simulator.register(new DummyObject());
+        simulator.registerUser(null);
     }
 	
 	@Test
 	public void testRegisterTicklistener(){
 	    simulator.configure();
-	    simulator.register(new DummyTickListener());
+	    simulator.registerTickListener(new DummyTickListener());
 	}
 	
 	@Test(expected = AssertionError.class)
 	public void TestRegisterTickListenerTooEarly(){
-	    simulator.register(new DummyTickListener());
+	    simulator.registerTickListener(new DummyTickListener());
 	}
 	
 	@Test
 	public void testRegisterModel(){
-	    simulator.register(new DummyModel());
+	    simulator.registerModel(new DummyModel());
 	}
 
     @Test(expected = AssertionError.class)
     public void testRegisterModelTooLate() {
         simulator.configure();
-        simulator.register(new DummyModel());
+        simulator.registerModel(new DummyModel());
     }
     
     @Test
     public void testRegisterUser(){
         simulator.configure();
-        simulator.register(new DummyUser());
+        simulator.registerUser(new DummyUser());
     }
+    
+    @Test
+    public void testRegisterWithData(){
+        simulator.configure();
+        Dummy2User user = new Dummy2User(0);
+        Dummy2Data data = new Dummy2Data();
+        simulator.registerUser(new Dummy2User(0), data);
+        assertTrue(user.initData == null);
+    }
+    
+    @Test(expected = AssertionError.class)
+    public void testRegisterWithNullData(){
+        simulator.configure();
+        Dummy2User user = new Dummy2User(0);
+        Dummy2Data data = new Dummy2Data();
+        simulator.registerUser(new Dummy2User(0), null);
+    }
+    
+    @Test
+    public void testRegisterWithDataAndModel(){
+        Dummy2Model model = new Dummy2Model();
+        simulator.registerModel(model);
+        assertEquals(0, model.objs.size());
+        simulator.configure();
+        Dummy2User user = new Dummy2User();
+        Dummy2Data data = new Dummy2Data();
+        simulator.registerUser(user, data);
+        assertEquals(1, model.objs.size());
+        assertEquals(data, user.initData);
+    }
+    
 
     @Test(expected = AssertionError.class)
     public void testRegisterUserTooEarly() {
-        simulator.register(new DummyUser());
-    }
-    
-    @Test(expected = IllegalArgumentException.class)
-    public void testRegisterUnitDirectly(){
-        simulator.register(new DummyUnit(new DummyUser()));
+        simulator.registerUser(new DummyUser());
     }
 	
 	@Test
@@ -106,16 +120,15 @@ public class SimulatorTest {
 		assertEquals(0L, simulator.getCurrentTime());
 		
 		DummyModel model = new DummyModel();
-		simulator.register(model);
+		simulator.registerModel(model);
 		
         simulator.configure();
         
-		DummyUser user = new DummyUser();
-		DummyUnit unit = user.getUnit();
+		DummyUserAgent user = new DummyUserAgent();
 		DummyTickListener tl = new DummyTickListener();
 		
-		simulator.register(tl);
-		simulator.register(user);
+		simulator.registerTickListener(tl);
+		simulator.registerUser(user);
 		
 		simulator.advanceTick();
         simulator.advanceTick();
@@ -123,16 +136,15 @@ public class SimulatorTest {
 		assertEquals(200L, simulator.getCurrentTime());
 		
 		assertEquals(2, model.getTickCount());
-		assertEquals(2, unit.getTickCount());
+		assertEquals(2, user.ticks);
 		assertEquals(2, tl.getTickCount());
 		
-		simulator.unregister(user);
-		simulator.unregister(tl);
+		simulator.unregisterUser(user);
+		simulator.unregisterTickListener(tl);
 		
 		simulator.advanceTick();
         
         assertEquals(3, model.getTickCount());
-        assertEquals(2, unit.getTickCount());
         assertEquals(2, tl.getTickCount());
 	}
 
@@ -148,8 +160,8 @@ public class SimulatorTest {
         
 		DummyModel m1 = new DummyModel();
 		DummyModel m2 = new DummyModel();
-		simulator.register(m1);
-		simulator.register(m2);
+		simulator.registerModel(m1);
+		simulator.registerModel(m2);
 		
 		assertEquals(m1, simulator.getModels().get(1));
         assertEquals(m2, simulator.getModels().get(2));
@@ -157,17 +169,12 @@ public class SimulatorTest {
 
 	@Test(expected = AssertionError.class)
 	public void testUnregisterNull() {
-		simulator.unregister(null);
-	}
-
-	@Test(expected = IllegalArgumentException.class)
-	public void testUnregisterModel() {
-		simulator.unregister(new DummyModel());
+		simulator.unregisterUser(null);
 	}
 
 	@Test(expected = AssertionError.class)
 	public void testUnregisterTooEarly() {
-		simulator.unregister(new DummyTickListener());
+		simulator.unregisterTickListener(new DummyTickListener());
 	}
 
 	@Test(expected = AssertionError.class)
@@ -179,7 +186,7 @@ public class SimulatorTest {
 	public void testStart() {
 		simulator.configure();
 		LimitingTickListener ltl = new LimitingTickListener(simulator, 3);
-		simulator.register(ltl);
+		simulator.registerTickListener(ltl);
 		simulator.start();
 		assertTrue(simulator.getCurrentTime() == 3 * timeStep);
 

@@ -1,16 +1,13 @@
 package rinde.sim.core.simulation.policies;
 
 import rinde.sim.core.simulation.TickListener;
-import rinde.sim.core.simulation.TimeInterval;
+import rinde.sim.core.simulation.TickPolicy;
 
-public class TickListenerPolicy extends SerialConcurrent<TickListener>{
+public interface TickListenerPolicy extends TickPolicy{
+    
 
-    public TickListenerPolicy(boolean register) {
-        super(register);
-    }
+    public void register(TickListener listener);
+    
+    public void unregister(TickListener listener);
 
-    @Override
-    public void doTick(TickListener obj, TimeInterval interval) {
-        obj.tick(interval);
-    }
 }

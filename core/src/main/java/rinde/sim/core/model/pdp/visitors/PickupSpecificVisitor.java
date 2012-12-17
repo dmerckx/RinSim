@@ -1,7 +1,7 @@
 package rinde.sim.core.model.pdp.visitors;
 
 import rinde.sim.core.graph.Point;
-import rinde.sim.core.model.pdp.users.Parcel;
+import rinde.sim.core.model.pdp.Parcel;
 
 /**
  * This class extends a {@link PickupVisitor} by only attempting to pick up

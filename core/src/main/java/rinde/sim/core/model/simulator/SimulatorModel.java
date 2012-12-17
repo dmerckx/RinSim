@@ -9,8 +9,10 @@ import rinde.sim.core.model.User;
 import rinde.sim.core.model.simulator.apis.SimulatorAPI;
 import rinde.sim.core.model.simulator.users.SimulatorUser;
 import rinde.sim.core.simulation.Simulator;
-import rinde.sim.core.simulation.SimulatorToModelAPI;
 import rinde.sim.core.simulation.TimeInterval;
+import rinde.sim.core.simulation.UserInit;
+
+import com.google.common.collect.Lists;
 
 /**
  * @author dmerckx
@@ -18,25 +20,25 @@ import rinde.sim.core.simulation.TimeInterval;
  */
 public class SimulatorModel implements Model<Data, SimulatorUser<?>>, SimulatorAPI{
     
-    public final List<Object> objectsToAdd;
-    public final List<Object> objectsToRemove;
+    public final List<UserInit<?>> objectsToAdd;
+    public final List<User<?>> objectsToRemove;
     private Simulator sim;
     
     public SimulatorModel(Simulator sim) {
-        objectsToAdd = new ArrayList<Object>();
-        objectsToRemove = new ArrayList<Object>();
+        objectsToAdd = Lists.newArrayList();
+        objectsToRemove = Lists.newArrayList();
     }
 
     
     // ----- SIMULATOR API ----- //
     
     @Override
-    public void registerUser(User o) {
-        objectsToAdd.add(o);
+    public <D extends Data> void registerUser(User<D> user, D data) {
+        objectsToAdd.add(UserInit.create(user, data));
     }
 
     @Override
-    public void unregisterUser(User o) {
+    public void unregisterUser(User<?> o) {
         objectsToRemove.add(o);
     }
     
@@ -44,16 +46,17 @@ public class SimulatorModel implements Model<Data, SimulatorUser<?>>, SimulatorA
     // ----- MODEL ----- //
     
     @Override
-    public void register(SimulatorToModelAPI sim2, SimulatorUser<?> user, Data data) {
-        assert sim!=null: "Sim can not be null.";
+    public List<UserInit<?>> register(SimulatorUser<?> user, Data data) {
         assert user!=null : "User can not be null.";
         
         user.setSimulatorAPI(this);
+        
+        return Lists.newArrayList();
     }
 
     @Override
-    public void unregister(SimulatorUser<?> user) {
-        
+    public List<User<?>> unregister(SimulatorUser<?> user) {
+        return Lists.newArrayList();
     }
 
     @Override
@@ -63,14 +66,18 @@ public class SimulatorModel implements Model<Data, SimulatorUser<?>>, SimulatorA
 
     @Override
     public void tick(TimeInterval t) {
-        for(Object o: objectsToAdd){
-            sim.register(o);
+        for(UserInit<?> i: objectsToAdd){
+            doRegister(i);
         }
         objectsToAdd.clear();
-        for(Object o: objectsToRemove){
-            sim.unregister(o);
+        for(User<?> o: objectsToRemove){
+            sim.unregisterUser(o);
         }
         objectsToRemove.clear();
+    }
+    
+    private <D extends Data> void doRegister(UserInit<D> init) {
+        sim.registerUser(init.user, init.data);
     }
 
 }

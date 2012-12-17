@@ -1,9 +1,9 @@
 package rinde.sim.core.model.pdp.users;
 
-import rinde.sim.core.model.interaction.users.InteractionUser;
+import rinde.sim.core.model.pdp.Parcel;
 import rinde.sim.core.model.pdp.apis.ContainerAPI;
+import rinde.sim.core.model.pdp.apis.ContainerState;
 import rinde.sim.core.model.road.users.RoadUser;
-import rinde.sim.core.old.pdp.Parcel_Old;
 import rinde.sim.core.simulation.Simulator;
 
 /**
@@ -19,8 +19,9 @@ import rinde.sim.core.simulation.Simulator;
  *
  * @param <P> The type of parcels contained.
  */
-public interface Container<D extends ContainerData>
-            extends RoadUser<D>, InteractionUser<D>, PdpUser<D>{
+public interface Container<D extends ContainerData> extends RoadUser<D>, PdpUser<D>{
     
     void setContainerAPI(ContainerAPI api);
+    
+    ContainerState getContainerState();
 }

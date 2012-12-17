@@ -4,11 +4,14 @@ import java.awt.Container;
 
 import rinde.sim.core.model.communication.Address;
 import rinde.sim.core.model.communication.users.CommUser;
-import rinde.sim.core.model.pdp.users.Parcel;
+import rinde.sim.core.model.pdp.Parcel;
 import rinde.sim.core.simulation.TimeInterval;
 
 public interface PickupAPI {
-
+    
+    public PickupPointState getState();
+   
+    
     public boolean isPickedUp();
     
     /**
@@ -20,7 +23,7 @@ public interface PickupAPI {
     /**
      * @return Returns the state of this point.
      */
-    public PickupState getState();
+    public PickupState getPickupState();
 
     /**
      * Check whether the constraints on this {@link PickupPoint} still

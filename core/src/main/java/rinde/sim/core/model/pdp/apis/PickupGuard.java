@@ -3,22 +3,22 @@ package rinde.sim.core.model.pdp.apis;
 import java.util.ArrayList;
 import java.util.List;
 
-import rinde.sim.PreAgentGuard;
-import rinde.sim.core.model.AfterTickGuard;
-import rinde.sim.core.model.Agent;
+import rinde.sim.FullGuard;
 import rinde.sim.core.model.Data;
 import rinde.sim.core.model.InitGuard;
 import rinde.sim.core.model.interaction.Notification;
 import rinde.sim.core.model.interaction.apis.InteractionAPI;
 import rinde.sim.core.model.interaction.users.InteractionUser;
+import rinde.sim.core.model.pdp.Parcel;
 import rinde.sim.core.model.pdp.PdpModel;
 import rinde.sim.core.model.pdp.receivers.ContainerNotification;
 import rinde.sim.core.model.pdp.receivers.DeliverySpecificReceiver;
-import rinde.sim.core.model.pdp.users.Parcel;
+import rinde.sim.core.model.pdp.users.PickupPoint;
+import rinde.sim.core.model.pdp.users.PickupPointData;
 import rinde.sim.core.simulation.TimeInterval;
 import rinde.sim.core.simulation.TimeLapse;
 
-public class PickupGuard implements PickupAPI, InitGuard, PreAgentGuard, AfterTickGuard, InteractionUser<Data>{
+public class PickupGuard extends PickupPointState implements PickupAPI, InitGuard, FullGuard, InteractionUser<Data>{
     
     private Parcel parcel;
     private InteractionAPI interactionAPI;
@@ -29,8 +29,8 @@ public class PickupGuard implements PickupAPI, InitGuard, PreAgentGuard, AfterTi
     private long pickupTime = 0;
     private PickupState state = PickupState.SETTING_UP;
     
-    public PickupGuard(Parcel parcel, PdpModel model) {
-        this.parcel = parcel;
+    public PickupGuard(PickupPoint<?> user, PickupPointData data, PdpModel model) {
+        this.parcel = data.getParcel();
         this.pdpModel = model;
     }
 
@@ -51,7 +51,7 @@ public class PickupGuard implements PickupAPI, InitGuard, PreAgentGuard, AfterTi
     }
 
     @Override
-    public PickupState getState() {
+    public PickupState getPickupState() {
         return state;
     }
     
@@ -79,10 +79,6 @@ public class PickupGuard implements PickupAPI, InitGuard, PreAgentGuard, AfterTi
 
     // ----- INIT GUARD & AFTER-TICK GUARD ----- //
 
-    @Override
-    public Agent getAgent() {
-        return null;
-    }
 
     @Override
     public void init() {
@@ -134,5 +130,10 @@ public class PickupGuard implements PickupAPI, InitGuard, PreAgentGuard, AfterTi
     public boolean canBePickedUp(TimeInterval time) {
         return pdpModel.getPolicy().canPickup(
                 parcel.pickupTimeWindow, time.getStartTime(), parcel.pickupDuration);
+    }
+
+    @Override
+    public PickupPointState getState() {
+        return this;
     }
 }

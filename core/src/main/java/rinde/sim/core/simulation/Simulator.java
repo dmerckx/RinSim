@@ -3,29 +3,24 @@
  */
 package rinde.sim.core.simulation;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.Multimap;
-import com.google.common.collect.TreeMultiset;
-import com.google.common.collect.HashMultimap;
-
-import rinde.sim.core.graph.Point;
-import rinde.sim.core.model.Agent;
 import rinde.sim.core.model.Data;
 import rinde.sim.core.model.Model;
 import rinde.sim.core.model.ModelManager;
 import rinde.sim.core.model.ModelProvider;
 import rinde.sim.core.model.TimeUser;
 import rinde.sim.core.model.User;
-import rinde.sim.core.model.road.users.RoadData;
-import rinde.sim.core.model.road.users.RoadUser;
 import rinde.sim.core.model.simulator.SimulatorModel;
 import rinde.sim.core.simulation.policies.ModelPolicy;
 import rinde.sim.core.simulation.policies.ParallelTimeUserPolicy;
 import rinde.sim.core.simulation.policies.TickListenerPolicy;
+import rinde.sim.core.simulation.policies.TickListenerSerialPolicy;
+import rinde.sim.core.simulation.policies.TimeUserPolicy;
 import rinde.sim.core.simulation.time.TimeIntervalImpl;
 import rinde.sim.event.Event;
 import rinde.sim.event.EventAPI;
@@ -57,15 +52,12 @@ import rinde.sim.event.EventDispatcher;
  * @author dmerckx
  */
 public class Simulator{
-
-    //protected final Map<User, Unit> unitMapping = new HashMap<User, Unit>();
-    protected Multimap<User<?>, User<?>> userToAPI = HashMultimap.create();
     
-    protected final TickPolicy<Model<?,?>> modelPolicy;
-    protected final TickPolicy<TimeUser> timeUserPolicy;
-    protected final TickPolicy<TickListener> externalPolicy;
+    protected final ModelPolicy modelPolicy;
+    protected final TimeUserPolicy timeUserPolicy;
+    protected final TickListenerPolicy externalPolicy;
     
-    private TickPolicy<?> activePolicy;
+    private TickPolicy activePolicy;
     
     
     /**
@@ -130,7 +122,7 @@ public class Simulator{
     public Simulator(long step) {
         modelPolicy = new ModelPolicy();
         timeUserPolicy = new ParallelTimeUserPolicy();
-        externalPolicy = new TickListenerPolicy(true);
+        externalPolicy = new TickListenerSerialPolicy(true);
         
         timeStep = step;
         time = 0L;
@@ -155,7 +147,10 @@ public class Simulator{
                 .dispatchEvent(new Event(SimulatorEventType.CONFIGURED, this));
     }
     
-    private void registerModel(Model<?> model){
+    // ----- REGISTERING ----- // 
+    
+    public void registerModel(Model<?,?> model){
+        assert model != null: "model cannot be null";
         assert !configured: "cannot register model after calling configure";
         
         modelManager.add(model);
@@ -164,42 +159,22 @@ public class Simulator{
         LOGGER.debug("Model is added: " + model);
     }
     
-    private void unregisterUser(User user){
-        assert configured: "cannot unregister users before calling configure";
-    
-        Unit unit = unitMapping.get(user);
-        modelManager.unregister(unit);
-        timeUserPolicy.unregister(unit);
-    }
-    
-    private void registerTickListener(TickListener listener){
+    public void registerTickListener(TickListener listener){
+        assert listener != null: "listener cannot be null";
         assert configured: "cannot register tick listener before calling configure";
 
         externalPolicy.register(listener);
     }
     
-    private void unregisterTickListener(TickListener listener){
+    public void unregisterTickListener(TickListener listener){
+        assert listener != null: "listener cannot be null";
         assert configured: "cannot unregister tick listener before calling configure";
     
         externalPolicy.unregister(listener);
-        
-        register(new RoadUser<RoadData>() {}, new RoadData() {
-            
-            @Override
-            public Point getStartPosition() {
-                // TODO Auto-generated method stub
-                return null;
-            }
-        });
     }
     
     
-    public void registerUser(User<Data> user){
-        
-    }
-    
-    
-    public <D> void registerUser(User<D> user, D data) {
+    public <D extends Data> void registerUser(User<D> user, D data) {
         assert user!=null: "object can not be null";
         assert data!=null: "data can not be null";
         assert configured: "cannot register users before calling configure";
@@ -208,41 +183,42 @@ public class Simulator{
         assert(!(user instanceof Model) && !(user instanceof TickListener)):
                 "A user can not be a model or ticklistener";
        
-        modelManager.register(user);
-        
-        if(user instanceof TimeUser){
-            timeUserPolicy.register((TimeUser) user);
-        }
+        List<TimeUser> timeUsers = addUser(new ArrayList<TimeUser>(), UserInit.create(user, data));
+        timeUserPolicy.register(user, timeUsers);
     }
-
-    /**
-     * Unregisters an object from the simulator.
-     * @param o The object to be unregistered.
-     */
-    public void unregister(Object o) {
-        assert o!=null: "object can not be null";
-        assert activePolicy == null || activePolicy.canUnregisterDuringExecution():
-                "Within " + activePolicy + " it is not possible to unregister objects";
+    
+    public void registerUser(User<Data> user) {
+        registerUser(user, new Data() {});
+    }
+    
+    private <D extends Data> List<TimeUser> addUser(List<TimeUser> users, UserInit<D> init){
+        List<UserInit<?>> guards = modelManager.register(init.user, init.data);
         
-        if (o instanceof Model<?>) { 
-            throw new IllegalArgumentException("Cannot unregister model");
+        for(UserInit<?> g:guards){
+            addUser(users, g);
         }
-        else if(o instanceof User){
-            unregisterUser((User) o);
-        }
-        else if(o instanceof TickListener){
-            unregisterTickListener((TickListener) o);
-        }
-        else {
-            throw new IllegalArgumentException(o + " is of an unknown type.");
-        }
+        
+        if(init.user instanceof TimeUser)
+            users.add((TimeUser) init.user);
+        
+        return users;
+    }
+    
+    public void unregisterUser(User user){
+        assert configured: "cannot unregister users before calling configure";
+    
+        //TODO
+    
+        /*Unit unit = unitMapping.get(user);
+        modelManager.unregister(unit);
+        timeUserPolicy.unregister(unit);*/
     }
 
     /**
      * Returns a safe to modify list of all models registered in the simulator.
      * @return list of models
      */
-    public List<Model<?>> getModels() {
+    public List<Model<?,?>> getModels() {
         return modelManager.getModels();
     }
 
@@ -287,7 +263,7 @@ public class Simulator{
         }
     }
     
-    private <T> void performTicks(TickPolicy<T> policy, TimeInterval interval){
+    private <T> void performTicks(TickPolicy policy, TimeInterval interval){
         activePolicy = policy;
         policy.performTicks(interval);
         activePolicy = null;

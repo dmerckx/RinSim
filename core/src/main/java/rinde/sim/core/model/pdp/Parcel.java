@@ -1,13 +1,12 @@
-package rinde.sim.core.model.pdp.users;
+package rinde.sim.core.model.pdp;
 
 import java.io.Serializable;
 
 import rinde.sim.core.graph.Point;
-import rinde.sim.core.model.Data;
 import rinde.sim.core.model.interaction.Result;
 import rinde.sim.util.TimeWindow;
 
-public class Parcel implements Serializable, Result, Data{
+public class Parcel implements Serializable, Result{
     
     public final Point location;
     public final Point destination;

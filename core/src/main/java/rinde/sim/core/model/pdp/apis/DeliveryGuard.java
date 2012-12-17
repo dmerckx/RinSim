@@ -3,22 +3,22 @@ package rinde.sim.core.model.pdp.apis;
 import java.util.ArrayList;
 import java.util.List;
 
-import rinde.sim.PreAgentGuard;
-import rinde.sim.core.model.AfterTickGuard;
-import rinde.sim.core.model.Agent;
+import rinde.sim.FullGuard;
 import rinde.sim.core.model.Data;
 import rinde.sim.core.model.InitGuard;
 import rinde.sim.core.model.interaction.Notification;
 import rinde.sim.core.model.interaction.apis.InteractionAPI;
 import rinde.sim.core.model.interaction.users.InteractionUser;
+import rinde.sim.core.model.pdp.Parcel;
 import rinde.sim.core.model.pdp.PdpModel;
 import rinde.sim.core.model.pdp.receivers.ContainerNotification;
 import rinde.sim.core.model.pdp.receivers.DeliverySpecificReceiver;
-import rinde.sim.core.model.pdp.users.Parcel;
+import rinde.sim.core.model.pdp.users.DeliveryPoint;
+import rinde.sim.core.model.pdp.users.DeliveryPointData;
 import rinde.sim.core.simulation.TimeInterval;
 import rinde.sim.core.simulation.TimeLapse;
 
-public class DeliveryGuard implements DeliveryAPI, InitGuard, PreAgentGuard, AfterTickGuard, InteractionUser<Data>{
+public class DeliveryGuard extends DeliveryPointState implements DeliveryAPI, InitGuard, FullGuard, InteractionUser<Data>{
 
     private Parcel parcel;
     private InteractionAPI interactionAPI;
@@ -29,7 +29,7 @@ public class DeliveryGuard implements DeliveryAPI, InitGuard, PreAgentGuard, Aft
     private long deliveryTime = 0;
     private DeliveryState state = DeliveryState.SETTING_UP;
     
-    public DeliveryGuard(Parcel parcel, PdpModel model) {
+    public DeliveryGuard(DeliveryPoint<?> user, DeliveryPointData data, PdpModel model) {
         this.parcel = parcel;
         this.pdpModel = model;
     }
@@ -51,7 +51,7 @@ public class DeliveryGuard implements DeliveryAPI, InitGuard, PreAgentGuard, Aft
     }
 
     @Override
-    public DeliveryState getState() {
+    public DeliveryState getDeliveryState() {
         return state;
     }
     
@@ -78,11 +78,6 @@ public class DeliveryGuard implements DeliveryAPI, InitGuard, PreAgentGuard, Aft
     }
 
     // ----- INIT GUARD & AFTER-TICK GUARD ----- //
-
-    @Override
-    public Agent getAgent() {
-        return null;
-    }
 
     @Override
     public void init() {
@@ -128,5 +123,10 @@ public class DeliveryGuard implements DeliveryAPI, InitGuard, PreAgentGuard, Aft
             }
         }
         setState(interval);
+    }
+
+    @Override
+    public DeliveryPointState getState() {
+        return this;
     }
 }

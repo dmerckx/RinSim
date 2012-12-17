@@ -2,15 +2,16 @@ package rinde.sim.core.model.pdp.apis;
 
 import java.util.List;
 
-import rinde.sim.core.model.Data;
-import rinde.sim.core.model.interaction.apis.InteractionAPI;
-import rinde.sim.core.model.interaction.users.InteractionUser;
-import rinde.sim.core.model.pdp.users.Parcel;
+import rinde.sim.core.model.pdp.Parcel;
+import rinde.sim.core.model.pdp.PdpModel;
+import rinde.sim.core.model.pdp.users.Truck;
+import rinde.sim.core.model.pdp.users.TruckData;
 
+//TODO
 public class TruckGuard implements TruckAPI{
 
     
-    public TruckGuard() {
+    public TruckGuard(Truck<?> user, TruckData data, PdpModel model) {
         
     }
 

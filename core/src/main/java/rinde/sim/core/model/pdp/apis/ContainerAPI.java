@@ -4,9 +4,10 @@ import java.util.List;
 
 import rinde.sim.core.model.Data;
 import rinde.sim.core.model.User;
+import rinde.sim.core.model.pdp.Parcel;
 import rinde.sim.core.model.pdp.users.Container;
-import rinde.sim.core.model.pdp.users.Parcel;
 import rinde.sim.core.model.road.RoadModel;
+import rinde.sim.core.model.road.apis.RoadAPI;
 import rinde.sim.core.model.road.users.RoadUser;
 import rinde.sim.core.simulation.TimeLapse;
 
@@ -28,12 +29,15 @@ import rinde.sim.core.simulation.TimeLapse;
  */
 public interface ContainerAPI extends User<Data>{
     
+    void init(RoadAPI api);
+    
+    ContainerState getState();
     
     /**
      * Returns all the parcels currently contained.
      * @return The list of contained parcels.
      */
-    public List<Parcel> getLoad();
+    public List<Parcel> getCurrentLoad();
     
     
     /**
@@ -48,7 +52,7 @@ public interface ContainerAPI extends User<Data>{
      * and then try to load up the first available parcel.
      * 
      * Note that if a parcel is available the {@link Container} state
-     * will change to {@link ContainerState} <code>PICKING_UP</code> and no
+     * will change to {@link ContState} <code>PICKING_UP</code> and no
      * time will be available until the container is done loading. 
      *  
      * @param lapse The time to perform the pickup if available
@@ -62,7 +66,7 @@ public interface ContainerAPI extends User<Data>{
      * any of the available {@link PickupPoint}s or {@link Container}s.
      * 
      * Note that the parcel is available the {@link Container} state
-     * will change to {@link ContainerState} <code>PICKING_UP</code> and no
+     * will change to {@link ContState} <code>PICKING_UP</code> and no
      * time will be available until the container is done loading. 
      * 
      * @param lapse The time to perform the pickup if available
@@ -99,12 +103,12 @@ public interface ContainerAPI extends User<Data>{
      * Returns the current state of this container.
      * @return The current state
      */
-    public ContainerState getState();
+    public ContState getContState();
     
     /**
      * The possible states a {@link Container} can be in.
      */
-    public enum ContainerState {
+    public enum ContState {
         /**
          * The 'normal' state, nothing is going on at this point.
          */

@@ -4,9 +4,9 @@ import rinde.sim.core.graph.Point;
 import rinde.sim.core.model.Data;
 import rinde.sim.core.model.User;
 
-public interface RoadAPI extends User<Data>{
+public interface RoadAPI{
     
-    public Point getLocation();
+    Point getCurrentLocation();
     
-    public Point getLastLocation();
+    RoadState getState();
 }
