@@ -19,7 +19,7 @@ import rinde.sim.core.simulation.TimeLapse;
  * 
  * @author dmerckx
  */
-public interface Agent extends TimeUser{
+public interface Agent{
     
     /**
      * An agent can 'use' the provided time to perform actions.

@@ -8,6 +8,8 @@ import rinde.sim.core.simulation.TimeLapse;
 
 public interface MovingRoadAPI extends RoadAPI{
     
+    Queue<Point> getPath();
+    
     void setSpeed(double speed);
     
     double getSpeed();

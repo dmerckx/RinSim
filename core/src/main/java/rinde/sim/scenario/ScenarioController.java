@@ -117,7 +117,7 @@ public abstract class ScenarioController implements TickListener {
         simulator.configure();
         LOGGER.info("simulator created");
 
-        simulator.register(this);
+        simulator.registerTickListener(this);
 
         uiMode = createUserInterface();
     }
@@ -156,7 +156,7 @@ public abstract class ScenarioController implements TickListener {
      */
     public void stop() {
         if (!uiMode) {
-            simulator.unregister(this);
+            simulator.unregisterTickListener(this);
             simulator.stop();
         }
     }
@@ -225,7 +225,7 @@ public abstract class ScenarioController implements TickListener {
                         + " [scenario controller is detaching from simulator..]");
             }
             status = EventType.SCENARIO_FINISHED;
-            simulator.unregister(this);
+            simulator.unregisterTickListener(this);
             disp.dispatchEvent(new Event(status, this));
         }
 

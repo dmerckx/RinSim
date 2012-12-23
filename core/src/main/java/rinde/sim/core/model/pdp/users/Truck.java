@@ -13,10 +13,6 @@ public class Truck<D extends TruckData> implements Container<D>, MovingRoadUser<
     protected ContainerAPI containerAPI;
     protected TruckAPI truckAPI;
     
-    public final void setTruckAPI(TruckAPI api){
-        this.truckAPI = api;
-    }
-    
     @Override
     public final void setRoadAPI(MovingRoadAPI api) {
         this.roadAPI = api;
@@ -38,4 +34,8 @@ public class Truck<D extends TruckData> implements Container<D>, MovingRoadUser<
         return containerAPI.getState();
     }
     
+    public final void setTruckAPI(TruckAPI api){
+        api.init(roadAPI, containerAPI);
+        this.truckAPI = api;
+    }
 }

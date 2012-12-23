@@ -75,6 +75,8 @@ public interface ContainerAPI extends User<Data>{
      */
     public boolean tryPickupOf(TimeLapse lapse, Parcel parcel);
     
+    public Parcel tryDelivery(TimeLapse lapse);
+    
     public void acceptAll(TimeLapse lapse);
     
     public void accept(TimeLapse lapse, List<Parcel> parcels);

@@ -2,43 +2,94 @@ package rinde.sim.core.model.communication;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.SortedSet;
+import java.util.concurrent.CountDownLatch;
+
+import org.apache.commons.math3.random.MersenneTwister;
+import org.apache.commons.math3.random.RandomGenerator;
 
 import rinde.sim.core.graph.Point;
+import rinde.sim.core.model.Data;
 import rinde.sim.core.model.Model;
 import rinde.sim.core.model.User;
 import rinde.sim.core.model.communication.apis.CommGuard;
+import rinde.sim.core.model.communication.apis.SimpleCommGuard;
 import rinde.sim.core.model.communication.users.CommData;
 import rinde.sim.core.model.communication.users.CommUser;
+import rinde.sim.core.model.communication.users.FullCommUser;
+import rinde.sim.core.model.communication.users.SimpleCommData;
+import rinde.sim.core.model.communication.users.SimpleCommUser;
 import rinde.sim.core.simulation.TimeInterval;
 import rinde.sim.core.simulation.UserInit;
+import rinde.sim.core.simulation.policies.ParallelExecution;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 
-public class CommunicationModel implements Model<CommData, CommUser<?>>{
+/**
+ * A model allowing its users to broadcast messages, send private
+ * messages and obtain received messages.
+ * 
+ * This model supports the following types:
+ *  - {@link SimpleCommUser} : {@link SimpleCommData}
+ *  - {@link FullCommUser} : {@link CommData}
+ *  
+ * @author dmerckx
+ */
+public class CommunicationModel extends ParallelExecution implements Model<Data, CommUser<?>>{
 
-	protected final HashMap<Address, CommGuard> comms;
-	private int nextId = 0;
+	private final HashMap<Address, CommGuard> fullComms = Maps.newHashMap();
+	private final HashMap<Address, SimpleCommGuard> simpleComms = Maps.newHashMap();
 	
+	private SortedSet<SimpleCommGuard> activeGuards = Sets.newTreeSet();
+	
+	private int nextId = 0;
+	private RandomGenerator rnd;
+	
+	/**
+	 * Create a new communication model.
+	 */
 	public CommunicationModel(){
-		comms = new HashMap<Address, CommGuard>();
 	}
 	
+	/**
+	 * Generate a new address, with a unique id.
+	 * @return A new unique address.
+	 */
 	public Address generateAddress(){
 		return new Address(nextId++);
 	}
 	
+	/**
+	 * Send a message to certain address.
+	 * @param destination The destination to send to.
+	 * @param msg The message to be delivered.
+	 */
 	public void send(Address destination, Delivery msg){
-		comms.get(destination).receive(msg);
+	    SimpleCommGuard receiver;
+	    if(simpleComms.containsKey(destination))
+	        receiver = simpleComms.get(destination);
+	    else
+	        receiver = fullComms.get(destination);
+	      
+	    if(!receiver.isActive())
+	        activeGuards.add(receiver);
+	    receiver.receive(msg);
 	}
 	
+	/**
+	 * Broadcast a message.
+	 * @param msg The message to be broadcasted.
+	 */
 	public void broadcast(Delivery msg){
-		CommGuard sender = comms.get(msg.address);
+		CommGuard sender = fullComms.get(msg.sender);
 		Point senderLocation = sender.getLastLocation();
 		
-		for(Address a: comms.keySet()){
-			if( Point.distance(comms.get(a).getLastLocation(),senderLocation) < sender.getRadius()){
+		for(Address a: fullComms.keySet()){
+			if( Point.distance(fullComms.get(a).getLastLocation(),senderLocation) < sender.getRadius()){
 				try {
-					comms.get(a).receive(msg.clone());
+				    fullComms.get(a).receive(msg.clone());
 				} catch (CloneNotSupportedException e) {
 					e.printStackTrace();
 				}
@@ -50,44 +101,79 @@ public class CommunicationModel implements Model<CommData, CommUser<?>>{
 	// ----- MODEL ----- //
 
 	@Override
-	public List<UserInit<?>> register(CommUser<?> user, CommData data) {
+	public List<UserInit<?>> register(CommUser<?> user, Data data) {
         assert user!=null : "User can not be null.";
 	    assert data!=null : "Data can not be null.";
 	    
-        CommGuard guard = new CommGuard(user, data, this);
-	    user.SetCommunicationAPI(guard);
-	    
-		comms.put(guard.getAddress(), guard);
-
-		List<UserInit<?>> result = Lists.newArrayList();
-        result.add(UserInit.create(guard));
+	    if(user instanceof FullCommUser<?>){
+	        CommGuard guard = new CommGuard((FullCommUser<?>) user, (CommData) data, this, rnd.nextLong());
+	        ((FullCommUser<?>) user).setCommunicationAPI(guard); 
+	        fullComms.put(guard.getAddress(), guard);
+	    }
+	    else if(user instanceof SimpleCommUser<?>){
+	        SimpleCommGuard guard =
+	                new SimpleCommGuard((SimpleCommUser<?>) user, (SimpleCommData) data, this, rnd.nextLong());
+	        ((SimpleCommUser<?>) user).setCommunicationAPI(guard);
+            simpleComms.put(guard.getAddress(), guard);
+	    }
+	    else {
+            throw new IllegalArgumentException("unknown type received..");
+	    }
         
-        return result;
+        return Lists.newArrayList();
+	}
+	
+	@Override
+	public void setSeed(long seed) {
+	    this.rnd = new MersenneTwister(seed);
 	}
 
 	@Override
 	public List<User<?>> unregister(CommUser<?> user) {
         assert user!=null : "User can not be null.";
-	   
-        Address a = user.getCommunicationState().getAddress();
         
-        assert comms.containsKey(a);
-        
-        List<User<?>> result = Lists.newArrayList();
-        result.add(comms.get(a));
-        
-        comms.remove(a);
-        
-        return result;
+        if(user instanceof FullCommUser<?>){
+            Address a = ((FullCommUser<?>) user).getCommunicationState().getAddress();
+            assert(fullComms.containsKey(a));
+            fullComms.remove(a);
+        }
+        else if(user instanceof SimpleCommUser<?>){
+            Address a = ((SimpleCommUser<?>) user).getCommunicationState().getAddress();
+            assert(simpleComms.containsKey(a));
+            simpleComms.remove(a);
+        }
+        else {
+            throw new IllegalArgumentException("unknown type to unregister..");
+        }
+
+        return Lists.newArrayList();
 	}
 
-	@Override
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+    @Override
 	public Class<CommUser<?>> getSupportedType() {
 		return (Class) CommUser.class;
 	}
 
     @Override
     public void tick(TimeInterval time) {
+        final CountDownLatch latch = new CountDownLatch(activeGuards.size());
         
+        for(final SimpleCommGuard guard:activeGuards){
+            pool.submit(new Runnable() {
+                @Override
+                public void run() {
+                    guard.process();
+                    latch.countDown();
+                }
+            });
+        }
+        activeGuards.clear();
+        
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 }

@@ -14,7 +14,7 @@ import rinde.sim.core.graph.Point;
 import rinde.sim.core.model.Agent;
 import rinde.sim.core.model.communication.Mailbox;
 import rinde.sim.core.model.communication.Message;
-import rinde.sim.core.model.communication.apis.CommunicationAPI;
+import rinde.sim.core.model.communication.apis.CommAPI;
 import rinde.sim.core.model.communication.users.CommUser;
 import rinde.sim.core.model.road.RoadModel;
 import rinde.sim.core.model.road.users.MovingRoadUser;
@@ -42,7 +42,7 @@ class RandomWalkAgent implements Agent, MovingRoadUser, SimulatorUser, CommUser 
 	protected RandomGenerator rnd;
 	private SimulatorAPI simulator;
 	private final double speed;
-	private CommunicationAPI cm;
+	private CommAPI cm;
 	private final int radius;
 
 	HashMap<RandomWalkAgent, Long> lastCommunicationTime;
@@ -95,7 +95,6 @@ class RandomWalkAgent implements Agent, MovingRoadUser, SimulatorUser, CommUser 
 		} else {
 			rs.followPath(this, path, timeLapse);
 		}
-
 		sendMsgs(timeLapse.getStartTime());
 	}
 
@@ -160,7 +159,7 @@ class RandomWalkAgent implements Agent, MovingRoadUser, SimulatorUser, CommUser 
 	}
 
 	@Override
-	public void setCommunicationAPI(CommunicationAPI api) {
+	public void setCommunicationAPI(CommAPI api) {
 		cm = api;
 	}
 

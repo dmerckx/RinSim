@@ -3,7 +3,7 @@ package rinde.sim.core.model.pdp.apis;
 import java.util.ArrayList;
 import java.util.List;
 
-import rinde.sim.FullGuard;
+import rinde.sim.TickGuard;
 import rinde.sim.core.model.Data;
 import rinde.sim.core.model.InitGuard;
 import rinde.sim.core.model.interaction.Notification;
@@ -12,17 +12,18 @@ import rinde.sim.core.model.interaction.users.InteractionUser;
 import rinde.sim.core.model.pdp.Parcel;
 import rinde.sim.core.model.pdp.PdpModel;
 import rinde.sim.core.model.pdp.receivers.ContainerNotification;
-import rinde.sim.core.model.pdp.receivers.DeliverySpecificReceiver;
+import rinde.sim.core.model.pdp.receivers.PickupReceiver;
 import rinde.sim.core.model.pdp.users.PickupPoint;
 import rinde.sim.core.model.pdp.users.PickupPointData;
 import rinde.sim.core.simulation.TimeInterval;
 import rinde.sim.core.simulation.TimeLapse;
 
-public class PickupGuard extends PickupPointState implements PickupAPI, InitGuard, FullGuard, InteractionUser<Data>{
+public class PickupGuard extends PickupPointState implements PickupAPI, InitGuard, TickGuard, InteractionUser<Data>{
     
     private Parcel parcel;
     private InteractionAPI interactionAPI;
     private PdpModel pdpModel;
+    private PickupPoint<?> user;
     
 
     private boolean pickedUp = false;
@@ -30,6 +31,7 @@ public class PickupGuard extends PickupPointState implements PickupAPI, InitGuar
     private PickupState state = PickupState.SETTING_UP;
     
     public PickupGuard(PickupPoint<?> user, PickupPointData data, PdpModel model) {
+        this.user = user;
         this.parcel = data.getParcel();
         this.pdpModel = model;
     }
@@ -50,6 +52,7 @@ public class PickupGuard extends PickupPointState implements PickupAPI, InitGuar
         return parcel;
     }
 
+    //TODO make detemerministic
     @Override
     public PickupState getPickupState() {
         return state;
@@ -86,7 +89,7 @@ public class PickupGuard extends PickupPointState implements PickupAPI, InitGuar
         targets.add(parcel);
         
         interactionAPI.advertise(
-                new DeliverySpecificReceiver(parcel.destination, targets, pdpModel.getPolicy()));
+                new PickupReceiver(parcel.location, targets, pdpModel.getPolicy()));
     }
 
     /**
@@ -95,6 +98,16 @@ public class PickupGuard extends PickupPointState implements PickupAPI, InitGuar
      */
     @Override
     public void tick(TimeLapse time) {
+        for(Notification n:interactionAPI.getNotifications()){
+            if(n instanceof ContainerNotification){
+                assert parcel == ((ContainerNotification) n).getParcel();
+                pickedUp = true;
+                pdpModel.notifyParcelPickup(user);
+                pickupTime = parcel.deliveryDuration;
+            }
+        }
+        setState(time);
+        
         switch(state){
             case BEING_PICKED_UP:
                 if(pickupTime > time.getTimeLeft()){
@@ -116,14 +129,7 @@ public class PickupGuard extends PickupPointState implements PickupAPI, InitGuar
      */
     @Override
     public void afterTick(TimeInterval interval) {
-        for(Notification n:interactionAPI.getNotifications()){
-            if(n instanceof ContainerNotification){
-                assert parcel == ((ContainerNotification) n).getParcel();
-                pickedUp = true;
-                pickupTime = parcel.deliveryDuration;
-            }
-        }
-        setState(interval);
+        
     }
 
     @Override

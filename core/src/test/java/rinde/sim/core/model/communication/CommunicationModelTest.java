@@ -212,13 +212,13 @@ public class CommunicationModelTest {
         }
         
         if(reverse){
-            sender1Unit.afterTick(ti);
-            sender2Unit.afterTick(ti);
-            recipientUnit.afterTick(ti);
+            sender1Unit.process(ti);
+            sender2Unit.process(ti);
+            recipientUnit.process(ti);
         }else{
-            recipientUnit.afterTick(ti);
-            sender2Unit.afterTick(ti);
-            sender1Unit.afterTick(ti);
+            recipientUnit.process(ti);
+            sender2Unit.process(ti);
+            sender1Unit.process(ti);
         }
         time += STEP;
     }

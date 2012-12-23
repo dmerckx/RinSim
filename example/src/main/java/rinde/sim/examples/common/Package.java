@@ -1,16 +1,17 @@
 package rinde.sim.examples.common;
 
-import rinde.sim.core.graph.Point;
-import rinde.sim.core.model.road.RoadModel;
-import rinde.sim.core.model.road.users.RoadUser;
+import rinde.sim.core.model.road.apis.RoadAPI;
+import rinde.sim.core.model.road.apis.RoadState;
+import rinde.sim.core.model.road.users.FixedRoadUser;
+import rinde.sim.core.model.road.users.RoadData;
 
-public class Package implements RoadUser {
+public class Package implements FixedRoadUser<RoadData> {
+	
 	public final String name;
-	private Point location;
-
-	public Package(String name, Point location) {
+	protected RoadAPI roadAPI;
+	
+	public Package(String name) {
 		this.name = name;
-		this.location = location;
 	}
 
 	@Override
@@ -19,11 +20,12 @@ public class Package implements RoadUser {
 	}
 
 	@Override
-	public void initRoadUser(RoadModel model) {
-		model.addObjectAt(this, location);
+	public void setRoadAPI(RoadAPI api) {
+		this.roadAPI = api;
 	}
 
-	public Point getLocation() {
-		return location;
+	@Override
+	public RoadState getRoadState() {
+		return roadAPI.getState();
 	}
 }

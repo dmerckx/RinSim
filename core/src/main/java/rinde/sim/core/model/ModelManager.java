@@ -116,23 +116,28 @@ public class ModelManager implements ModelProvider {
      *             configured
      */
     @SuppressWarnings("unchecked")
-    public <U extends User<?>> void unregister(U user) {
+    public <U extends User<?>> List<User<?>> unregister(U user) {
         assert user!=null : "Can not unregister null";
         assert !(user instanceof Model): "Can not unregister models";
         
         checkState(configured, "can not unregister when not configured, call configure() first");
 
         final Set<Class<?>> modelSupportedTypes = registry.keySet();
+        
+        List<User<?>> result = Lists.newArrayList();
+        
         for (final Class<?> modelSupportedType : modelSupportedTypes) {
             // check if object is from a known type
             if (modelSupportedType.isAssignableFrom(user.getClass())) {
                 final Collection<Model<?,?>> assignableModels = registry
                         .get(modelSupportedType);
                 for (final Model<?,?> m : assignableModels) {
-                    ((Model<?,U>) m).unregister(user);
+                    result.addAll(((Model<?,U>) m).unregister(user));
                 }
             }
         }
+        
+        return result;
     }
 
     /**

@@ -3,8 +3,8 @@
  */
 package rinde.sim.ui.renderers;
 
-import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
@@ -49,11 +49,11 @@ public class RoadUserRenderer implements ModelRenderer {
 		uiSchema.initialize(gc.getDevice());
 		gc.setBackground(uiSchema.getDefaultColor());
 
-		final Map<RoadUser, Point> objects = rs.getObjectsAndPositions();
+		final Set<RoadUser<?>> objects = rs.getObjects();
 		synchronized (objects) {
-			for (final Entry<RoadUser, Point> entry : objects.entrySet()) {
-				final Point p = entry.getValue();
-				final Class<?> type = entry.getKey().getClass();
+			for (final RoadUser<?> user : objects) {
+				final Point p = user.getRoadState().getLocation();
+				final Class<?> type = user.getClass();
 				final Image image = uiSchema.getImage(type);
 				final int x = vp.toCoordX(p.x) - radius;
 				final int y = vp.toCoordY(p.y) - radius;

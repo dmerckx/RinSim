@@ -34,6 +34,9 @@ public class DeliveryVisitor extends Visitor<DeliveryReceiver, Parcel> {
      
     @Override
     public Parcel visit(TimeLapse lapse, List<DeliveryReceiver> targets) {
+        System.out.println("do visit");
+        System.out.println("targets: " + targets);
+        
         for(DeliveryReceiver r:targets){
             for(Parcel parcel:parcels){
                 if(tryDelivery(lapse, parcel, r)) return parcel;

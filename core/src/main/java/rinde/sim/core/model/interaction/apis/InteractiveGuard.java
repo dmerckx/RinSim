@@ -4,45 +4,88 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import rinde.sim.FullGuard;
-import rinde.sim.core.model.Data;
-import rinde.sim.core.model.User;
+import rinde.sim.core.model.communication.Delivery;
+import rinde.sim.core.model.communication.Message;
+import rinde.sim.core.model.communication.apis.CommunicationState;
+import rinde.sim.core.model.communication.apis.SimpleCommAPI;
+import rinde.sim.core.model.communication.users.SimpleCommData;
+import rinde.sim.core.model.communication.users.SimpleCommUser;
 import rinde.sim.core.model.interaction.ExtendedReceiver;
 import rinde.sim.core.model.interaction.InteractionModel;
-import rinde.sim.core.model.interaction.Notification;
 import rinde.sim.core.model.interaction.Receiver;
 import rinde.sim.core.model.interaction.Result;
 import rinde.sim.core.model.interaction.Visitor;
 import rinde.sim.core.model.interaction.users.InteractionUser;
-import rinde.sim.core.simulation.TimeInterval;
 import rinde.sim.core.simulation.TimeLapse;
 
-public class InteractiveGuard implements InteractionAPI, FullGuard, User<Data>{
+import com.google.common.collect.Lists;
 
-    private List<Notification> notifications = new ArrayList<Notification>();
-    private List<Notification> notificationsInbox = new ArrayList<Notification>();
-    
-    private final InteractionUser agent;
+/**
+ * An implementation of the {@link InteractionAPI}.
+ * 
+ * This guard guarantees consistency for undergoing interactions:
+ *  - new notifications are received in a thread safe way
+ *  - new notifications are not shown to the user until the next turn
+ *  - advertised receivers are activated after everyone processed its tick
+ *  - using a visitor forces a sleep until all users before this user 
+ *  have finished their turn, 2 visits are never processed simultaneously
+ * 
+ * @author dmerckx
+ */
+public class InteractiveGuard implements SimpleCommUser<SimpleCommData>, InteractionAPI{
+
     private final InteractionModel interactionModel;
+    private SimpleCommAPI commAPI;
     
-    private List<Receiver> receivers = new ArrayList<Receiver>();
+    /**
+     * The list with active receivers that were advertised by this guard.
+     */
+    public final List<Receiver> receivers = new ArrayList<Receiver>();
     
-    public InteractiveGuard(InteractionUser agent, InteractionModel model) {
-        this.agent = agent;
+    /**
+     * Construct a new guard. 
+     * @param user The user to which this API belongs.
+     * @param model The interaction model. 
+     */
+    public InteractiveGuard(InteractionUser<?> user, InteractionModel model) {
         this.interactionModel = model;
     }
     
-    public synchronized void receiveNotification(Notification notification){
-        notifications.add(notification);
+    
+    // ----- SIMPLE COMM USER ----- // 
+    
+    @Override
+    public void setCommunicationAPI(SimpleCommAPI api) {
+        this.commAPI = api;
+    }
+
+    @Override
+    public CommunicationState getCommunicationState() {
+        return commAPI.getState();
     }
     
-    public synchronized void receiveTermination(ExtendedReceiver receiver){
+    /**
+     * Receive a message that one of the receivers advertised by this guard was
+     * terminated;
+     * @param receiver The receiver that terminated
+     */
+    public synchronized void receiveTermination(Receiver receiver){
         receivers.remove(receiver);
     }
     
     @Override
-    public List<Notification> getNotifications(){
-        return notificationsInbox;
+    public List<Message> getNotifications(){
+        Iterator<Delivery> it = commAPI.getMessages();
+        
+        List<Message> result = Lists.newArrayList();
+        
+        while(it.hasNext()){
+            Delivery d = it.next();
+            result.add(d.message);
+            it.remove();
+        }
+        
+        return result;
     }
     
     @Override
@@ -52,13 +95,11 @@ public class InteractiveGuard implements InteractionAPI, FullGuard, User<Data>{
     
     @Override
     public void advertise(Receiver receiver){
+        if(receiver instanceof ExtendedReceiver){
+            ((ExtendedReceiver) receiver).setGuard(commAPI.getAddress());
+        }
         receivers.add(receiver);
-    }
-    
-    @Override
-    public void removeReceiver(Receiver receiver){
-        interactionModel.remove(receiver);
-        receivers.remove(receiver);
+        interactionModel.advertise(receiver);
     }
 
     @Override
@@ -75,23 +116,10 @@ public class InteractiveGuard implements InteractionAPI, FullGuard, User<Data>{
 
     @Override
     public void removeAll() {
-        for(Receiver receiver:receivers){
+        for(Receiver receiver:Lists.newArrayList(receivers)){
             interactionModel.remove(receiver);
         }
-        receivers.clear();
-    }
-
-    @Override
-    public void tick(TimeLapse time) {
-        // TODO Auto-generated method stub
         
+        assert receivers.isEmpty() : "all receivers should be removed at this point";
     }
-    
-    public void afterTick(TimeInterval time) {
-        if(notifications.size() == 0)
-            return;
-        
-        notificationsInbox.addAll(notifications);
-    }
-    
 }

@@ -6,7 +6,7 @@ import rinde.sim.core.model.road.apis.RoadAPI;
 import rinde.sim.core.model.road.apis.RoadState;
 import rinde.sim.core.model.road.users.FixedRoadUser;
 
-public class PickupPoint<D extends PickupPointData> implements FixedRoadUser<D>{
+public class PickupPoint<D extends PickupPointData> implements FixedRoadUser<D>, PdpUser<D>{
     
     protected PickupAPI pickupAPI;
     protected RoadAPI roadAPI;

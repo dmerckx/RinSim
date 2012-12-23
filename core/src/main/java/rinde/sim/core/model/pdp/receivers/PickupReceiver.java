@@ -61,6 +61,7 @@ public class PickupReceiver extends ExtendedReceiver {
      * @param parcel Pickup the specified parcel.
      */
     public void pickup(Parcel parcel){
+        System.out.println("----------PICKUP");
         sendNotification(new ContainerNotification(NotificationType.PICKUP, parcel));
         terminate();
     }

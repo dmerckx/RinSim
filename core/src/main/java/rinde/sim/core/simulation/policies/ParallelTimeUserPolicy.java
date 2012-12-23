@@ -3,11 +3,11 @@ package rinde.sim.core.simulation.policies;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
-import rinde.sim.FullGuard;
+import rinde.sim.TickGuard;
 import rinde.sim.core.model.Agent;
 import rinde.sim.core.model.InitGuard;
 import rinde.sim.core.model.TimeUser;
@@ -16,29 +16,26 @@ import rinde.sim.core.simulation.TimeInterval;
 import rinde.sim.core.simulation.TimeLapse;
 import rinde.sim.core.simulation.time.TimeLapseGroup;
 
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Sets;
 
-public class ParallelTimeUserPolicy extends ThreadState implements TimeUserPolicy{
+public class ParallelTimeUserPolicy extends ParallelExecution implements TimeUserPolicy{
     
     private LinkedHashSet<InitGuard> initGuards = Sets.newLinkedHashSet();
-    private LinkedHashSet<FullGuard> fullGuards = Sets.newLinkedHashSet();
-    private HashMultimap<User<?>, Agent> agents = HashMultimap.create();
+    private ListMultimap<User<?>, Agent> agents = ArrayListMultimap.create();
     
     final TimeLapseGroup group = new TimeLapseGroup();
 
     
     public void register(User<?> originalUser, List<TimeUser> relatedTimeUsers){
+        System.out.println(" -- register");
+        
         for(TimeUser user:relatedTimeUsers){
             assert isValidUser(user);
 
             if(user instanceof InitGuard){
                 initGuards.add((InitGuard) user);
-            }
-            
-            if(user instanceof FullGuard){
-                fullGuards.add((FullGuard) user);
             }
             
             if(!(user instanceof Agent))
@@ -51,12 +48,6 @@ public class ParallelTimeUserPolicy extends ThreadState implements TimeUserPolic
     public void unregister(User<?> originalUser) {
         assert agents.containsKey(originalUser);
         
-        for(Agent agent:agents.get(originalUser)){
-            if(agent instanceof FullGuard){
-                fullGuards.remove(agent);
-            }
-        }
-        
         agents.removeAll(originalUser);
     }
     
@@ -64,11 +55,11 @@ public class ParallelTimeUserPolicy extends ThreadState implements TimeUserPolic
         //A time user is either a simple agent..
         boolean simpleAgent = (user instanceof Agent      
                 && !(user instanceof InitGuard)
-                && !(user instanceof FullGuard));
+                && !(user instanceof TickGuard));
         
         //..or a guard acting as time user. 
         boolean guard = (user instanceof InitGuard 
-                || (user instanceof FullGuard));
+                || (user instanceof TickGuard));
         
         return simpleAgent ^ guard;
     }
@@ -83,13 +74,13 @@ public class ParallelTimeUserPolicy extends ThreadState implements TimeUserPolic
         List<Future<?>> futures = new ArrayList<Future<?>>();
         List<CountDownLatch> barriers = new ArrayList<CountDownLatch>();
         
-        for(final User<?> key:agents.keys()){
-            final Set<Agent> toExecute= agents.get(key); //TODO: check if execution order is not random !!
+        for(final User<?> key:agents.keySet()){
+            final List<Agent> toExecute= agents.get(key); //TODO: check if execution order is not random !!
             final ThreadLocal<CountDownLatch> local = previousBarrier;
             final CountDownLatch barrier = new CountDownLatch(1);
             barriers.add(barrier);
             
-            futures.add(pool.submit(new Runnable() {
+            Future<?> f = pool.submit(new Runnable() {
                 @Override
                 public void run() {
                     local.set(barrier);
@@ -101,25 +92,21 @@ public class ParallelTimeUserPolicy extends ThreadState implements TimeUserPolic
                     
                     local.set(null);
                 }
-            }));
+            });
+            
+            futures.add(f);
         }
         
         for(int i = 0; i < futures.size(); i++){
             try {
                 futures.get(i).get();
-            } catch (Exception e) {
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } catch (ExecutionException e) {
                 e.printStackTrace();
             }
+            
             barriers.get(i).countDown();
-        }
-        
-        for(final FullGuard g:fullGuards){
-            futures.add(pool.submit(new Runnable() {
-                @Override
-                public void run() {
-                    g.afterTick(interval);
-                }
-            }));
         }
     }
 

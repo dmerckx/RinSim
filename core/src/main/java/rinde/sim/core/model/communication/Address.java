@@ -1,16 +1,26 @@
 package rinde.sim.core.model.communication;
 
-import java.util.Iterator;
+import rinde.sim.core.model.communication.users.CommUser;
 
-import rinde.sim.core.model.communication.apis.CommunicationAPI;
-import rinde.sim.core.model.communication.apis.CommunicationState;
 
+/**
+ * Represents an address used to distinguish {@link CommUser}s.
+ * 
+ * @author dmerckx
+ */
 public final class Address {
 
+	/**
+	 * The id of this address.
+	 */
 	public final int id;
 	
-	public Address(int id){
+	/**
+	 * Create a new address with a given id.
+	 * @param id The id of this address.
+	 */
+	@SuppressWarnings("hiding")
+    public Address(int id){
 		this.id = id;
-		
 	}
 }

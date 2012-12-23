@@ -13,6 +13,7 @@ import rinde.sim.core.model.pdp.receivers.DeliverySpecificReceiver;
 import rinde.sim.core.model.pdp.receivers.PickupReceiver;
 import rinde.sim.core.model.pdp.users.Container;
 import rinde.sim.core.model.pdp.users.ContainerData;
+import rinde.sim.core.model.pdp.visitors.DeliveryVisitor;
 import rinde.sim.core.model.pdp.visitors.PickupSpecificVisitor;
 import rinde.sim.core.model.pdp.visitors.PickupVisitor;
 import rinde.sim.core.model.road.apis.RoadAPI;
@@ -59,7 +60,15 @@ public class ContainerGuard extends ContainerState implements ContainerAPI, Inte
     @SuppressWarnings("javadoc")
     protected void load(TimeLapse lapse, Parcel parcel){
         state = ContState.PICKING_UP;
+        load.add(parcel);
         actionTime = parcel.pickupDuration;
+        doAction(lapse);
+    }
+    
+    protected void unload(TimeLapse lapse, Parcel parcel){
+        state = ContState.DELIVERING;
+        load.remove(parcel);
+        actionTime = parcel.deliveryDuration;
         doAction(lapse);
     }
     
@@ -104,7 +113,7 @@ public class ContainerGuard extends ContainerState implements ContainerAPI, Inte
         PickupVisitor visitor = new PickupVisitor(parcelType,
                 roadAPI.getCurrentLocation(), getCapacityLeft());
         Parcel result = interactiveAPI.visit(lapse, visitor);
-        if(result != null) load.add(result);
+        if(result != null) load(lapse, result);
         return result;
     }
 
@@ -117,8 +126,17 @@ public class ContainerGuard extends ContainerState implements ContainerAPI, Inte
         PickupVisitor visitor = new PickupSpecificVisitor(parcel,
                 roadAPI.getCurrentLocation(), getCapacityLeft());
         Parcel result = interactiveAPI.visit(lapse, visitor);
-        if(result != null) load.add(result);
+        if(result != null) load(lapse, result);
         return result != null;
+    }
+    
+    public Parcel tryDelivery(TimeLapse lapse){
+        
+        DeliveryVisitor visitor = new DeliveryVisitor(roadAPI.getCurrentLocation(), load);
+        
+        Parcel result = interactiveAPI.visit(lapse, visitor);
+        if(result != null) unload(lapse, result);
+        return result;
     }
 
     @Override

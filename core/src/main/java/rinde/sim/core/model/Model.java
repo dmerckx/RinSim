@@ -19,6 +19,8 @@ public interface Model<D extends Data, T extends User<? extends D>>{
      */
     List<UserInit<?>> register(T user, D data);
     
+    void setSeed(long seed);
+    
     /**
      * Unregister element from a model.
      * @param element the <code>! null</code> should be imposed

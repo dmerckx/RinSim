@@ -11,6 +11,9 @@ import org.apache.commons.math3.random.RandomGenerator;
 
 import rinde.sim.core.graph.Graph;
 import rinde.sim.core.graph.MultiAttributeData;
+import rinde.sim.core.model.pdp.PdpObserver;
+import rinde.sim.core.model.pdp.users.DeliveryPoint;
+import rinde.sim.core.model.pdp.users.PickupPoint;
 import rinde.sim.core.model.road.GraphRoadModel;
 import rinde.sim.core.model.road.RoadModel;
 import rinde.sim.core.old.pdp.PDPModel;
@@ -26,7 +29,7 @@ import rinde.sim.ui.renderers.UiSchema;
  * @author Rinde van Lon <rinde.vanlon@cs.kuleuven.be>
  * 
  */
-public class PDPExample {
+public class PDPExample{
 
 	public static void main(String[] args) throws FileNotFoundException, IOException {
 

@@ -1,7 +1,7 @@
 package rinde.sim.core.model.communication.dummies;
 
 import rinde.sim.core.graph.Point;
-import rinde.sim.core.model.communication.apis.CommunicationAPI;
+import rinde.sim.core.model.communication.apis.CommAPI;
 import rinde.sim.core.model.communication.users.CommUser;
 import rinde.sim.core.model.road.apis.RoadAPI;
 
@@ -11,7 +11,7 @@ public class TestCommUser implements CommUser{
     public final TestCommUnit unit;
 
     public RoadAPI roadAPI;
-    public CommunicationAPI commAPI;
+    public CommAPI commAPI;
     
     public TestCommUser(double rad) {
         this(new Point(0,0), rad, 1.0);

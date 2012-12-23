@@ -34,10 +34,9 @@ import org.eclipse.swt.widgets.Shell;
 
 import rinde.sim.core.graph.Point;
 import rinde.sim.core.model.ModelReceiver;
-import rinde.sim.core.simulation.Controller;
 import rinde.sim.core.simulation.Simulator;
-import rinde.sim.core.simulation.Agent;
-import rinde.sim.core.simulation.time.TimeLapse;
+import rinde.sim.core.simulation.TickListener;
+import rinde.sim.core.simulation.TimeInterval;
 import rinde.sim.ui.renderers.Renderer;
 import rinde.sim.ui.renderers.ViewPort;
 import rinde.sim.ui.renderers.ViewRect;
@@ -50,7 +49,7 @@ import rinde.sim.util.TimeFormatter;
  * @author Rinde van Lon <rinde.vanlon@cs.kuleuven.be>
  * 
  */
-public class SimulationViewer extends Composite implements Controller, ControlListener, PaintListener,
+public class SimulationViewer extends Composite implements TickListener, ControlListener, PaintListener,
 		SelectionListener {
 
 	public static final String COLOR_WHITE = "white";
@@ -104,7 +103,7 @@ public class SimulationViewer extends Composite implements Controller, ControlLi
 			}
 		}
 		simulator = sim;
-		simulator.register(this);
+		simulator.registerTickListener(this);
 
 		this.renderers = renderers;
 		this.speedUp = speedUp;
@@ -526,7 +525,7 @@ public class SimulationViewer extends Composite implements Controller, ControlLi
 	}
 
 	@Override
-	public void preTick(TimeLapse timeLapse) {
+	public void tick(TimeInterval timeLapse) {
 		if (simulator.isPlaying() && lastRefresh + timeLapse.getTimeStep() * speedUp > timeLapse.getStartTime()) {
 			return;
 		}

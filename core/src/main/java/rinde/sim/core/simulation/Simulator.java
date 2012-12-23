@@ -3,7 +3,6 @@
  */
 package rinde.sim.core.simulation;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -25,6 +24,8 @@ import rinde.sim.core.simulation.time.TimeIntervalImpl;
 import rinde.sim.event.Event;
 import rinde.sim.event.EventAPI;
 import rinde.sim.event.EventDispatcher;
+
+import com.google.common.collect.Lists;
 
 /**
  * Simulator is the core class of a simulation. It is responsible for managing
@@ -183,19 +184,23 @@ public class Simulator{
         assert(!(user instanceof Model) && !(user instanceof TickListener)):
                 "A user can not be a model or ticklistener";
        
-        List<TimeUser> timeUsers = addUser(new ArrayList<TimeUser>(), UserInit.create(user, data));
-        timeUserPolicy.register(user, timeUsers);
+        List<TimeUser> timeUsers = addUser(UserInit.create(user, data));
+        
+        if(timeUsers.size() > 0)
+            timeUserPolicy.register(user, timeUsers);
     }
     
     public void registerUser(User<Data> user) {
         registerUser(user, new Data() {});
     }
     
-    private <D extends Data> List<TimeUser> addUser(List<TimeUser> users, UserInit<D> init){
+    private <D extends Data> List<TimeUser> addUser(UserInit<D> init){
         List<UserInit<?>> guards = modelManager.register(init.user, init.data);
         
+        List<TimeUser> users = Lists.newArrayList();
+        
         for(UserInit<?> g:guards){
-            addUser(users, g);
+            users.addAll(addUser(g));
         }
         
         if(init.user instanceof TimeUser)
@@ -207,11 +212,25 @@ public class Simulator{
     public void unregisterUser(User user){
         assert configured: "cannot unregister users before calling configure";
     
-        //TODO
+        List<TimeUser> timeUsers = removeUser(user);
+        //TODO unregister TimeUsers ?
+        
+        timeUserPolicy.unregister(user);
+    }
     
-        /*Unit unit = unitMapping.get(user);
-        modelManager.unregister(unit);
-        timeUserPolicy.unregister(unit);*/
+    private <D extends Data> List<TimeUser> removeUser(User<?> user){
+        List<User<?>> guards = modelManager.unregister(user);
+        
+        List<TimeUser> users = Lists.newArrayList();
+        
+        for(User<?> g:guards){
+            users.addAll(removeUser(g));
+        }
+        
+        if(user instanceof TimeUser)
+            users.add((TimeUser) user);
+        
+        return users;
     }
 
     /**

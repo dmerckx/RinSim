@@ -10,13 +10,13 @@ import rinde.sim.core.simulation.Simulator;
  * @author dmerckx
  *
  */
-public class ThreadState {
+public class ParallelExecution {
     
     /**
      * This bounds the maximal number of threads used by all running instances of
      * {@link Parallel} (also across different running {@link Simulator}s).
      */
-    public static final int NR_THREADS = 4;
+    public static final int NR_THREADS = 8;
     protected static ExecutorService pool = Executors.newFixedThreadPool(NR_THREADS);
     protected static ThreadLocal<CountDownLatch> previousBarrier = new ThreadLocal<CountDownLatch>();
 
@@ -31,5 +31,4 @@ public class ThreadState {
         }
 
     }
-
 }

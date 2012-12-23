@@ -1,5 +1,5 @@
 package rinde.sim.core.model.road;
 
-public class InvalidLocationException extends Exception {
+public class InvalidLocationException extends RuntimeException {
 
 }

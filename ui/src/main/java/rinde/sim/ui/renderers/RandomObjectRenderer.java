@@ -3,8 +3,8 @@
  */
 package rinde.sim.ui.renderers;
 
-import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
@@ -36,10 +36,10 @@ public class RandomObjectRenderer implements Renderer {
 
 		gc.setBackground(defaultColor);
 
-		final Map<RoadUser, Point> objects = model.getObjectsAndPositions();
+		final Set<RoadUser<?>> objects = model.getObjects();
 		synchronized (objects) {
-			for (final Entry<RoadUser, Point> entry : objects.entrySet()) {
-				final Point p = entry.getValue();
+			for (final RoadUser user : objects) {
+				final Point p = user.getRoadState().getLocation();
 				// if (colorMap != null) {
 				// if (colorMap.containsKey(entry.getKey().getClass())) {
 				// gc.setBackground(new Color(gc.getDevice(),
@@ -60,7 +60,7 @@ public class RandomObjectRenderer implements Renderer {
 				final int y = (int) (viewPort.origin.y + (p.y - viewPort.rect.min.y) * viewPort.scale) - radius;
 
 				gc.fillOval(x, y, 2 * radius, 2 * radius);
-				gc.drawText(entry.getKey() + "", x + 5, y - 15);
+				gc.drawText(user + "", x + 5, y - 15);
 			}
 		}
 	}

@@ -4,11 +4,10 @@
 package rinde.sim.examples.rwalk3;
 
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
+import java.util.Random;
+import java.util.Set;
 
 import org.apache.commons.math3.random.MersenneTwister;
-import org.apache.commons.math3.random.RandomGenerator;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.RGB;
@@ -17,10 +16,10 @@ import rinde.sim.core.graph.Graph;
 import rinde.sim.core.graph.MultiAttributeData;
 import rinde.sim.core.graph.Point;
 import rinde.sim.core.model.ModelProvider;
-import rinde.sim.core.model.communication.CommunicationModel;
 import rinde.sim.core.model.road.GraphRoadModel;
 import rinde.sim.core.model.road.RoadModel;
 import rinde.sim.core.model.road.RoadModels;
+import rinde.sim.core.model.road.users.MovingRoadData;
 import rinde.sim.core.model.road.users.RoadUser;
 import rinde.sim.core.simulation.Simulator;
 import rinde.sim.examples.common.Package;
@@ -42,9 +41,9 @@ public class RandomWalkExample {
 	public static void main(String[] args) throws Exception {
 
 		final String MAP_DIR = "../core/files/maps/";
+		
 		// create a new simulator, load map of Leuven
-		final RandomGenerator rand = new MersenneTwister(123);
-		final Simulator simulator = new Simulator(rand, 1000);
+		final Simulator simulator = new Simulator(50000);
 		final Graph<MultiAttributeData> graph = DotGraphSerializer
 				.getMultiAttributeGraphSerializer(new SelfCycleFilter())
 				// .read("/Users/rindevanlon/Downloads/dot-files/brussels.dot");
@@ -55,19 +54,23 @@ public class RandomWalkExample {
 
 		// XXX [bm] to be decided either Communication model have RG as a
 		// constructor parameter or implements Simulator user interface
-		final CommunicationModel communicationModel = new CommunicationModel(rand);
-		simulator.register(roadModel);
-		simulator.register(communicationModel);
+		simulator.registerModel(roadModel);
 		simulator.configure();
 
-		final RandomGenerator r = new MersenneTwister(1317);
-		for (int i = 0; i < 15; i++) {
-			final RandomWalkAgent agent = new RandomWalkAgent(r.nextDouble() * 100);
-			simulator.register(agent);
-
-			for (int j = 0; j < 2; j++) {
-				simulator.register(new Package("name", roadModel.getRandomPosition(r)));
-			}
+		Random r = new Random(1317);
+		for (int i = 0; i < 1; i++) {
+			final RandomWalkAgent agent = new RandomWalkAgent();
+			simulator.registerUser(agent, new MovingRoadData() {
+				@Override
+				public Point getStartPosition() {
+					return roadModel.getRandomPosition(new MersenneTwister());
+				}
+				
+				@Override
+				public double getInitialSpeed() {
+					return 70.0d;
+				}
+			});
 		}
 
 		// // GUI stuff: agents are red, packages are blue or have ico
@@ -78,9 +81,9 @@ public class RandomWalkExample {
 		schema.add(Package.class, "/graphics/perspective/deliverypackage.png");
 		// schema.add(Package.class, new RGB(0x0, 0x0, 0xFF));
 
-		// View.setTestingMode(true);
-		View.startGui(simulator, 5, new GraphRoadModelRenderer(20), new FancyRenderer(), new RoadUserRenderer(schema,
-				false));
+		View.setTestingMode(true);
+		View.startGui(simulator, 5, new GraphRoadModelRenderer(20), new FancyRenderer(), new RoadUserRenderer(schema,false));
+		
 	}
 
 	static class FancyRenderer implements ModelRenderer {
@@ -95,15 +98,15 @@ public class RandomWalkExample {
 
 		@Override
 		public void renderDynamic(GC gc, ViewPort vp, long time) {
-			// TODO Auto-generated method stub
+			final Set<RoadUser<?>> objects = rm.getObjects();
 
-			final Map<RoadUser, Point> obs = rm.getObjectsAndPositions();
-
-			for (final Entry<RoadUser, Point> entry : obs.entrySet()) {
-
-				if (entry.getKey() instanceof RandomWalkAgent) {
-					final int x = vp.toCoordX(entry.getValue().x);
-					final int y = vp.toCoordY(entry.getValue().y);
+			for (final RoadUser user : objects) {
+				Point pos = user.getRoadState().getLocation();
+				
+				if (user instanceof RandomWalkAgent) {
+					
+					final int x = vp.toCoordX(pos.x);
+					final int y = vp.toCoordY(pos.y);
 					final int radius = 100;
 
 					gc.setLineWidth(1);
@@ -118,14 +121,15 @@ public class RandomWalkExample {
 
 			final RGB[] rgbs = new RGB[] { new RGB(51, 0, 153), new RGB(0, 165, 43), new RGB(255, 125, 41) };
 			int i = 0;
-			for (final Entry<RoadUser, Point> entry : obs.entrySet()) {
+			for (final RoadUser<?> user : objects) {
+				Point pos = user.getRoadState().getLocation();
 
-				if (entry.getKey() instanceof Package) {
-					final int x = vp.toCoordX(entry.getValue().x);
-					final int y = vp.toCoordY(entry.getValue().y);
+				if (user instanceof Package) {
+					final int x = vp.toCoordX(pos.x);
+					final int y = vp.toCoordY(pos.y);
 
 					final List<RandomWalkAgent> list = RoadModels
-							.findClosestObjects(entry.getValue(), rm, RandomWalkAgent.class, 3);
+							.findClosestObjects(user.getRoadState().getLocation(), rm, RandomWalkAgent.class, 3);
 
 					for (final RandomWalkAgent rwa : list) {
 						final Point p = rm.getPosition(rwa);
