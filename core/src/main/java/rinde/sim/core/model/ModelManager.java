@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Set;
 
 import rinde.sim.core.simulation.UserInit;
+import rinde.sim.core.simulation.time.TimeLapseHandle;
 
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Lists;
@@ -82,7 +83,7 @@ public class ModelManager implements ModelProvider {
      * @return <code>true</code> if object was added to at least one model
      */
     @SuppressWarnings("unchecked")
-    public <D extends Data> List<UserInit<?>> register(User<D> user, D data) {
+    public <D extends Data> List<UserInit<?>> register(User<D> user, D data, TimeLapseHandle handle) {
         assert user!=null : "Can not register null";
         assert data!=null : "Data can not be null";
         assert !(user instanceof Model): "Can not register models";
@@ -98,7 +99,7 @@ public class ModelManager implements ModelProvider {
                 final Collection<Model<?,?>> assignableModels = registry
                         .get(modelSupportedType);
                 for (final Model<?,?> m : assignableModels) {
-                    result.addAll(((Model<D,User<D>>) m).register(user, data));
+                    result.addAll(((Model<D,User<D>>) m).register(user, data, handle));
                 }
             }
         }

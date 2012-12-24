@@ -1,48 +1,78 @@
 package rinde.sim.core.model.pdp.apis;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import rinde.sim.TickGuard;
 import rinde.sim.core.model.Data;
-import rinde.sim.core.model.InitGuard;
-import rinde.sim.core.model.interaction.Notification;
 import rinde.sim.core.model.interaction.apis.InteractionAPI;
 import rinde.sim.core.model.interaction.users.InteractionUser;
 import rinde.sim.core.model.pdp.Parcel;
 import rinde.sim.core.model.pdp.PdpModel;
-import rinde.sim.core.model.pdp.receivers.ContainerNotification;
 import rinde.sim.core.model.pdp.receivers.PickupReceiver;
 import rinde.sim.core.model.pdp.users.PickupPoint;
 import rinde.sim.core.model.pdp.users.PickupPointData;
 import rinde.sim.core.simulation.TimeInterval;
 import rinde.sim.core.simulation.TimeLapse;
+import rinde.sim.core.simulation.time.TimeLapseHandle;
 
-public class PickupGuard extends PickupPointState implements PickupAPI, InitGuard, TickGuard, InteractionUser<Data>{
+import com.google.common.collect.Lists;
+
+public class PickupGuard extends PickupPointState implements PickupAPI, InteractionUser<Data>{
     
     private Parcel parcel;
     private InteractionAPI interactionAPI;
     private PdpModel pdpModel;
-    private PickupPoint<?> user;
     
-
-    private boolean pickedUp = false;
-    private long pickupTime = 0;
-    private PickupState state = PickupState.SETTING_UP;
+    private long lastUpdatedState = -1;
+    private PickupState state;
     
-    public PickupGuard(PickupPoint<?> user, PickupPointData data, PdpModel model) {
-        this.user = user;
+    private final TimeLapse handle;
+    
+    public PickupGuard(PickupPoint<?> user, PickupPointData data, PdpModel model, TimeLapseHandle handle) {
         this.parcel = data.getParcel();
         this.pdpModel = model;
+        this.handle = handle;
     }
 
     @Override
     public void setInteractionAPi(InteractionAPI api) {
         this.interactionAPI = api;
     }
+
+    public void init() {
+        interactionAPI.advertise(
+                new PickupReceiver(parcel.location, Lists.newArrayList(parcel), pdpModel.getPolicy()));
+    }
+    
+    /**
+     * State always remains the same during a single tick.
+     */
+    private void updateState(){
+        if(lastUpdatedState == handle.getStartTime()) 
+            return; //up to date 
+        
+        long time = handle.getStartTime();
+        
+        if(interactionAPI.isAdvertising()){
+            if(time < parcel.deliveryTimeWindow.begin)
+                state = PickupState.SETTING_UP;
+            else if(time < parcel.deliveryTimeWindow.end)
+                state = PickupState.AVAILABLE;
+            else 
+                state = PickupState.LATE;
+        }
+        else {
+            if(interactionAPI.getTerminationTime() < time + parcel.deliveryDuration)
+                state = PickupState.BEING_PICKED_UP;
+            else
+                state = PickupState.PICKED_UP;
+        }
+        
+        lastUpdatedState = time;
+    }
+    
+    // ----- PICKUP API ----- //
     
     @Override
     public boolean isPickedUp() {
+        updateState();
         return state == PickupState.BEING_PICKED_UP 
                 || state == PickupState.PICKED_UP;
     }
@@ -52,86 +82,12 @@ public class PickupGuard extends PickupPointState implements PickupAPI, InitGuar
         return parcel;
     }
 
-    //TODO make detemerministic
     @Override
     public PickupState getPickupState() {
+        updateState();
         return state;
     }
     
-    public void setState(TimeInterval interval){
-        if(!pickedUp){
-            if(interval.getEndTime() < parcel.pickupTimeWindow.begin){
-                state = PickupState.SETTING_UP;
-            } 
-            else if(interval.getEndTime() < parcel.pickupTimeWindow.end){
-                state = PickupState.AVAILABLE;
-            }
-            else {
-                state = PickupState.LATE;
-            }
-        }
-        else{
-            if(pickupTime == 0){
-                state = PickupState.PICKED_UP;
-            }
-            else{
-                state = PickupState.BEING_PICKED_UP;
-            }
-        }
-    }
-
-    // ----- INIT GUARD & AFTER-TICK GUARD ----- //
-
-
-    @Override
-    public void init() {
-        List<Parcel> targets = new ArrayList<Parcel>();
-        targets.add(parcel);
-        
-        interactionAPI.advertise(
-                new PickupReceiver(parcel.location, targets, pdpModel.getPolicy()));
-    }
-
-    /**
-     * State does not change during a tick.
-     * Enforce time consistency.
-     */
-    @Override
-    public void tick(TimeLapse time) {
-        for(Notification n:interactionAPI.getNotifications()){
-            if(n instanceof ContainerNotification){
-                assert parcel == ((ContainerNotification) n).getParcel();
-                pickedUp = true;
-                pdpModel.notifyParcelPickup(user);
-                pickupTime = parcel.deliveryDuration;
-            }
-        }
-        setState(time);
-        
-        switch(state){
-            case BEING_PICKED_UP:
-                if(pickupTime > time.getTimeLeft()){
-                    pickupTime -= time.getTimeLeft(); 
-                    time.consumeAll();
-                }
-                else{
-                    time.consume(pickupTime);
-                    pickupTime = 0;
-                }
-                break;
-            default:
-                break;
-        }
-    }
-    
-    /**
-     * Change state if necessary.
-     */
-    @Override
-    public void afterTick(TimeInterval interval) {
-        
-    }
-
     @Override
     public boolean canBePickedUp(TimeInterval time) {
         return pdpModel.getPolicy().canPickup(

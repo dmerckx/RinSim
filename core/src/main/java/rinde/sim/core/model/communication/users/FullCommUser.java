@@ -1,7 +1,6 @@
 package rinde.sim.core.model.communication.users;
 
 import rinde.sim.core.model.communication.apis.CommAPI;
-import rinde.sim.core.model.communication.apis.CommunicationState;
 import rinde.sim.core.model.road.users.RoadUser;
 import rinde.sim.core.simulation.Simulator;
 
@@ -30,16 +29,4 @@ public interface FullCommUser<D extends CommData> extends RoadUser<D>, CommUser<
 	 * @param api The communication API.
 	 */
 	public void setCommunicationAPI(CommAPI api);
-	
-	/**
-	 * Should return the state, regarding communication, of this user.
-	 * This state can be found in the injected {@link CommAPI}.
-	 * 
-	 * Note:
-	 * This method should simply return the state, present in the given API.
-	 * No side effects should be applied during this call.
-	 * 
-	 * @return The communication state.
-	 */
-	public CommunicationState getCommunicationState();
 }

@@ -4,6 +4,7 @@ import java.util.List;
 
 import rinde.sim.core.simulation.TimeInterval;
 import rinde.sim.core.simulation.UserInit;
+import rinde.sim.core.simulation.time.TimeLapseHandle;
 
 
 /**
@@ -17,7 +18,7 @@ public interface Model<D extends Data, T extends User<? extends D>>{
      * 
      * @param element the <code>! null</code> should be imposed
      */
-    List<UserInit<?>> register(T user, D data);
+    List<UserInit<?>> register(T user, D data, TimeLapseHandle handle);
     
     void setSeed(long seed);
     

@@ -24,7 +24,6 @@ public class ContainerGuard extends ContainerState implements ContainerAPI, Inte
     private PdpModel pdpModel;
     private RoadAPI roadAPI;
     private InteractionAPI interactiveAPI;
-    private Container<?> container;
     
     private ContState state = ContState.AVAILABLE;
     private long actionTime = 0;
@@ -46,16 +45,16 @@ public class ContainerGuard extends ContainerState implements ContainerAPI, Inte
 
     @Override
     public void init(RoadAPI api) {
+        assert roadAPI == null: "The roadApi can be set only ones";
         assert api != null: "The api can not be null";
-        
         this.roadAPI = api;
     }
     
     public void tick(TimeLapse lapse){
-        //TODO
-        
         doAction(lapse);
     }
+    
+    // ----- CONTAINER API ----- //
     
     @SuppressWarnings("javadoc")
     protected void load(TimeLapse lapse, Parcel parcel){

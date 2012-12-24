@@ -126,10 +126,6 @@ public interface ContainerAPI extends User<Data>{
          */
         ADVERTISING,
         /**
-         * 
-         */
-        ACCEPTING_ADVERTISING,
-        /**
          * This State indicates that this container is currently picking up
          * a {@link Parcel} from another {@link Container} or a {@link PickupPoint}.
          */

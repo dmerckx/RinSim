@@ -44,11 +44,6 @@ public interface TimeLapse extends TimeInterval{
     public long getCurrentTime() ;
 
     /**
-     * @return The step (or length) of this time lapse.
-     */
-    public long getTimeStep();
-
-    /**
      * @return The time that was previously consumed in this time lapse.
      */
     public long getTimeConsumed();

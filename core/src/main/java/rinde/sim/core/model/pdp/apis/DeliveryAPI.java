@@ -1,6 +1,7 @@
 package rinde.sim.core.model.pdp.apis;
 
 import rinde.sim.core.model.pdp.Parcel;
+import rinde.sim.core.simulation.TimeInterval;
 
 public interface DeliveryAPI {
 
@@ -9,6 +10,8 @@ public interface DeliveryAPI {
     public Parcel getParcel();
     
     public DeliveryState getDeliveryState();
+    
+    public boolean canBeDelivered(TimeInterval time);
     
     public DeliveryPointState getState();
     

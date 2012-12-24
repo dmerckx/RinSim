@@ -15,10 +15,12 @@ import rinde.sim.core.simulation.TimeLapse;
  * This API allows users to perform interactions with each other.
  * There are 2 interactors for each action:
  *  - {@link Receiver}:
- *      Interaction users can add one or more receivers. These receivers
+ *      Interaction users can advertise a receiver. A receiver
  *      will passively wait until a visitor comes by to interact.
  *      After an interaction a receiver can decide to send a 
  *      notification to its creating user and/or terminate itself.
+ *      The creating user can at any point choose to terminate
+ *      or replace the receiver itself.
  *  - {@link Visitor}:
  *      Interaction users can use a visitor to visit a certain location.
  *      All receivers stationed at this location will be visited and
@@ -60,13 +62,15 @@ public interface InteractionAPI{
     public void advertise(Receiver receiver);
     
     /**
-     * Remove all receivers advertised with the given class.
-     * @param target The class of receivers to remove.
+     * Stop advertising any receiver.
      */
-    public void removeAll(Class<?> target);
+    public void stopAdvertising();
 
     /**
-     * Remove all receivers advertised.
+     * Returns whether or not this API is advertising a receiver.
+     * @return True iff this user is advertising a receiver.
      */
-    public void removeAll();
+    public boolean isAdvertising();
+
+    public long getTerminationTime();
 }

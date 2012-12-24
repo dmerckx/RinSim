@@ -1,6 +1,6 @@
 package rinde.sim.core.model.pdp.receivers;
 
-import rinde.sim.core.model.interaction.Notification;
+import rinde.sim.core.model.communication.Message;
 import rinde.sim.core.model.pdp.Parcel;
 
 /**
@@ -10,7 +10,7 @@ import rinde.sim.core.model.pdp.Parcel;
  * @author dmerckx
  *
  */
-public class ContainerNotification implements Notification{
+public class ContainerNotification extends Message{
     
     private final NotificationType type;
     private final Parcel parcel;

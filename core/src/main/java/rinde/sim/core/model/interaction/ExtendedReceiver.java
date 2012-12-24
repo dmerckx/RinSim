@@ -19,6 +19,7 @@ import rinde.sim.core.model.interaction.users.InteractionUser;
 public abstract class ExtendedReceiver extends Receiver implements SimpleCommUser<SimpleCommData>{
 
     private Address guard;
+    
     /**
      * The communication API, which is used to send messages to the guard
      * that advertised this receiver.

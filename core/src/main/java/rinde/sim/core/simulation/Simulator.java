@@ -12,7 +12,6 @@ import rinde.sim.core.model.Data;
 import rinde.sim.core.model.Model;
 import rinde.sim.core.model.ModelManager;
 import rinde.sim.core.model.ModelProvider;
-import rinde.sim.core.model.TimeUser;
 import rinde.sim.core.model.User;
 import rinde.sim.core.model.simulator.SimulatorModel;
 import rinde.sim.core.simulation.policies.ModelPolicy;
@@ -21,6 +20,7 @@ import rinde.sim.core.simulation.policies.TickListenerPolicy;
 import rinde.sim.core.simulation.policies.TickListenerSerialPolicy;
 import rinde.sim.core.simulation.policies.TimeUserPolicy;
 import rinde.sim.core.simulation.time.TimeIntervalImpl;
+import rinde.sim.core.simulation.time.TimeLapseHandle;
 import rinde.sim.event.Event;
 import rinde.sim.event.EventAPI;
 import rinde.sim.event.EventDispatcher;
@@ -174,6 +174,9 @@ public class Simulator{
         externalPolicy.unregister(listener);
     }
     
+    public void registerUser(User<Data> user) {
+        registerUser(user, new Data() {});
+    }
     
     public <D extends Data> void registerUser(User<D> user, D data) {
         assert user!=null: "object can not be null";
@@ -184,53 +187,33 @@ public class Simulator{
         assert(!(user instanceof Model) && !(user instanceof TickListener)):
                 "A user can not be a model or ticklistener";
        
-        List<TimeUser> timeUsers = addUser(UserInit.create(user, data));
+        TimeLapseHandle handle = new TimeLapseHandle(time, timeStep);
+        addUser(UserInit.create(user, data), handle);
         
-        if(timeUsers.size() > 0)
-            timeUserPolicy.register(user, timeUsers);
+        timeUserPolicy.register(user, handle);
     }
     
-    public void registerUser(User<Data> user) {
-        registerUser(user, new Data() {});
-    }
-    
-    private <D extends Data> List<TimeUser> addUser(UserInit<D> init){
-        List<UserInit<?>> guards = modelManager.register(init.user, init.data);
-        
-        List<TimeUser> users = Lists.newArrayList();
+    private <D extends Data> void addUser(UserInit<D> init, TimeLapseHandle lapse){
+        List<UserInit<?>> guards = modelManager.register(init.user, init.data, lapse);
         
         for(UserInit<?> g:guards){
-            users.addAll(addUser(g));
+            addUser(g, lapse);
         }
-        
-        if(init.user instanceof TimeUser)
-            users.add((TimeUser) init.user);
-        
-        return users;
     }
     
     public void unregisterUser(User user){
         assert configured: "cannot unregister users before calling configure";
     
-        List<TimeUser> timeUsers = removeUser(user);
-        //TODO unregister TimeUsers ?
-        
+        removeUser(user);
         timeUserPolicy.unregister(user);
     }
     
-    private <D extends Data> List<TimeUser> removeUser(User<?> user){
+    private <D extends Data> void removeUser(User<?> user){
         List<User<?>> guards = modelManager.unregister(user);
         
-        List<TimeUser> users = Lists.newArrayList();
-        
         for(User<?> g:guards){
-            users.addAll(removeUser(g));
+            removeUser(g);
         }
-        
-        if(user instanceof TimeUser)
-            users.add((TimeUser) user);
-        
-        return users;
     }
 
     /**

@@ -15,6 +15,7 @@ import rinde.sim.core.model.interaction.users.InteractionUser;
 import rinde.sim.core.simulation.TimeInterval;
 import rinde.sim.core.simulation.TimeLapse;
 import rinde.sim.core.simulation.UserInit;
+import rinde.sim.core.simulation.time.TimeLapseHandle;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
@@ -33,6 +34,8 @@ public class InteractionModel implements Model<Data, InteractionUser<?>> {
     
     private HashMultimap<Point, Receiver> receiversPos = HashMultimap.create();
     private HashMap<InteractionUser<?>, InteractiveGuard> mapping = Maps.newHashMap();
+    
+    private List<Receiver> schedualedForRemoval = Lists.newArrayList();
     
     private CommunicationModel commModel;
     
@@ -90,26 +93,37 @@ public class InteractionModel implements Model<Data, InteractionUser<?>> {
     }
     
     /**
-     * Remove a receiver.
+     * Remove an advertised receiver, and apply an additional time
+     * cost for this removal.
      * @param receiver The receiver to remove.
+     * @param extraTime The additional time cost to apply.
      */
-    public void remove(Receiver receiver){
+    public void remove(Receiver receiver, long extraTime){
         receiversPos.remove(receiver.location, receiver);
-        mapping.get(receiver).receiveTermination(receiver);
+        mapping.get(receiver).receiveTermination(extraTime);
         
         if(receiver instanceof ExtendedReceiver){
             commModel.unregister((ExtendedReceiver) receiver);
         }
     }
     
+    /**
+     * Schedule this receiver for removal. It will be removed at the end of that
+     * tick.
+     * @param receiver The receiver to schedule.
+     */
+    public void schedualRemove(Receiver receiver){
+        schedualedForRemoval.add(receiver);
+    }
+    
     
     // ----- MODEL ----- //
 
     @Override
-    public List<UserInit<?>> register(InteractionUser<?> user, Data d) {
+    public List<UserInit<?>> register(InteractionUser<?> user, Data d, TimeLapseHandle handle) {
         assert user!=null : "User can not be null.";
         
-        InteractiveGuard guard = new InteractiveGuard(user, this);
+        InteractiveGuard guard = new InteractiveGuard(user, this, handle);
         user.setInteractionAPi(guard);
         
         mapping.put(user, guard);
@@ -127,11 +141,10 @@ public class InteractionModel implements Model<Data, InteractionUser<?>> {
         List<User<?>> result = Lists.newArrayList();
         result.add(mapping.get(user));
         
-        for(Receiver r: mapping.get(user).receivers){
-            if(r instanceof ExtendedReceiver){
-                commModel.unregister((ExtendedReceiver) r);
-            }
-        }
+        Receiver r = mapping.get(user).receiver;
+        if(r instanceof ExtendedReceiver)
+            commModel.unregister((ExtendedReceiver) r);
+        
         mapping.remove(user);
         
         return result;
@@ -145,7 +158,10 @@ public class InteractionModel implements Model<Data, InteractionUser<?>> {
 
     @Override
     public void tick(TimeInterval time) {
-        
+        for(Receiver r:schedualedForRemoval){
+            remove(r, 0);
+        }
+        schedualedForRemoval.clear();
     }
 
     @Override

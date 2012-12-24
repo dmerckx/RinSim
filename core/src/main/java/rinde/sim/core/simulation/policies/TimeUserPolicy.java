@@ -1,14 +1,12 @@
 package rinde.sim.core.simulation.policies;
 
-import java.util.List;
-
-import rinde.sim.core.model.TimeUser;
 import rinde.sim.core.model.User;
 import rinde.sim.core.simulation.TickPolicy;
+import rinde.sim.core.simulation.time.TimeLapseHandle;
 
 public interface TimeUserPolicy extends TickPolicy{
     
-    public void register(User<?> originalUser, List<TimeUser> users);
+    public void register(User<?> agent, TimeLapseHandle handle);
     
-    public void unregister(User<?> originalUser);
+    public void unregister(User<?> agent);
 }

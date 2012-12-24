@@ -44,9 +44,18 @@ public abstract class Receiver{
     }
     
     /**
-     * 
+     * Terminate this receiver, the time lapse of the user will no longer be blocked.
      */
     public final void terminate(){
-        model.remove(this);
+        terminate(0);
+    }
+    
+    /**
+     * Terminate this receiver, the time lapse of the user will no longer be blocked
+     * after the given additional time cost has expired.
+     * @param timeCost Additional time cost.
+     */
+    public final void terminate(long timeCost){
+        model.remove(this, timeCost);
     }
 }

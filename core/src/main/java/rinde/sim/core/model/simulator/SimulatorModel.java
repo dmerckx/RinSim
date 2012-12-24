@@ -1,6 +1,5 @@
 package rinde.sim.core.model.simulator;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import rinde.sim.core.model.Data;
@@ -11,22 +10,32 @@ import rinde.sim.core.model.simulator.users.SimulatorUser;
 import rinde.sim.core.simulation.Simulator;
 import rinde.sim.core.simulation.TimeInterval;
 import rinde.sim.core.simulation.UserInit;
+import rinde.sim.core.simulation.time.TimeLapseHandle;
 
 import com.google.common.collect.Lists;
 
 /**
+ * A model allowing its users to register and unregister other agents
+ * to the simulator.
+ * 
+ * This model supports the following types:
+ *  - {@link SimulatorUser} : {@link Data}
+ *  
  * @author dmerckx
- *
  */
 public class SimulatorModel implements Model<Data, SimulatorUser<?>>, SimulatorAPI{
     
-    public final List<UserInit<?>> objectsToAdd;
-    public final List<User<?>> objectsToRemove;
+    private final List<UserInit<?>> objectsToAdd = Lists.newArrayList();
+    private final List<User<?>> objectsToRemove = Lists.newArrayList();
     private Simulator sim;
     
+    /**
+     * Create a new simulator model.
+     * @param sim The actual simulator.
+     */
+    @SuppressWarnings("hiding")
     public SimulatorModel(Simulator sim) {
-        objectsToAdd = Lists.newArrayList();
-        objectsToRemove = Lists.newArrayList();
+        this.sim = sim;
     }
 
     
@@ -44,9 +53,14 @@ public class SimulatorModel implements Model<Data, SimulatorUser<?>>, SimulatorA
     
     
     // ----- MODEL ----- //
+
+    @Override
+    public void setSeed(long seed) {
+        
+    }
     
     @Override
-    public List<UserInit<?>> register(SimulatorUser<?> user, Data data) {
+    public List<UserInit<?>> register(SimulatorUser<?> user, Data data, TimeLapseHandle handle) {
         assert user!=null : "User can not be null.";
         
         user.setSimulatorAPI(this);
@@ -59,6 +73,7 @@ public class SimulatorModel implements Model<Data, SimulatorUser<?>>, SimulatorA
         return Lists.newArrayList();
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public Class<SimulatorUser<?>> getSupportedType() {
         return (Class) SimulatorUser.class;

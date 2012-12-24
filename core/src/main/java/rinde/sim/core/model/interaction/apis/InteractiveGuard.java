@@ -1,6 +1,5 @@
 package rinde.sim.core.model.interaction.apis;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -17,6 +16,7 @@ import rinde.sim.core.model.interaction.Result;
 import rinde.sim.core.model.interaction.Visitor;
 import rinde.sim.core.model.interaction.users.InteractionUser;
 import rinde.sim.core.simulation.TimeLapse;
+import rinde.sim.core.simulation.time.TimeLapseHandle;
 
 import com.google.common.collect.Lists;
 
@@ -37,18 +37,23 @@ public class InteractiveGuard implements SimpleCommUser<SimpleCommData>, Interac
     private final InteractionModel interactionModel;
     private SimpleCommAPI commAPI;
     
+    private final TimeLapseHandle handle;
+    
     /**
-     * The list with active receivers that were advertised by this guard.
+     * The outstanding receiver, advertised by this guard.
      */
-    public final List<Receiver> receivers = new ArrayList<Receiver>();
+    public Receiver receiver = null;
     
     /**
      * Construct a new guard. 
      * @param user The user to which this API belongs.
      * @param model The interaction model. 
+     * @param handle A handle to the users time lapse.
      */
-    public InteractiveGuard(InteractionUser<?> user, InteractionModel model) {
+    @SuppressWarnings("hiding")
+    public InteractiveGuard(InteractionUser<?> user, InteractionModel model, TimeLapseHandle handle) {
         this.interactionModel = model;
+        this.handle = handle;
     }
     
     
@@ -65,12 +70,15 @@ public class InteractiveGuard implements SimpleCommUser<SimpleCommData>, Interac
     }
     
     /**
-     * Receive a message that one of the receivers advertised by this guard was
+     * Receive a message that the advertised receivers was
      * terminated;
-     * @param receiver The receiver that terminated
+     * @param extraTime The extra amount of time to consume.
      */
-    public synchronized void receiveTermination(Receiver receiver){
-        receivers.remove(receiver);
+    public synchronized void receiveTermination(long extraTime){
+        assert receiver != null;
+        receiver = null;
+        
+        handle.unblock(extraTime);
     }
     
     @Override
@@ -93,33 +101,25 @@ public class InteractiveGuard implements SimpleCommUser<SimpleCommData>, Interac
         return interactionModel.visit(lapse, visitor);
     }
     
+    @SuppressWarnings("hiding")
     @Override
     public void advertise(Receiver receiver){
         if(receiver instanceof ExtendedReceiver){
             ((ExtendedReceiver) receiver).setGuard(commAPI.getAddress());
         }
-        receivers.add(receiver);
+        this.receiver = receiver;
         interactionModel.advertise(receiver);
+        handle.block();
     }
 
     @Override
-    public void removeAll(Class<?> target) {
-        Iterator<Receiver> it = receivers.iterator();
-        while(it.hasNext()){
-            Receiver receiver = it.next();
-            if( receiver.getClass().isAssignableFrom(target)){
-                interactionModel.remove(receiver);
-                it.remove();
-            }
-        }
+    public boolean isAdvertising() {
+        return receiver != null;
     }
 
     @Override
-    public void removeAll() {
-        for(Receiver receiver:Lists.newArrayList(receivers)){
-            interactionModel.remove(receiver);
-        }
-        
-        assert receivers.isEmpty() : "all receivers should be removed at this point";
+    public void stopAdvertising() {
+        assert receiver != null;
+        interactionModel.remove(receiver, 0);
     }
 }

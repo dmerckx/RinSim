@@ -9,6 +9,10 @@ import rinde.sim.core.model.Data;
  */
 public interface SimpleCommData extends Data {
     
+    /**
+     * The simplest form of a {@link SimpleCommData}, initialized with
+     * reliability at 100%.
+     */
     public static final SimpleCommData RELIABLE = new SimpleCommData() {
         @Override
         public Double getReliability() {

@@ -18,11 +18,12 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 
+import org.apache.commons.math3.random.MersenneTwister;
+import org.apache.commons.math3.random.RandomGenerator;
+
 import rinde.sim.core.graph.Point;
 import rinde.sim.core.model.User;
-import rinde.sim.core.model.road.apis.MovingRoadAPI;
 import rinde.sim.core.model.road.apis.MovingRoadGuard;
-import rinde.sim.core.model.road.apis.RoadAPI;
 import rinde.sim.core.model.road.apis.RoadGuard;
 import rinde.sim.core.model.road.users.FixedRoadUser;
 import rinde.sim.core.model.road.users.MovingRoadData;
@@ -32,6 +33,7 @@ import rinde.sim.core.model.road.users.RoadUser;
 import rinde.sim.core.simulation.TimeInterval;
 import rinde.sim.core.simulation.TimeLapse;
 import rinde.sim.core.simulation.UserInit;
+import rinde.sim.core.simulation.time.TimeLapseHandle;
 import rinde.sim.event.EventAPI;
 import rinde.sim.event.EventDispatcher;
 import rinde.sim.util.SpeedConverter;
@@ -53,6 +55,7 @@ import com.google.common.collect.Sets;
  */
 public abstract class AbstractRoadModel<T> implements RoadModel{
 
+    private RandomGenerator rnd;
     private Map<RoadUser<?>, RoadGuard> mapping = new HashMap<RoadUser<?>, RoadGuard>();
     
     protected final SpeedConverter speedConverter;
@@ -62,6 +65,11 @@ public abstract class AbstractRoadModel<T> implements RoadModel{
     // TODO event dispatching has to be tested
     protected final EventDispatcher eventDispatcher;
     protected final EventAPI eventAPI;
+    
+    @Override
+    public void setSeed(long seed) {
+        this.rnd = new MersenneTwister(seed);
+    }
 
     public enum RoadEvent {
         MOVE
@@ -334,22 +342,16 @@ public abstract class AbstractRoadModel<T> implements RoadModel{
     }
 
     @Override
-    public List<UserInit<?>> register(RoadUser<?> user, RoadData data) {
+    public List<UserInit<?>> register(RoadUser<?> user, RoadData data, TimeLapseHandle handle) {
         assert user!=null : "User can not be null.";
         assert data!=null : "Data can not be null.";
-        
-        List<UserInit<?>> result = Lists.newArrayList();
         
         if( user instanceof MovingRoadUser<?>){
             assert data instanceof MovingRoadData: "Data must fit user";
             
-            MovingRoadGuard guard = new MovingRoadGuard((MovingRoadUser<?>) user, (MovingRoadData) data, this);
+            MovingRoadGuard guard = new MovingRoadGuard((MovingRoadUser<?>) user, (MovingRoadData) data, this, rnd.nextLong(), handle);
             ((MovingRoadUser<?>) user).setRoadAPI(guard);
             mapping.put(user, guard);
-            
-            //MovingRoadGuard functions as a FullGuard (after tick implemented)
-            //and is therefore added to the resulting list
-            result.add(UserInit.create(guard));
         }
         else if( user instanceof FixedRoadUser<?>){
             
@@ -358,11 +360,11 @@ public abstract class AbstractRoadModel<T> implements RoadModel{
             mapping.put(user, guard);
         }
         else {
-            throw new IllegalArgumentException("The user " + user + " has not a valid type known by this road model");
+            throw new IllegalArgumentException("The user " + user + " has not a valid type, known by this road model");
         }
         addObjectAt(user, data.getStartPosition());
         
-        return result;
+        return Lists.newArrayList();
     }
 
     @Override
@@ -370,20 +372,10 @@ public abstract class AbstractRoadModel<T> implements RoadModel{
         assert user!=null : "User can not be null.";
         assert containsObject(user) : "The user has to be present in this model";
         
-        RoadGuard g = mapping.get(user);
-        
         removeObject(user);
         mapping.remove(user);
         
-
-        List<User<?>> result = Lists.newArrayList();
-        
-        if(g instanceof MovingRoadGuard){
-            //MovingRoadGuards were added during registration
-            result.add((MovingRoadGuard) g);
-        }
-        
-        return result;
+        return Lists.newArrayList();
     }
 
     @Override

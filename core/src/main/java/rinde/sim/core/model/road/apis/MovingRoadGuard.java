@@ -6,42 +6,76 @@ import org.apache.commons.math3.random.MersenneTwister;
 import org.apache.commons.math3.random.RandomGenerator;
 
 import rinde.sim.core.graph.Point;
-import rinde.sim.core.model.Data;
-import rinde.sim.core.model.User;
 import rinde.sim.core.model.road.InvalidLocationException;
 import rinde.sim.core.model.road.RoadModel;
 import rinde.sim.core.model.road.users.MovingRoadData;
 import rinde.sim.core.model.road.users.MovingRoadUser;
 import rinde.sim.core.simulation.TimeLapse;
+import rinde.sim.core.simulation.time.TimeLapseHandle;
 
 import com.google.common.collect.Lists;
 
-public class MovingRoadGuard extends RoadGuard implements MovingRoadAPI, User<Data>{
+/**
+ * An implementation of the {@link MovingRoadAPI}.
+ * 
+ * This guard guarantees additional location consistency:
+ *  - the position of this API will never change more then the 
+ *  maximal speed provided * the amount of time consumed
+ *  - the current position of this APi will always be a valid position 
+ * 
+ * @author dmerckx
+ */
+public class MovingRoadGuard extends RoadGuard implements MovingRoadAPI{
 
-    private RandomGenerator rnd = new MersenneTwister();//TODO
     private Queue<Point> path = Lists.newLinkedList();
+    private final RandomGenerator rnd;
     
-    public long lastChangedTime;
-    public double speed;
+    private long lastChangedTime;
+    private double speed;
+    private final TimeLapseHandle handle;
     
-    public MovingRoadGuard(MovingRoadUser<?> user, MovingRoadData data, RoadModel model) {
+    /**
+     * Construct a new guard. 
+     * @param user The user to which this API belongs.
+     * @param data The initialization data for this API.
+     * @param model The road model.
+     * @param seed The seed used for generating random number.
+     * @param handle A handle to the users time lapse.
+     */
+    @SuppressWarnings("hiding")
+    public MovingRoadGuard(MovingRoadUser<?> user, MovingRoadData data, RoadModel model, long seed, TimeLapseHandle handle) {
         super(user, data, model);
+        this.rnd = new MersenneTwister(seed);
         this.speed = data.getInitialSpeed();
-    }
-    
-    public void setSpeed(double speed){
-        this.speed = speed;
-    }
-
-    public double getSpeed(){
-        return speed;
+        this.handle = handle;
     }
     
     // ------ MOVING ROAD API ------ //
     
+    @SuppressWarnings("hiding")
+    @Override
+    public void setSpeed(double speed){
+        this.speed = speed;
+    }
+
+    @Override
+    public double getSpeed(){
+        return speed;
+    }
+    
     @Override
     public Queue<Point> getPath() {
         return path;
+    }
+    
+    @Override
+    public Point getLocation() {
+        if(handle.getStartTime() > lastChangedTime){
+            lastLocation = getCurrentLocation();
+            lastChangedTime = handle.getStartTime();
+        }
+        
+        return lastLocation;
     }
 
     @Override
@@ -60,6 +94,7 @@ public class MovingRoadGuard extends RoadGuard implements MovingRoadAPI, User<Da
         path.addAll(model.getShortestPathTo(user, p));
     }
 
+    @SuppressWarnings("hiding")
     @Override
     public void setTarget(Queue<Point> path) throws InvalidLocationException {
         this.path = path;
@@ -67,9 +102,13 @@ public class MovingRoadGuard extends RoadGuard implements MovingRoadAPI, User<Da
 
     @Override
     public void advance(TimeLapse time) {
+        if(handle.getStartTime() > lastChangedTime){
+            lastLocation = getCurrentLocation();
+            lastChangedTime = handle.getStartTime();
+        }
+        
         if(! isDriving() || ! time.hasTimeLeft()) return;
-        model.followPath((MovingRoadUser) user, path, time);
-        lastChangedTime = time.getStartTime();
+        model.followPath((MovingRoadUser<?>) user, path, time);
     }
 
     @Override

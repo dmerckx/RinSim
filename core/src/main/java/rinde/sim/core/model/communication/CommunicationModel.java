@@ -19,9 +19,11 @@ import rinde.sim.core.model.communication.users.CommUser;
 import rinde.sim.core.model.communication.users.FullCommUser;
 import rinde.sim.core.model.communication.users.SimpleCommData;
 import rinde.sim.core.model.communication.users.SimpleCommUser;
+import rinde.sim.core.simulation.Simulator;
 import rinde.sim.core.simulation.TimeInterval;
 import rinde.sim.core.simulation.UserInit;
 import rinde.sim.core.simulation.policies.ParallelExecution;
+import rinde.sim.core.simulation.time.TimeLapseHandle;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -100,8 +102,17 @@ public class CommunicationModel extends ParallelExecution implements Model<Data,
 	
 	// ----- MODEL ----- //
 
+	/**
+	 * Register a communication user without going through the {@link Simulator}.
+	 * @param user The user to register.
+	 * @param data The initialization data of this user.
+	 */
+	public void register(CommUser<?> user, Data data) {
+	    register(user, data, null);
+	}
+	
 	@Override
-	public List<UserInit<?>> register(CommUser<?> user, Data data) {
+	public List<UserInit<?>> register(CommUser<?> user, Data data, TimeLapseHandle handle) {
         assert user!=null : "User can not be null.";
 	    assert data!=null : "Data can not be null.";
 	    

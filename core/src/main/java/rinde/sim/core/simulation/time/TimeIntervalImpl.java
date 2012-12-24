@@ -7,20 +7,13 @@ public class TimeIntervalImpl implements TimeInterval {
 
     protected long startTime;
     protected long endTime;
-    
-    public TimeIntervalImpl() {}
 
     public TimeIntervalImpl(long start, long end) {
         checkArgument(start >= 0, "time must be positive");
         checkArgument(end > start, "end time must be after start time");
         
-        initialize(start, end);
-    }
-    
-    public TimeInterval initialize(long start, long end) {
-        startTime = start;
-        endTime = end;
-        return this;
+        this.startTime = start;
+        this.endTime = end;
     }
     
     @Override
@@ -40,7 +33,6 @@ public class TimeIntervalImpl implements TimeInterval {
 
     @Override
     public String toString() {
-        return new StringBuilder("[").append(startTime).append(",")
-                .append(endTime).append(")").toString();
+        return "[" + startTime + "," + endTime + "]";
     }
 }
