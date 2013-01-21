@@ -1,6 +1,7 @@
 package rinde.sim.core.model.communication;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.concurrent.CountDownLatch;
@@ -44,7 +45,7 @@ public class CommunicationModel extends ParallelExecution implements Model<Data,
 	private final HashMap<Address, CommGuard> fullComms = Maps.newHashMap();
 	private final HashMap<Address, SimpleCommGuard> simpleComms = Maps.newHashMap();
 	
-	private SortedSet<SimpleCommGuard> activeGuards = Sets.newTreeSet();
+	private List<SimpleCommGuard> activeGuards = Lists.newArrayList();
 	
 	private int nextId = 0;
 	private RandomGenerator rnd;
@@ -74,10 +75,15 @@ public class CommunicationModel extends ParallelExecution implements Model<Data,
 	        receiver = simpleComms.get(destination);
 	    else
 	        receiver = fullComms.get(destination);
-	      
-	    if(!receiver.isActive())
-	        activeGuards.add(receiver);
-	    receiver.receive(msg);
+	    
+	   
+	    synchronized(receiver){
+	        synchronized(this){
+	            if(!receiver.isActive())
+	                activeGuards.add(receiver);
+	        }
+    	    receiver.receive(msg);
+	    }
 	}
 	
 	/**
@@ -117,13 +123,13 @@ public class CommunicationModel extends ParallelExecution implements Model<Data,
 	    assert data!=null : "Data can not be null.";
 	    
 	    if(user instanceof FullCommUser<?>){
-	        CommGuard guard = new CommGuard((FullCommUser<?>) user, (CommData) data, this, rnd.nextLong());
+	        CommGuard guard = new CommGuard((FullCommUser<?>) user, (CommData) data, this, rnd.nextLong(), handle);
 	        ((FullCommUser<?>) user).setCommunicationAPI(guard); 
 	        fullComms.put(guard.getAddress(), guard);
 	    }
 	    else if(user instanceof SimpleCommUser<?>){
 	        SimpleCommGuard guard =
-	                new SimpleCommGuard((SimpleCommUser<?>) user, (SimpleCommData) data, this, rnd.nextLong());
+	                new SimpleCommGuard((SimpleCommUser<?>) user, (SimpleCommData) data, this, rnd.nextLong(), handle);
 	        ((SimpleCommUser<?>) user).setCommunicationAPI(guard);
             simpleComms.put(guard.getAddress(), guard);
 	    }
@@ -179,12 +185,13 @@ public class CommunicationModel extends ParallelExecution implements Model<Data,
                 }
             });
         }
-        activeGuards.clear();
         
         try {
             latch.await();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+        
+        activeGuards.clear();
     }
 }

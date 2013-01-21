@@ -4,11 +4,15 @@
 package rinde.sim.core.simulation;
 
 import java.util.List;
+import java.util.Random;
 
+import org.apache.commons.math3.random.MersenneTwister;
+import org.apache.commons.math3.random.RandomGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import rinde.sim.core.model.Data;
+import rinde.sim.core.model.InitUser;
 import rinde.sim.core.model.Model;
 import rinde.sim.core.model.ModelManager;
 import rinde.sim.core.model.ModelProvider;
@@ -24,8 +28,6 @@ import rinde.sim.core.simulation.time.TimeLapseHandle;
 import rinde.sim.event.Event;
 import rinde.sim.event.EventAPI;
 import rinde.sim.event.EventDispatcher;
-
-import com.google.common.collect.Lists;
 
 /**
  * Simulator is the core class of a simulation. It is responsible for managing
@@ -57,6 +59,8 @@ public class Simulator{
     protected final ModelPolicy modelPolicy;
     protected final TimeUserPolicy timeUserPolicy;
     protected final TickListenerPolicy externalPolicy;
+    
+    private final RandomGenerator rnd;
     
     private TickPolicy activePolicy;
     
@@ -120,7 +124,11 @@ public class Simulator{
 
     private final long timeStep;
     
-    public Simulator(long step) {
+    public Simulator(long step){
+        this(step, 19);
+    }
+    
+    public Simulator(long step, long seed) {
         modelPolicy = new ModelPolicy();
         timeUserPolicy = new ParallelTimeUserPolicy();
         externalPolicy = new TickListenerSerialPolicy(true);
@@ -133,6 +141,8 @@ public class Simulator{
         eventAPI = dispatcher.getEventAPI();
         
         registerModel(new SimulatorModel(this));
+        
+        this.rnd = new MersenneTwister(seed);
     }
     
     /**
@@ -146,6 +156,10 @@ public class Simulator{
         configured = true;
         dispatcher
                 .dispatchEvent(new Event(SimulatorEventType.CONFIGURED, this));
+        
+        for(Model<?,?> model:modelManager.getModels()){
+            model.setSeed(rnd.nextLong());
+        }
     }
     
     // ----- REGISTERING ----- // 
@@ -195,6 +209,9 @@ public class Simulator{
     
     private <D extends Data> void addUser(UserInit<D> init, TimeLapseHandle lapse){
         List<UserInit<?>> guards = modelManager.register(init.user, init.data, lapse);
+        if(init.user instanceof InitUser){
+            timeUserPolicy.addInituser((InitUser) init.user);
+        }
         
         for(UserInit<?> g:guards){
             addUser(g, lapse);
@@ -259,6 +276,12 @@ public class Simulator{
         dispatcher.dispatchEvent(new Event(SimulatorEventType.STOPPED, this));
     }
     
+    public void advanceTicks(int nrTicks){
+        for(int i = 0; i < nrTicks; i++){
+            advanceTick();
+        }
+    }
+    
     public void advanceTick(){
         if( !isPlaying()){
             tick();
@@ -283,6 +306,7 @@ public class Simulator{
         performTicks(modelPolicy, interval);
         performTicks(timeUserPolicy, interval);
         performTicks(externalPolicy, interval);
+        
         
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("tick(): " + (System.currentTimeMillis() - timeS));

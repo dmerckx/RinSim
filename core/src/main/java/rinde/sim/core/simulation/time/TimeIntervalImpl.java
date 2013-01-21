@@ -33,6 +33,6 @@ public class TimeIntervalImpl implements TimeInterval {
 
     @Override
     public String toString() {
-        return "[" + startTime + "," + endTime + "]";
+        return /*super.toString() +*/ "[" + startTime + "," + endTime + "]";
     }
 }

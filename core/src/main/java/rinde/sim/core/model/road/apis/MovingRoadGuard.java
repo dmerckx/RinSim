@@ -101,14 +101,14 @@ public class MovingRoadGuard extends RoadGuard implements MovingRoadAPI{
     }
 
     @Override
-    public void advance(TimeLapse time) {
+    public void advance(TimeLapse lapse) {
         if(handle.getStartTime() > lastChangedTime){
             lastLocation = getCurrentLocation();
             lastChangedTime = handle.getStartTime();
         }
         
-        if(! isDriving() || ! time.hasTimeLeft()) return;
-        model.followPath((MovingRoadUser<?>) user, path, time);
+        if(! isDriving() || ! lapse.hasTimeLeft()) return;
+        model.followPath((MovingRoadUser<?>) user, path, lapse);
     }
 
     @Override

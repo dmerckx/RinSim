@@ -13,12 +13,7 @@ public interface SimpleCommData extends Data {
      * The simplest form of a {@link SimpleCommData}, initialized with
      * reliability at 100%.
      */
-    public static final SimpleCommData RELIABLE = new SimpleCommData() {
-        @Override
-        public Double getReliability() {
-            return 1.0d;
-        }
-    };
+    public static final SimpleCommData RELIABLE = new Std(1.0);
     
     /**
      * The reliability to be used to receiving and sending messages.
@@ -27,4 +22,17 @@ public interface SimpleCommData extends Data {
      * @return The reliability for sending and receiving messages.
      */
     Double getReliability();
+    
+    public static class Std implements SimpleCommData{
+        private final double reliability;
+        
+        public Std(double reliability) {
+            this.reliability = reliability;
+        }
+        @Override
+        public Double getReliability() {
+            return reliability;
+        }
+        
+    }
 }

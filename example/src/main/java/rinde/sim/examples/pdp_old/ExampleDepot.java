@@ -1,7 +1,7 @@
 /**
  * 
  */
-package rinde.sim.examples.pdp;
+package rinde.sim.examples.pdp_old;
 
 import rinde.sim.core.graph.Point;
 import rinde.sim.core.model.road.RoadModel;

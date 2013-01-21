@@ -31,4 +31,8 @@ public class ParallelExecution {
         }
 
     }
+
+    public static void close() {
+        pool.shutdown();
+    }
 }

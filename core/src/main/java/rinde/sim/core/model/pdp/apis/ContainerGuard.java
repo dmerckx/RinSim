@@ -1,6 +1,5 @@
 package rinde.sim.core.model.pdp.apis;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import rinde.sim.core.model.Data;
@@ -18,6 +17,9 @@ import rinde.sim.core.model.pdp.visitors.PickupSpecificVisitor;
 import rinde.sim.core.model.pdp.visitors.PickupVisitor;
 import rinde.sim.core.model.road.apis.RoadAPI;
 import rinde.sim.core.simulation.TimeLapse;
+import rinde.sim.core.simulation.time.TimeLapseHandle;
+
+import com.google.common.collect.Lists;
 
 public class ContainerGuard extends ContainerState implements ContainerAPI, InteractionUser<Data>{
     
@@ -25,17 +27,25 @@ public class ContainerGuard extends ContainerState implements ContainerAPI, Inte
     private RoadAPI roadAPI;
     private InteractionAPI interactiveAPI;
     
-    private ContState state = ContState.AVAILABLE;
-    private long actionTime = 0;
-    private double capacity;
-    private List<Parcel> load = new ArrayList<Parcel>();
+    private final double capacity;
+    private final Class<? extends Parcel> parcelType;
     
-    private Class<? extends Parcel> parcelType;
+    private List<Parcel> load = Lists.newArrayList();
     
-    public ContainerGuard(Container<?> user, ContainerData data, PdpModel model) {
-        this.container = user;
+    private long backupTime;
+    private List<Parcel> backupLoad = Lists.newArrayList();
+    private ContState backupState;
+    
+    private Action lastAction;
+    private long lastActionEnd;
+    
+    private final TimeLapseHandle handle;
+    
+    public ContainerGuard(Container<?> user, ContainerData data, PdpModel model, TimeLapseHandle handle) {
         this.capacity = data.getCapacity();
         this.parcelType = data.getParcelType();
+        this.handle = handle;
+        updateBackup();
     }
 
     @Override
@@ -50,46 +60,58 @@ public class ContainerGuard extends ContainerState implements ContainerAPI, Inte
         this.roadAPI = api;
     }
     
-    public void tick(TimeLapse lapse){
-        doAction(lapse);
+    private void load(Parcel parcel){
+        assert handle.hasTimeLeft();
+        
+        handle.consume(parcel.pickupDuration);
+        load.add(parcel);
+        lastAction = Action.LOAD;
+        lastActionEnd = parcel.pickupDuration;
+    }
+    
+    private void unload(Parcel parcel){
+        assert handle.hasTimeLeft();
+        
+        handle.consume(parcel.deliveryDuration);
+        load.remove(parcel);
+        lastAction = Action.UNLOAD;
+        lastActionEnd = parcel.deliveryDuration;
+    }
+    
+    private void updateBackup(){
+        if(backupTime == handle.getStartTime())
+            return;
+        
+        backupState = getCurrentContState(handle.getStartTime());
+        backupLoad = load;
+    }
+    
+    private ContState getCurrentContState(long time){
+        if(interactiveAPI.isAdvertising()){
+            switch(lastAction){
+                case ACCEPT: return ContState.ACCEPTING;
+                case ADVERTISE: return ContState.ADVERTISING;
+                default: throw new IllegalStateException();
+            }
+        }
+        
+        if(lastAction == null)
+            return ContState.AVAILABLE;
+        
+        switch (lastAction) {
+            case LOAD:
+                if(time < lastActionEnd)
+                    return ContState.PICKING_UP;
+                return ContState.AVAILABLE;
+            case UNLOAD:
+                if(time < lastActionEnd)
+                    return ContState.DELIVERING;
+                return ContState.AVAILABLE;
+            default: throw new IllegalStateException();
+        }
     }
     
     // ----- CONTAINER API ----- //
-    
-    @SuppressWarnings("javadoc")
-    protected void load(TimeLapse lapse, Parcel parcel){
-        state = ContState.PICKING_UP;
-        load.add(parcel);
-        actionTime = parcel.pickupDuration;
-        doAction(lapse);
-    }
-    
-    protected void unload(TimeLapse lapse, Parcel parcel){
-        state = ContState.DELIVERING;
-        load.remove(parcel);
-        actionTime = parcel.deliveryDuration;
-        doAction(lapse);
-    }
-    
-    @SuppressWarnings("javadoc")
-    protected void doAction(TimeLapse lapse){
-        if(state == ContState.ADVERTISING){
-            lapse.consumeAll();
-            return;
-        }
-        
-        if(actionTime == 0) return;
-        
-        if( lapse.getTimeLeft() >= actionTime){
-            lapse.consume(actionTime);
-            actionTime = 0;
-            state = ContState.AVAILABLE;
-        }
-        else {
-            actionTime -= lapse.getTimeLeft();
-            lapse.consumeAll();
-        }
-    }
 
     @Override
     public List<Parcel> getCurrentLoad() {
@@ -105,121 +127,128 @@ public class ContainerGuard extends ContainerState implements ContainerAPI, Inte
 
     @Override
     public Parcel tryPickup(TimeLapse lapse) {
-        assert roadAPI != null: "init must be called while receiving this container api";
-        
-        if(state != ContState.AVAILABLE) return null;
+        assert handle == lapse;
+        if(!handle.hasTimeLeft()) return null;
+        updateBackup();
         
         PickupVisitor visitor = new PickupVisitor(parcelType,
                 roadAPI.getCurrentLocation(), getCapacityLeft());
+        
         Parcel result = interactiveAPI.visit(lapse, visitor);
-        if(result != null) load(lapse, result);
+        if(result != null) load(result);
         return result;
     }
 
     @Override
     public boolean tryPickupOf(TimeLapse lapse, Parcel parcel) {
-        assert roadAPI != null: "init must be called while receiving this container api";
-        
-        if(state != ContState.AVAILABLE) return false;
+        assert handle == lapse;
+        if(!handle.hasTimeLeft()) return false;
+        updateBackup();
         
         PickupVisitor visitor = new PickupSpecificVisitor(parcel,
                 roadAPI.getCurrentLocation(), getCapacityLeft());
         Parcel result = interactiveAPI.visit(lapse, visitor);
-        if(result != null) load(lapse, result);
+        if(result != null) load(result);
         return result != null;
     }
     
+    @Override
     public Parcel tryDelivery(TimeLapse lapse){
+        assert handle == lapse;
+        if(!handle.hasTimeLeft()) return null;
+        updateBackup();
         
-        DeliveryVisitor visitor = new DeliveryVisitor(roadAPI.getCurrentLocation(), load);
+        DeliveryVisitor visitor =
+                new DeliveryVisitor(roadAPI.getCurrentLocation(), load);
         
         Parcel result = interactiveAPI.visit(lapse, visitor);
-        if(result != null) unload(lapse, result);
+        if(result != null) unload(result);
         return result;
+    }
+    
+    @Override
+    public boolean tryDeliveryOf(TimeLapse lapse, Parcel parcel){
+        assert handle == lapse;
+        assert load.contains(parcel);
+        if(!handle.hasTimeLeft()) return false;
+        updateBackup();
+        
+        DeliveryVisitor visitor =
+                new DeliveryVisitor(roadAPI.getCurrentLocation(), Lists.newArrayList(parcel));
+        
+        Parcel result = interactiveAPI.visit(lapse, visitor);
+        if(result != null) unload(result);
+        return result != null;
     }
 
     @Override
     public void acceptAll(TimeLapse lapse){
-        assert roadAPI != null: "init must be called while receiving this container api";
+        if(interactiveAPI.isAdvertising()) return;
+        if(!handle.hasTimeLeft()) return;
+        updateBackup();
         
-        DeliveryReceiver rec = new DeliveryReceiver(roadAPI.getCurrentLocation(),
-                parcelType, pdpModel.getPolicy());
-        accept(lapse, rec);
+        DeliveryReceiver rec = new DeliveryReceiver(
+                roadAPI.getCurrentLocation(), parcelType, pdpModel.getPolicy());
+        interactiveAPI.advertise(rec);
+        lastAction = Action.ACCEPT;
     }
     
     @Override
     public void accept(TimeLapse lapse, List<Parcel> parcels){
-        assert roadAPI != null: "init must be called while receiving this container api";
+        if(interactiveAPI.isAdvertising()) return;
+        if(!handle.hasTimeLeft()) return;
+        updateBackup();
         
         DeliveryReceiver rec = new DeliverySpecificReceiver(
-                roadAPI.getCurrentLocation(), parcels,
-                pdpModel.getPolicy());
-        accept(lapse, rec);
+                roadAPI.getCurrentLocation(), parcels, pdpModel.getPolicy());
+        interactiveAPI.advertise(rec);
+        lastAction = Action.ACCEPT;
     }
 
     @Override
     public void advertiseAll(TimeLapse lapse) {
-        assert roadAPI != null: "init must be called while receiving this container api";
-        
         advertise(lapse, load);
     }
     
     @Override
     public void advertise(TimeLapse lapse, List<Parcel> parcels) {
-        assert roadAPI != null: "init must be called while receiving this container api";
+        if(interactiveAPI.isAdvertising()) return;
+        if(!handle.hasTimeLeft()) return;
+        updateBackup();
         
-        switch(state){
-            case ADVERTISING:
-                interactiveAPI.removeAll();
-                break;
-            case ACCEPTING_ADVERTISING:
-                interactiveAPI.removeAll(PickupReceiver.class);
-                break;
-            case ACCEPTING:
-                state = ContState.ACCEPTING_ADVERTISING;
-                break;
-            default:
-                return;
-        }
-
-        PickupReceiver rec = new PickupReceiver(roadAPI.getCurrentLocation(),
-                parcels, pdpModel.getPolicy());
+        PickupReceiver rec = new PickupReceiver(
+                roadAPI.getCurrentLocation(), parcels, pdpModel.getPolicy());
         interactiveAPI.advertise(rec);
-        doAction(lapse);
+        lastAction = Action.ADVERTISE;
+    }
+    
+    @Override
+    public void stopAdvertisingOrAccepting(){
+        updateBackup();
+        interactiveAPI.stopAdvertising();
     }
 
     @Override
     public ContState getContState() {
-        return state;
-    }
-    
-    @SuppressWarnings("javadoc")
-    protected void accept(TimeLapse lapse, DeliveryReceiver rec){
-        switch(state){
-            case ACCEPTING:
-                interactiveAPI.removeAll();
-                break;
-            case ACCEPTING_ADVERTISING:
-                interactiveAPI.removeAll(DeliveryReceiver.class);
-                break;
-            case ADVERTISING:
-                state = ContState.ACCEPTING_ADVERTISING;
-                break;
-            default:
-                return;
-        }
-        interactiveAPI.advertise(rec);
-        doAction(lapse);
+        updateBackup();
+        return backupState;
     }
 
     @Override
     public List<Parcel> getLoad() {
-        //TODO
-        return null;
+        updateBackup();
+        return backupLoad;
     }
 
     @Override
     public ContainerState getState() {
         return this;
     }
+}
+
+enum Action{
+    LOAD,
+    UNLOAD,
+    ADVERTISE,
+    ACCEPT
 }

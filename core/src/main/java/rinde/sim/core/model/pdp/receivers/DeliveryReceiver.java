@@ -1,10 +1,8 @@
 package rinde.sim.core.model.pdp.receivers;
 
 import rinde.sim.core.graph.Point;
-import rinde.sim.core.model.interaction.ExtendedReceiver;
 import rinde.sim.core.model.interaction.Receiver;
 import rinde.sim.core.model.pdp.Parcel;
-import rinde.sim.core.model.pdp.receivers.ContainerNotification.NotificationType;
 import rinde.sim.core.model.pdp.twpolicy.TimeWindowPolicy;
 import rinde.sim.core.model.pdp.visitors.DeliveryVisitor;
 import rinde.sim.core.simulation.TimeLapse;
@@ -19,7 +17,7 @@ import rinde.sim.core.simulation.TimeLapse;
  * 
  * @author dmerckx
  */
-public class DeliveryReceiver extends ExtendedReceiver {
+public class DeliveryReceiver extends Receiver {
 
     private final Class<? extends Parcel> target;
     private final TimeWindowPolicy policy;
@@ -46,6 +44,8 @@ public class DeliveryReceiver extends ExtendedReceiver {
      *         parcel.
      */
     public boolean canAccept(TimeLapse time, Parcel parcel, DeliveryVisitor visitor) {
+       if(terminated) return false;
+        
        return parcel.getClass().isAssignableFrom(target)
                 && policy.canDeliver(parcel.deliveryTimeWindow, time.getCurrentTime(), parcel.deliveryDuration);
     }
@@ -54,7 +54,8 @@ public class DeliveryReceiver extends ExtendedReceiver {
      * @param parcel Deliver the specified parcel.
      */
     public void deliver(Parcel parcel) {
-        sendNotification(new ContainerNotification(NotificationType.DELIVERY, parcel));
-        terminate();
+        assert !terminated;
+
+        terminate(parcel.deliveryDuration);
     }
 }

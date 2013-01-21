@@ -1,6 +1,7 @@
 package rinde.sim.core.model.communication.users;
 
 import rinde.sim.core.model.communication.apis.CommAPI;
+import rinde.sim.core.model.communication.apis.CommunicationState;
 import rinde.sim.core.model.communication.apis.SimpleCommAPI;
 import rinde.sim.core.simulation.Simulator;
 
@@ -28,4 +29,18 @@ public interface SimpleCommUser<D extends SimpleCommData> extends CommUser<D>{
      */
     public void setCommunicationAPI(SimpleCommAPI api);
 
+    
+    public static class Std implements SimpleCommUser<SimpleCommData>{
+        protected SimpleCommAPI commAPI;
+        
+        @Override
+        public void setCommunicationAPI(SimpleCommAPI api) {
+            this.commAPI = api;
+        }
+        
+        @Override
+        public CommunicationState getCommunicationState() {
+            return commAPI.getState();
+        }
+    }
 }

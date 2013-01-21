@@ -26,6 +26,7 @@ import rinde.sim.core.model.pdp.users.Truck;
 import rinde.sim.core.model.pdp.users.TruckData;
 import rinde.sim.core.simulation.TimeInterval;
 import rinde.sim.core.simulation.UserInit;
+import rinde.sim.core.simulation.time.TimeLapseHandle;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -143,14 +144,14 @@ public class PdpModel implements Model<Data, PdpUser<?>>, PdpAPI{
     // ------ MODEL ------ //
 
     @Override
-    public List<UserInit<?>> register(PdpUser<?> user, Data data) {
+    public List<UserInit<?>> register(PdpUser<?> user, Data data, TimeLapseHandle handle) {
         assert user != null;
         assert data != null;
         
         List<UserInit<?>> result = Lists.newArrayList();
         
         if(user instanceof Container<?>){
-            ContainerGuard guard = new ContainerGuard((Container) user, (ContainerData) data, this);
+            ContainerGuard guard = new ContainerGuard((Container) user, (ContainerData) data, this, handle);
             ((Container) user).setContainerAPI(guard);
             
             result.add(UserInit.create(guard));
@@ -165,14 +166,14 @@ public class PdpModel implements Model<Data, PdpUser<?>>, PdpAPI{
             }
         }
         else if(user instanceof PickupPoint){
-            PickupGuard guard = new PickupGuard((PickupPoint<?>) user, (PickupPointData) data, this);
+            PickupGuard guard = new PickupGuard((PickupPoint<?>) user, (PickupPointData) data, this, handle);
             ((PickupPoint) user).setPickupAPI(guard);
             
             result.add(UserInit.create(guard));
             pickups.put((PickupPoint<?>) user, guard);
         }
         else if(user instanceof DeliveryPoint){
-            DeliveryGuard guard = new DeliveryGuard((DeliveryPoint<?>) user, (DeliveryPointData) data, this);
+            DeliveryGuard guard = new DeliveryGuard((DeliveryPoint<?>) user, (DeliveryPointData) data, this, handle);
             ((DeliveryPoint) user).setDeliveryAPI(guard);
             
             result.add(UserInit.create(guard));
@@ -243,5 +244,10 @@ public class PdpModel implements Model<Data, PdpUser<?>>, PdpAPI{
             observer.packageDelivered(d);
         }
         deliveryEvents.clear();
+    }
+
+    @Override
+    public void setSeed(long seed) {
+        
     }
 }

@@ -1,6 +1,7 @@
 package rinde.sim.core.model.pdp.apis;
 
 import rinde.sim.core.model.Data;
+import rinde.sim.core.model.InitUser;
 import rinde.sim.core.model.interaction.apis.InteractionAPI;
 import rinde.sim.core.model.interaction.users.InteractionUser;
 import rinde.sim.core.model.pdp.Parcel;
@@ -13,7 +14,7 @@ import rinde.sim.core.simulation.time.TimeLapseHandle;
 
 import com.google.common.collect.Lists;
 
-public class DeliveryGuard extends DeliveryPointState implements DeliveryAPI, InteractionUser<Data>{
+public class DeliveryGuard extends DeliveryPointState implements DeliveryAPI, InitUser, InteractionUser<Data>{
 
     private final PdpModel pdpModel;
     private InteractionAPI interactionAPI;
@@ -30,8 +31,6 @@ public class DeliveryGuard extends DeliveryPointState implements DeliveryAPI, In
         this.parcel = data.getParcel();
         this.pdpModel = model;
         this.handle = handle;
-        
-        updateState();
     }
 
     @Override
@@ -39,6 +38,7 @@ public class DeliveryGuard extends DeliveryPointState implements DeliveryAPI, In
         this.interactionAPI = api;
     }
 
+    @Override
     public void init() {
         //Advertise a receiver, waiting for the parcel to be delivered
         interactionAPI.advertise(
@@ -63,7 +63,7 @@ public class DeliveryGuard extends DeliveryPointState implements DeliveryAPI, In
                 state = DeliveryState.LATE;
         }
         else {
-            if(interactionAPI.getTerminationTime() < time + parcel.deliveryDuration)
+            if(time < interactionAPI.getTerminationTime() + parcel.deliveryDuration)
                 state = DeliveryState.BEING_DELIVERED;
             else
                 state = DeliveryState.DELIVERED;

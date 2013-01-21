@@ -38,7 +38,6 @@ public class TruckGuard implements TruckAPI{
         Iterator<PickupPoint<?>> it = pdpModel.queryPickups();
         while(it.hasNext()){
             PickupPoint<?> p = it.next();
-            System.out.println("p found: " + p);
             
             switch(p.getPickupPointState().getPickupState()){
                 case BEING_PICKED_UP: continue;

@@ -28,4 +28,7 @@ public class DeliveryPoint<D extends DeliveryPointData> implements FixedRoadUser
     public final RoadState getRoadState() {
         return roadAPI.getState();
     }
+    
+
+    public static class Std extends DeliveryPoint<DeliveryPointData>{}
 }

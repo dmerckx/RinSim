@@ -8,12 +8,20 @@ public class TimeLapseHandle extends TimeIntervalImpl implements TimeLapse{
     
     private long step;
     private long schedualedUntil;
-    private boolean blocked;
+    private boolean blocked = false;
     
     public TimeLapseHandle(long start, long step) {
         super(start, start+step);
         this.step = step;
         this.schedualedUntil = start;
+    }
+    
+    public boolean isBlocked(){
+        return blocked;
+    }
+    
+    public long getSchedualedUntil(){
+        return schedualedUntil;
     }
     
     /**
@@ -22,8 +30,12 @@ public class TimeLapseHandle extends TimeIntervalImpl implements TimeLapse{
      * tick has been handled.
      */
     public void nextStep(){
+        
         startTime += step;
         endTime += step;
+        
+        if(schedualedUntil < startTime)
+            schedualedUntil = startTime;
         
         if(blocked) 
             schedualedUntil = endTime;
@@ -68,7 +80,7 @@ public class TimeLapseHandle extends TimeIntervalImpl implements TimeLapse{
      */
     @Override
     public long getTimeLeft() {
-        long timeLeft = schedualedUntil - getEndTime();
+        long timeLeft = getEndTime() - schedualedUntil;
         
         return timeLeft > 0 ? timeLeft : 0;
     }
@@ -101,7 +113,7 @@ public class TimeLapseHandle extends TimeIntervalImpl implements TimeLapse{
 
     @Override
     public String toString() {
-        return "[" + startTime + "," + endTime + "{" + schedualedUntil +"}]";
+        return super.toString() + "{" + schedualedUntil +"}";
     }
 
     /**

@@ -53,6 +53,10 @@ public class UiSchema {
 		colorCache.put(key, rgb);
 	}
 
+	public void add(String type, String fileName) {
+		imgCache.put(type, fileName);
+	}
+	
 	public void add(Class<?> type, String fileName) {
 		// final ImageDescriptor descriptor =
 		// ImageDescriptor.createFromFile(type, fileName);
@@ -61,6 +65,10 @@ public class UiSchema {
 
 	public Image getImage(Class<?> type) {
 		return imageRegistry.get(type.getName());
+	}
+
+	public Image getImage(String type) {
+		return imageRegistry.get(type);
 	}
 
 	public Color getColor(Class<?> type) {

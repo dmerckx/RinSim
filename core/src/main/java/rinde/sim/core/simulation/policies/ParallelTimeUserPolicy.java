@@ -9,16 +9,18 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 import rinde.sim.core.model.Agent;
+import rinde.sim.core.model.InitUser;
 import rinde.sim.core.model.User;
 import rinde.sim.core.simulation.TimeInterval;
 import rinde.sim.core.simulation.time.TimeLapseHandle;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 public class ParallelTimeUserPolicy extends ParallelExecution implements TimeUserPolicy{
     
     private HashMap<User<?>, TimeLapseHandle> agents = Maps.newLinkedHashMap();
-    
+    private List<InitUser> initUsers = Lists.newArrayList();
     
     public void register(User<?> agent, TimeLapseHandle handle){
         assert agent != null;
@@ -35,13 +37,28 @@ public class ParallelTimeUserPolicy extends ParallelExecution implements TimeUse
     }
 
     @Override
+    public void addInituser(InitUser user) {
+        initUsers.add(user);
+    }
+
+    @Override
     public void performTicks(TimeInterval interval) {
+        for(InitUser user:initUsers){
+            user.init();
+        }
+        initUsers.clear();
+        
         List<Future<?>> futures = new ArrayList<Future<?>>();
         List<CountDownLatch> barriers = new ArrayList<CountDownLatch>();
         
         for(Entry<User<?>,TimeLapseHandle> entry:agents.entrySet()){
+            entry.getValue().nextStep();
+        }
+            
+        for(Entry<User<?>,TimeLapseHandle> entry:agents.entrySet()){
             if(!(entry.getKey() instanceof Agent))
                 continue;
+                
             final Agent agent = (Agent) entry.getKey();
             final TimeLapseHandle lapse = entry.getValue();
             
@@ -54,7 +71,6 @@ public class ParallelTimeUserPolicy extends ParallelExecution implements TimeUse
                     previousBarrier.set(barrier);
                     
                     agent.tick(lapse);
-                    lapse.nextStep();
                     
                     previousBarrier.set(null);
                 }
@@ -64,6 +80,7 @@ public class ParallelTimeUserPolicy extends ParallelExecution implements TimeUse
         }
         
         for(int i = 0; i < futures.size(); i++){
+            barriers.get(i).countDown();
             try {
                 futures.get(i).get();
             } catch (InterruptedException e) {
@@ -71,8 +88,6 @@ public class ParallelTimeUserPolicy extends ParallelExecution implements TimeUse
             } catch (ExecutionException e) {
                 e.printStackTrace();
             }
-            
-            barriers.get(i).countDown();
         }
     }
 

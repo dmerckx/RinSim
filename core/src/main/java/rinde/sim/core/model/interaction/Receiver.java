@@ -17,13 +17,15 @@ import rinde.sim.core.model.interaction.users.InteractionUser;
  *  
  * @author dmerckx
  */
-public abstract class Receiver{
+public class Receiver{
     
     /**
      * The location at which this receiver is stationed.
      */
     public final Point location;
     private InteractionModel model;
+    
+    protected boolean terminated = false;
     
     /**
      * Create a new receiver, which will be active at the given location.
@@ -56,6 +58,7 @@ public abstract class Receiver{
      * @param timeCost Additional time cost.
      */
     public final void terminate(long timeCost){
-        model.remove(this, timeCost);
+        model.terminate(this, timeCost);
+        terminated = true;
     }
 }

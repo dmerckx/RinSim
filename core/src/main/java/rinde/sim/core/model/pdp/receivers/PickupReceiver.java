@@ -3,10 +3,8 @@ package rinde.sim.core.model.pdp.receivers;
 import java.util.List;
 
 import rinde.sim.core.graph.Point;
-import rinde.sim.core.model.interaction.ExtendedReceiver;
 import rinde.sim.core.model.interaction.Receiver;
 import rinde.sim.core.model.pdp.Parcel;
-import rinde.sim.core.model.pdp.receivers.ContainerNotification.NotificationType;
 import rinde.sim.core.model.pdp.twpolicy.TimeWindowPolicy;
 import rinde.sim.core.model.pdp.visitors.PickupVisitor;
 import rinde.sim.core.simulation.TimeLapse;
@@ -22,7 +20,7 @@ import rinde.sim.core.simulation.TimeLapse;
  * 
  * @author dmerckx
  */
-public class PickupReceiver extends ExtendedReceiver {
+public class PickupReceiver extends Receiver {
 
     private final List<? extends Parcel> parcels;
     private final TimeWindowPolicy policy;
@@ -53,6 +51,8 @@ public class PickupReceiver extends ExtendedReceiver {
      * @return Whether or not the visitor is allowed to pick up the given parcel.
      */
     public boolean canBePickedUp(TimeLapse lapse, Parcel parcel, PickupVisitor visitor){
+        if(terminated) return false;
+        
         return parcels.contains(parcel) &&
                 policy.canPickup(parcel.pickupTimeWindow, lapse.getCurrentTime(), parcel.pickupDuration);
     }
@@ -61,8 +61,8 @@ public class PickupReceiver extends ExtendedReceiver {
      * @param parcel Pickup the specified parcel.
      */
     public void pickup(Parcel parcel){
-        System.out.println("----------PICKUP");
-        sendNotification(new ContainerNotification(NotificationType.PICKUP, parcel));
-        terminate();
+        assert !terminated;
+        
+        terminate(parcel.pickupDuration);
     }
 }

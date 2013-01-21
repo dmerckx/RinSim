@@ -1,6 +1,7 @@
 package rinde.sim.core.model.pdp.apis;
 
 import rinde.sim.core.model.Data;
+import rinde.sim.core.model.InitUser;
 import rinde.sim.core.model.interaction.apis.InteractionAPI;
 import rinde.sim.core.model.interaction.users.InteractionUser;
 import rinde.sim.core.model.pdp.Parcel;
@@ -14,7 +15,7 @@ import rinde.sim.core.simulation.time.TimeLapseHandle;
 
 import com.google.common.collect.Lists;
 
-public class PickupGuard extends PickupPointState implements PickupAPI, InteractionUser<Data>{
+public class PickupGuard extends PickupPointState implements PickupAPI, InitUser, InteractionUser<Data>{
     
     private Parcel parcel;
     private InteractionAPI interactionAPI;
@@ -36,6 +37,7 @@ public class PickupGuard extends PickupPointState implements PickupAPI, Interact
         this.interactionAPI = api;
     }
 
+    @Override
     public void init() {
         interactionAPI.advertise(
                 new PickupReceiver(parcel.location, Lists.newArrayList(parcel), pdpModel.getPolicy()));
@@ -49,7 +51,7 @@ public class PickupGuard extends PickupPointState implements PickupAPI, Interact
             return; //up to date 
         
         long time = handle.getStartTime();
-        
+       
         if(interactionAPI.isAdvertising()){
             if(time < parcel.deliveryTimeWindow.begin)
                 state = PickupState.SETTING_UP;
@@ -59,7 +61,7 @@ public class PickupGuard extends PickupPointState implements PickupAPI, Interact
                 state = PickupState.LATE;
         }
         else {
-            if(interactionAPI.getTerminationTime() < time + parcel.deliveryDuration)
+            if(time < interactionAPI.getTerminationTime() + parcel.deliveryDuration)
                 state = PickupState.BEING_PICKED_UP;
             else
                 state = PickupState.PICKED_UP;
@@ -72,9 +74,8 @@ public class PickupGuard extends PickupPointState implements PickupAPI, Interact
     
     @Override
     public boolean isPickedUp() {
-        updateState();
-        return state == PickupState.BEING_PICKED_UP 
-                || state == PickupState.PICKED_UP;
+        return getPickupState() == PickupState.BEING_PICKED_UP 
+                || getPickupState() == PickupState.PICKED_UP;
     }
 
     @Override
@@ -90,7 +91,7 @@ public class PickupGuard extends PickupPointState implements PickupAPI, Interact
     
     @Override
     public boolean canBePickedUp(TimeInterval time) {
-        return pdpModel.getPolicy().canPickup(
+        return !isPickedUp() && pdpModel.getPolicy().canPickup(
                 parcel.pickupTimeWindow, time.getStartTime(), parcel.pickupDuration);
     }
 

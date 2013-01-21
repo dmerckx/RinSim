@@ -1,4 +1,4 @@
-package rinde.sim.examples.pdp2;
+package rinde.sim.examples.pdp;
 
 import rinde.sim.core.model.Agent;
 import rinde.sim.core.model.pdp.Parcel;
@@ -6,11 +6,11 @@ import rinde.sim.core.model.pdp.users.Truck;
 import rinde.sim.core.model.pdp.users.TruckData;
 import rinde.sim.core.simulation.TimeLapse;
 
-public class Truck2 extends Truck<TruckData> implements Agent{
+public class PdpTruck extends Truck<TruckData> implements Agent{
 	
 	Parcel target = null;
 	
-	public Truck2() {
+	public PdpTruck() {
 		super();
 	}
 	

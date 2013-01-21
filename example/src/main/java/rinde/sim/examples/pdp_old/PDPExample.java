@@ -1,7 +1,7 @@
 /**
  * 
  */
-package rinde.sim.examples.pdp;
+package rinde.sim.examples.pdp_old;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;

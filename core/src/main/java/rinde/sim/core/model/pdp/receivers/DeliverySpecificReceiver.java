@@ -34,6 +34,7 @@ public class DeliverySpecificReceiver extends DeliveryReceiver {
 
     @Override
     public boolean canAccept(TimeLapse time, Parcel parcel, DeliveryVisitor visitor){
+        if(terminated) return false;
         return targets.contains(parcel) &&
                  super.canAccept(time, parcel, visitor);
     }

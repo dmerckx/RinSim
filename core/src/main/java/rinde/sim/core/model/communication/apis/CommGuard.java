@@ -6,6 +6,7 @@ import rinde.sim.core.model.communication.Delivery;
 import rinde.sim.core.model.communication.Message;
 import rinde.sim.core.model.communication.users.CommData;
 import rinde.sim.core.model.communication.users.FullCommUser;
+import rinde.sim.core.simulation.time.TimeLapseHandle;
 
 /**
  * An implementation of the {@link CommAPI}.
@@ -28,8 +29,8 @@ public class CommGuard extends SimpleCommGuard implements CommAPI{
      * @param seed The seed used for generating random number.
      */
     @SuppressWarnings("hiding")
-    public CommGuard(FullCommUser<?> user, CommData data, CommunicationModel model, long seed) {
-        super(user, data, model, seed);
+    public CommGuard(FullCommUser<?> user, CommData data, CommunicationModel model, long seed, TimeLapseHandle handle) {
+        super(user, data, model, seed, handle);
         this.user = user;
         
         this.radius = data.getInitialRadius();

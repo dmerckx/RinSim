@@ -15,6 +15,7 @@ import rinde.sim.core.model.communication.Delivery;
 import rinde.sim.core.model.communication.Message;
 import rinde.sim.core.model.communication.users.CommUser;
 import rinde.sim.core.model.communication.users.SimpleCommData;
+import rinde.sim.core.simulation.time.TimeLapseHandle;
 
 /**
  * An implementation of the {@link CommAPI}.
@@ -27,10 +28,10 @@ import rinde.sim.core.model.communication.users.SimpleCommData;
  * @author dmerckx
  */
 public class SimpleCommGuard extends CommunicationState
-        implements SimpleCommAPI, Comparable<SimpleCommGuard>{
+        implements SimpleCommAPI{
 	
-	private List<Delivery> mailbox;
-	private SortedSet<Delivery> tempMailbox;
+	private final List<Delivery> mailbox;
+	private final SortedSet<Delivery> tempMailbox;
 	private boolean active = false;
 	
 	@SuppressWarnings("javadoc")
@@ -40,7 +41,9 @@ public class SimpleCommGuard extends CommunicationState
 	protected final CommunicationModel model;
     @SuppressWarnings("javadoc")
     protected final RandomGenerator rnd;
-
+    private final int seed;
+    private final TimeLapseHandle handle;
+    
     @SuppressWarnings("javadoc")
     protected double reliability;
 	
@@ -52,15 +55,16 @@ public class SimpleCommGuard extends CommunicationState
 	 * @param seed The seed used for generating random number.
 	 */
 	@SuppressWarnings("hiding")
-    public SimpleCommGuard(CommUser<?> user, SimpleCommData data, CommunicationModel model, long seed){
+    public SimpleCommGuard(CommUser<?> user, SimpleCommData data, CommunicationModel model, long seed, TimeLapseHandle handle){
 	    super();
 		this.model = model;
 		this.rnd = new MersenneTwister(seed);
-		
 		this.address = model.generateAddress();
 		this.mailbox = new ArrayList<Delivery>();
 		this.tempMailbox = new TreeSet<Delivery>();
         this.reliability = data.getReliability();
+        this.handle = handle;
+        this.seed = rnd.nextInt();
 	}
 	
 	/**
@@ -77,8 +81,12 @@ public class SimpleCommGuard extends CommunicationState
      * @param delivery The delivery of a new message.
      */
     public final synchronized void receive(Delivery delivery){
-        if(rnd.nextFloat() <= reliability)
+        Long time = handle.getStartTime();
+        RandomGenerator gen = new MersenneTwister(new int[]{seed, time.intValue(), delivery.sender.id});
+        if(gen.nextFloat() <= reliability){
             tempMailbox.add(delivery);
+        }
+        tempMailbox.add(delivery);
         active = true;
     }
 
@@ -87,11 +95,8 @@ public class SimpleCommGuard extends CommunicationState
      * messages and add them to the mailbox. 
      */
     public void process() {
-        assert tempMailbox.size() > 0 : "after tick called for inactive guard";
-        
         mailbox.addAll(tempMailbox);
         tempMailbox.clear();
-        
         active = false;
     }
     
@@ -101,7 +106,7 @@ public class SimpleCommGuard extends CommunicationState
 	@Override
 	public void send(Address destination, Message message) {
 	    if(rnd.nextFloat() <= reliability)
-		model.send(destination, new Delivery(address, message));
+	        model.send(destination, new Delivery(address, message));
 	}
 	@Override
 	public Iterator<Delivery> getMessages() {
@@ -119,10 +124,5 @@ public class SimpleCommGuard extends CommunicationState
     @Override
     public CommunicationState getState() {
         return this;
-    }
-
-    @Override
-    public int compareTo(SimpleCommGuard g) {
-        return address.id < g.address.id ? -1 : 1;
     }
 }

@@ -72,5 +72,9 @@ public interface InteractionAPI{
      */
     public boolean isAdvertising();
 
+    /**
+     * The time the last advertised receiver was terminated.
+     * @return The termination time of the last receiver.
+     */
     public long getTerminationTime();
 }

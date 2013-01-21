@@ -31,8 +31,6 @@ public interface ContainerAPI extends User<Data>{
     
     void init(RoadAPI api);
     
-    ContainerState getState();
-    
     /**
      * Returns all the parcels currently contained.
      * @return The list of contained parcels.
@@ -77,6 +75,8 @@ public interface ContainerAPI extends User<Data>{
     
     public Parcel tryDelivery(TimeLapse lapse);
     
+    boolean tryDeliveryOf(TimeLapse lapse, Parcel parcel);
+    
     public void acceptAll(TimeLapse lapse);
     
     public void accept(TimeLapse lapse, List<Parcel> parcels);
@@ -100,12 +100,16 @@ public interface ContainerAPI extends User<Data>{
      */
     public void advertise(TimeLapse lapse, List<Parcel> parcels);
     
+
+    void stopAdvertisingOrAccepting();
     
     /**
      * Returns the current state of this container.
      * @return The current state
      */
     public ContState getContState();
+    
+    ContainerState getState();
     
     /**
      * The possible states a {@link Container} can be in.

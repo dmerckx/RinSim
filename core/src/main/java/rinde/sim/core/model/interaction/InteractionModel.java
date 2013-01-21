@@ -3,6 +3,7 @@ package rinde.sim.core.model.interaction;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map.Entry;
 
 import rinde.sim.core.graph.Point;
 import rinde.sim.core.model.Data;
@@ -15,6 +16,7 @@ import rinde.sim.core.model.interaction.users.InteractionUser;
 import rinde.sim.core.simulation.TimeInterval;
 import rinde.sim.core.simulation.TimeLapse;
 import rinde.sim.core.simulation.UserInit;
+import rinde.sim.core.simulation.policies.ParallelExecution;
 import rinde.sim.core.simulation.time.TimeLapseHandle;
 
 import com.google.common.collect.HashMultimap;
@@ -35,19 +37,19 @@ public class InteractionModel implements Model<Data, InteractionUser<?>> {
     private HashMultimap<Point, Receiver> receiversPos = HashMultimap.create();
     private HashMap<InteractionUser<?>, InteractiveGuard> mapping = Maps.newHashMap();
     
-    private List<Receiver> schedualedForRemoval = Lists.newArrayList();
+    private List<Receiver> schedualedForAdd = Lists.newArrayList();
+    private List<Receiver> schedualedRemoval = Lists.newArrayList();
+    private HashMap<Receiver, Long> terminated = Maps.newHashMap();
     
-    private CommunicationModel commModel;
+    private HashMap<Receiver, InteractiveGuard> recGuards = Maps.newHashMap();
     
     /**
      * Create a new interaction model.
      * @param commModel The required communication model.
      */
     @SuppressWarnings("hiding")
-    public InteractionModel(CommunicationModel commModel) {
-        assert commModel != null;
+    public InteractionModel() {
         
-        this.commModel = commModel;
     }
     
     /**
@@ -58,10 +60,10 @@ public class InteractionModel implements Model<Data, InteractionUser<?>> {
      */
     @SuppressWarnings("unchecked")
     public <T extends Receiver, R extends Result> R visit(TimeLapse lapse, Visitor<T, R> visitor){
+        ParallelExecution.awaitAllPrevious();
+        
         List<T> targets = new ArrayList<T>();
 
-        System.out.println("visit" + visitor.location);
-        System.out.println("receivers for this pos: " + receiversPos.get(visitor.location));
         
         for(Receiver r: receiversPos.get(visitor.location)){
             if( visitor.target.isAssignableFrom(r.getClass())){
@@ -72,48 +74,29 @@ public class InteractionModel implements Model<Data, InteractionUser<?>> {
         return visitor.visit(lapse, targets);
     }
     
-    /**
-     * Advertise a new receiver.
-     * @param receiver The receiver to advertise.
-     */
-    public void advertise(Receiver receiver){
-        assert !(receiver instanceof ExtendedReceiver);
-        
-        receiver.setModel(this);
-        receiversPos.put(receiver.location, receiver);
-    }
-    
-    /**
-     * Advertise a new extended receiver. 
-     * @param receiver The extended receiver to advertise.
-     * @param guard The guard from which this receiver originates.
-     */
-    public void advertise(ExtendedReceiver receiver, InteractiveGuard guard){
-        commModel.register(receiver, SimpleCommData.RELIABLE);
-    }
-    
-    /**
-     * Remove an advertised receiver, and apply an additional time
-     * cost for this removal.
-     * @param receiver The receiver to remove.
-     * @param extraTime The additional time cost to apply.
-     */
-    public void remove(Receiver receiver, long extraTime){
-        receiversPos.remove(receiver.location, receiver);
-        mapping.get(receiver).receiveTermination(extraTime);
-        
-        if(receiver instanceof ExtendedReceiver){
-            commModel.unregister((ExtendedReceiver) receiver);
-        }
+    public synchronized void terminate(Receiver receiver, long timeCost){
+        terminated.put(receiver, timeCost);
     }
     
     /**
      * Schedule this receiver for removal. It will be removed at the end of that
      * tick.
      * @param receiver The receiver to schedule.
+     * @param timeCost The time cost to apply when removing.
      */
-    public void schedualRemove(Receiver receiver){
-        schedualedForRemoval.add(receiver);
+    public synchronized void schedualRemove(Receiver receiver){
+        schedualedRemoval.add(receiver);
+    }
+    
+    /**
+     * Schedule this receiver to be added. It will be added at the end of thatsSatisfied();
+     * tick.
+     * @param receiver The receiver to add.
+     * @param guard The guard that created the guard.
+     */
+    public synchronized void schedualAdd(Receiver receiver, InteractiveGuard guard){
+        recGuards.put(receiver, guard);
+        schedualedForAdd.add(receiver);
     }
     
     
@@ -129,7 +112,6 @@ public class InteractionModel implements Model<Data, InteractionUser<?>> {
         mapping.put(user, guard);
         
         List<UserInit<?>> result = Lists.newArrayList();
-        result.add(UserInit.create(guard, SimpleCommData.RELIABLE));
         
         return result;
     }
@@ -139,11 +121,6 @@ public class InteractionModel implements Model<Data, InteractionUser<?>> {
         assert user!=null : "User can not be null.";
         
         List<User<?>> result = Lists.newArrayList();
-        result.add(mapping.get(user));
-        
-        Receiver r = mapping.get(user).receiver;
-        if(r instanceof ExtendedReceiver)
-            commModel.unregister((ExtendedReceiver) r);
         
         mapping.remove(user);
         
@@ -158,10 +135,26 @@ public class InteractionModel implements Model<Data, InteractionUser<?>> {
 
     @Override
     public void tick(TimeInterval time) {
-        for(Receiver r:schedualedForRemoval){
-            remove(r, 0);
+        for(Receiver receiver:schedualedForAdd){
+            receiversPos.put(receiver.location, receiver);
         }
-        schedualedForRemoval.clear();
+        schedualedForAdd.clear();
+        
+        for(Entry<Receiver, Long> entry:terminated.entrySet()){
+            if(schedualedRemoval.contains(entry.getKey()))
+                schedualedRemoval.remove(entry.getKey());
+            receiversPos.remove(entry.getKey().location, entry.getKey());
+            recGuards.get(entry.getKey()).unsetReceiver(entry.getValue());
+            recGuards.remove(entry.getKey());
+        }
+        terminated.clear();
+        
+        for(Receiver receiver:schedualedRemoval){
+            receiversPos.remove(receiver.location, receiver);
+            recGuards.get(receiver).unsetReceiver(0);
+            recGuards.remove(receiver);
+        }
+        schedualedRemoval.clear();
     }
 
     @Override
