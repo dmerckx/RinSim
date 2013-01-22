@@ -86,8 +86,43 @@ public class Pickup2 {
                     new DeliveryPointData.Std(p));
         }
     }
+    
     @Test
-    public void snapshotTest() {
+    public void snapshotTest1() {
+        setupSim();
+        simulator.advanceTicks(500);
+        List<TestTruck2> drivers1 = trucks;
+        List<PickupPoint.Std> pickupPoints1 = pickupPoints;
+        List<DeliveryPoint.Std> deliveryPoints1 = deliveryPoints;
+        
+        setupSim();
+        simulator.advanceTicks(500);
+        List<TestTruck2> drivers2 = trucks;
+        List<PickupPoint.Std> pickupPoints2 = pickupPoints;
+        List<DeliveryPoint.Std> deliveryPoints2 = deliveryPoints;
+        
+        assertTrue(drivers1.size() == drivers2.size());
+        for(int i = 0; i < drivers1.size(); i++){
+            assertEquals(drivers1.get(i).getRoadState().getLocation(),
+                    drivers2.get(i).getRoadState().getLocation());
+            
+            assertEquals(drivers1.get(i).getContainerState().getLoad().size(),
+                    drivers2.get(i).getContainerState().getLoad().size());
+            assertEquals(drivers1.get(i).getContainerState().getContState(),
+                    drivers2.get(i).getContainerState().getContState());
+        }
+        
+
+        for(int i = 0; i < PACKAGES; i++){
+            assertEquals(pickupPoints1.get(i).getPickupPointState().getPickupState(),
+                    pickupPoints2.get(i).getPickupPointState().getPickupState());
+            assertEquals(deliveryPoints1.get(i).getDeliveryPointState().getDeliveryState(),
+                    deliveryPoints2.get(i).getDeliveryPointState().getDeliveryState());
+        }
+    }
+    
+    @Test
+    public void snapshotTest2() {
         setupSim();
         simulator.advanceTicks(4);
         List<TestTruck2> drivers1 = trucks;

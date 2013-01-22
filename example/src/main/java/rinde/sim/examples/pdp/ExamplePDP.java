@@ -24,6 +24,9 @@ import rinde.sim.core.model.road.RoadModel;
 import rinde.sim.core.simulation.Simulator;
 import rinde.sim.serializers.DotGraphSerializer;
 import rinde.sim.serializers.SelfCycleFilter;
+import rinde.sim.ui.View;
+import rinde.sim.ui.renderers.GraphRoadModelRenderer;
+import rinde.sim.ui.renderers.PDPModelRenderer;
 import rinde.sim.util.TimeWindow;
 
 /**
@@ -32,7 +35,7 @@ import rinde.sim.util.TimeWindow;
  */
 public class ExamplePDP implements PdpObserver{
 	
-	private static final int STEP = 30000;
+	private static final int STEP = 10000;
 	private Simulator sim;
 	
 	public ExamplePDP(Simulator sim) {
@@ -68,13 +71,13 @@ public class ExamplePDP implements PdpObserver{
 		simulator.registerModel(pdpModel);
 		simulator.configure();
 
-		for (int i = 0; i < 1500; i++) {
+		for (int i = 0; i < 10; i++) {
 			simulator.registerUser(
 					new PdpTruck(),
 					new TruckData.Std(1000, roadModel.getRandomPosition(rng), 100));
 		}
 
-		for (int i = 0; i < 100; i++) {
+		for (int i = 0; i < 50; i++) {
 			Point from = roadModel.getRandomPosition(rng);
 			Point to = roadModel.getRandomPosition(rng);
 			final Parcel parcel =
@@ -87,7 +90,7 @@ public class ExamplePDP implements PdpObserver{
 			simulator.registerUser(new DeliveryPoint.Std(), new DeliveryPointData.Std(parcel));
 		}
 		
-		simulator.start();
-		//View.startGui(simulator, 1, new GraphRoadModelRenderer(), new PDPModelRenderer());
+		//simulator.start();
+		View.startGui(simulator, 1, new GraphRoadModelRenderer(), new PDPModelRenderer());
 	}
 }
