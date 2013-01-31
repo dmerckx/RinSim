@@ -8,6 +8,7 @@ import java.util.Set;
 
 import rinde.sim.core.model.Data;
 import rinde.sim.core.model.Model;
+import rinde.sim.core.model.SafeIterator;
 import rinde.sim.core.model.User;
 import rinde.sim.core.model.pdp.apis.ContainerGuard;
 import rinde.sim.core.model.pdp.apis.DeliveryGuard;
@@ -69,31 +70,31 @@ public class PdpModel implements Model<Data, PdpUser<?>>, PdpAPI{
     // ----- QUERIES ----- //
     
     @Override
-    public Iterator<Truck<?>> queryTrucks(){
-        return getSafeIterator(trucks.keySet());
+    public SafeIterator<Truck<?>> queryTrucks(){
+        return new SafeIterator.Std<Truck<?>>(trucks.keySet());
     }
     
     @Override
-    public Iterator<Depot<?>> queryDepots(){
-        return getSafeIterator(depots.keySet());
+    public SafeIterator<Depot<?>> queryDepots(){
+        return new SafeIterator.Std<Depot<?>>(depots.keySet());
     }
     
     @Override
-    public Iterator<PickupPoint<?>> queryPickups(){
-        return getSafeIterator(pickups.keySet());
+    public SafeIterator<PickupPoint<?>> queryPickups(){
+        return new SafeIterator.Std<PickupPoint<?>>(pickups.keySet());
     }
     
     @Override
-    public Iterator<DeliveryPoint<?>> queryDeliveries(){
-        return getSafeIterator(deliveries.keySet());
+    public SafeIterator<DeliveryPoint<?>> queryDeliveries(){
+        return new SafeIterator.Std<DeliveryPoint<?>>(deliveries.keySet());
     }
     
     @Override
-    public Iterator<Container<?>> queryContainers(){
+    public SafeIterator<Container<?>> queryContainers(){
         final Iterator<Truck<?>> it1 = trucks.keySet().iterator();
         final Iterator<Depot<?>> it2 = depots.keySet().iterator();
         
-        return new Iterator<Container<?>>() {
+        return new SafeIterator<Container<?>>() {
             @Override
             public boolean hasNext() {
                 return it1.hasNext() || it2.hasNext();
@@ -102,31 +103,6 @@ public class PdpModel implements Model<Data, PdpUser<?>>, PdpAPI{
             @Override
             public Container<?> next() {
                 return it1.hasNext()? it1.next() : it2.next();
-            }
-
-            @Override
-            public void remove() {
-                throw new UnsupportedOperationException();
-            }};
-    }
-    
-    private <T> Iterator<T> getSafeIterator(Collection<T> coll){
-        final Iterator<T> it = coll.iterator();
-        
-        return new Iterator<T>() {
-            @Override
-            public boolean hasNext() {
-                return it.hasNext();
-            }
-            
-            @Override
-            public T next() {
-                return it.next();
-            }
-            
-            @Override
-            public void remove() {
-                throw new UnsupportedOperationException();
             }
         };
     }

@@ -63,7 +63,6 @@ public class InteractionModel implements Model<Data, InteractionUser<?>> {
         ParallelExecution.awaitAllPrevious();
         
         List<T> targets = new ArrayList<T>();
-
         
         for(Receiver r: receiversPos.get(visitor.location)){
             if( visitor.target.isAssignableFrom(r.getClass())){

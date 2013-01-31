@@ -36,7 +36,7 @@ public class RandomObjectRenderer implements Renderer {
 
 		gc.setBackground(defaultColor);
 
-		final Set<RoadUser<?>> objects = model.getObjects();
+		final Set<RoadUser<?>> objects = model.getAllRoadUsers();
 		synchronized (objects) {
 			for (final RoadUser user : objects) {
 				final Point p = user.getRoadState().getLocation();

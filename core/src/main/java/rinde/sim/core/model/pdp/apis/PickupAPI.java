@@ -1,42 +1,61 @@
 package rinde.sim.core.model.pdp.apis;
 
-import java.awt.Container;
-
-import rinde.sim.core.model.communication.Address;
-import rinde.sim.core.model.communication.users.CommUser;
 import rinde.sim.core.model.pdp.Parcel;
+import rinde.sim.core.model.pdp.users.Container;
+import rinde.sim.core.model.pdp.users.PickupPoint;
 import rinde.sim.core.simulation.TimeInterval;
 
+/**
+ * The API provided to each individual {@link PickupPoint}.
+ * This API allows to retrieve the current state of this user.
+ * 
+ * Note that there is not a single method in this API that does
+ * not return the same result within a single turn.
+ * 
+ * When a parcel from a pickup point is actually picked up, it
+ * is not reflected until the start of the next turn! 
+ * It is impossible to retrieve this during the actual turn, since
+ * that could break deterministic executing of the simulator.
+ * 
+ * @author dmerckx
+ */
 public interface PickupAPI {
     
+    /**
+     * Returns a presentation of the state of the user of this API. 
+     * @return The state of this user.
+     */
     public PickupPointState getState();
-   
     
+    /**
+     * Returns true iff the package contained by this pickup point is
+     * either being delivered or delivered.
+     * @return Whether the contained package is picked up yet.
+     */
     public boolean isPickedUp();
     
     /**
-     * 
-     * @return
+     * Data of the parcel that was originally contained by this pickup point.
+     * @return The parcel contained by this pickup point.
      */
     public Parcel getParcel();
     
     /**
-     * @return Returns the state of this point.
+     * Returns the current state of this pickup point as an enum.
+     * @return The current state.
      */
     public PickupState getPickupState();
 
     /**
-     * Check whether the constraints on this {@link PickupPoint} still
-     * allow it to be picked up.
-     * Returns true iff the parcel is not gone yet and 
-     * 
-     * @return
+     * Check whether the time constraints on this {@link PickupPoint} still
+     * allow it to be picked up at the given time (if it were still present then).
+     * @param time The time at which we would like to check.
+     * @return Whether pickup is still allowed at the given time. 
      */
     public boolean canBePickedUp(TimeInterval time);
     
-    
     /**
-     * The possible states a {@link Container} can be in.
+     * The possible states a {@link PickupPoint} can be in.
      */
     public enum PickupState {
         /**
@@ -54,7 +73,7 @@ public interface PickupAPI {
          */
         LATE,
         /**
-         * State that indicates that a {@link Container2} is currently picking up
+         * State that indicates that a {@link Container} is currently picking up
          * the {@link Parcel} from this {@link PickupPoint}.
          */
         BEING_PICKED_UP,

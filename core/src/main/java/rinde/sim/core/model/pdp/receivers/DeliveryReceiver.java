@@ -53,9 +53,11 @@ public class DeliveryReceiver extends Receiver {
     /**
      * @param parcel Deliver the specified parcel.
      */
-    public void deliver(Parcel parcel) {
+    public void deliver(TimeLapse lapse, Parcel parcel) {
         assert !terminated;
-
-        terminate(parcel.deliveryDuration);
+        
+        //The delivery point will have to stay unavailable until the delivery duration is over
+        long timeCost = parcel.deliveryDuration - lapse.getCurrentTime();
+        terminate(timeCost > 0? timeCost : 0);
     }
 }

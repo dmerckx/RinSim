@@ -24,7 +24,7 @@ public class PickupGuard extends PickupPointState implements PickupAPI, InitUser
     private long lastUpdatedState = -1;
     private PickupState state;
     
-    private final TimeLapse handle;
+    private final TimeLapseHandle handle;
     
     public PickupGuard(PickupPoint<?> user, PickupPointData data, PdpModel model, TimeLapseHandle handle) {
         this.parcel = data.getParcel();
@@ -53,15 +53,15 @@ public class PickupGuard extends PickupPointState implements PickupAPI, InitUser
         long time = handle.getStartTime();
        
         if(interactionAPI.isAdvertising()){
-            if(time < parcel.deliveryTimeWindow.begin)
+            if(time < parcel.pickupTimeWindow.begin)
                 state = PickupState.SETTING_UP;
-            else if(time < parcel.deliveryTimeWindow.end)
+            else if(time < parcel.pickupTimeWindow.end)
                 state = PickupState.AVAILABLE;
             else 
                 state = PickupState.LATE;
         }
         else {
-            if(time < interactionAPI.getTerminationTime() + parcel.deliveryDuration)
+            if(time < handle.getSchedualedUntil())
                 state = PickupState.BEING_PICKED_UP;
             else
                 state = PickupState.PICKED_UP;
@@ -77,17 +77,6 @@ public class PickupGuard extends PickupPointState implements PickupAPI, InitUser
         return getPickupState() == PickupState.BEING_PICKED_UP 
                 || getPickupState() == PickupState.PICKED_UP;
     }
-
-    @Override
-    public Parcel getParcel() {
-        return parcel;
-    }
-
-    @Override
-    public PickupState getPickupState() {
-        updateState();
-        return state;
-    }
     
     @Override
     public boolean canBePickedUp(TimeInterval time) {
@@ -99,4 +88,18 @@ public class PickupGuard extends PickupPointState implements PickupAPI, InitUser
     public PickupPointState getState() {
         return this;
     }
+    
+    // ----- OVERLAP PICKUP API & PICKUP POINT STATE ----- //
+
+    @Override
+    public PickupState getPickupState() {
+        updateState();
+        return state;
+    }
+    
+    @Override
+    public Parcel getParcel() {
+        return parcel;
+    }
+
 }

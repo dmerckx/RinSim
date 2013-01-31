@@ -1,7 +1,6 @@
 package rinde.sim.core.model.pdp;
 
-import java.util.Iterator;
-
+import rinde.sim.core.model.SafeIterator;
 import rinde.sim.core.model.pdp.twpolicy.TimeWindowPolicy;
 import rinde.sim.core.model.pdp.users.Container;
 import rinde.sim.core.model.pdp.users.DeliveryPoint;
@@ -13,14 +12,13 @@ public interface PdpAPI{
     
     TimeWindowPolicy getPolicy();
     
-    Iterator<Truck<?>> queryTrucks();
+    SafeIterator<Truck<?>> queryTrucks();
     
-    Iterator<Depot<?>> queryDepots();
+    SafeIterator<Depot<?>> queryDepots();
     
-    Iterator<PickupPoint<?>> queryPickups();
+    SafeIterator<PickupPoint<?>> queryPickups();
     
-    Iterator<DeliveryPoint<?>> queryDeliveries();
+    SafeIterator<DeliveryPoint<?>> queryDeliveries();
     
-    Iterator<Container<?>> queryContainers();
-
+    SafeIterator<Container<?>> queryContainers();
 }

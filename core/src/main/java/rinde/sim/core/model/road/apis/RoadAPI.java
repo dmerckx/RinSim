@@ -1,6 +1,7 @@
 package rinde.sim.core.model.road.apis;
 
 import rinde.sim.core.graph.Point;
+import rinde.sim.core.model.road.RoadQueries;
 
 /**
  * The API provided to road users, every road user
@@ -10,7 +11,7 @@ import rinde.sim.core.graph.Point;
  * 
  * @author dmerckx
  */
-public interface RoadAPI{
+public interface RoadAPI extends RoadQueries{
     
     /**
      * Returns the current location of this user.

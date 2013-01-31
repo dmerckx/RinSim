@@ -257,7 +257,7 @@ public class Simulator{
      * @return The current simulation time.
      */
     public long getCurrentTime() {
-        return time;
+        return time + timeStep;
     }
     
     /**

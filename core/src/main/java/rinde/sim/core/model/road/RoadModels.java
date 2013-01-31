@@ -54,7 +54,7 @@ public final class RoadModels {
     public static RoadUser<?> findClosestObject(Point pos, RoadModel rm,
             Predicate<RoadUser<?>> predicate) {
         final Collection<RoadUser<?>> filtered = Collections2.filter(rm
-                .getObjects(), predicate);
+                .getAllRoadUsers(), predicate);
         return findClosestObject(pos, rm, filtered);
     }
 
@@ -131,7 +131,7 @@ public final class RoadModels {
     public static List<RoadUser<?>> findClosestObjects(Point pos, RoadModel rm,
             Predicate<RoadUser<?>> predicate, int n) {
         final Collection<RoadUser<?>> filtered = Collections2.filter(rm
-                .getObjects(), predicate);
+                .getAllRoadUsers(), predicate);
         return RoadModels.findClosestObjects(pos, rm, filtered, n);
     }
 
@@ -186,7 +186,7 @@ public final class RoadModels {
             final Point position, final RoadModel model, final double radius) {
         return RoadModels
                 .findObjectsWithinRadius(position, model, radius, model
-                        .getObjects());
+                        .getAllRoadUsers());
     }
 
     /**

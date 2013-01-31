@@ -53,7 +53,7 @@ public class DeliveryVisitor extends Visitor<DeliveryReceiver, Parcel> {
         if(!receiver.canAccept(lapse, parcel, this))
             return false;
         
-        receiver.deliver(parcel);
+        receiver.deliver(lapse, parcel);
         return true;
     }
 }

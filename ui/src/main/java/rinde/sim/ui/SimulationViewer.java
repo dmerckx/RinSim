@@ -7,6 +7,8 @@ import static com.google.common.collect.Sets.newLinkedHashSet;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CyclicBarrier;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ControlEvent;
@@ -526,19 +528,22 @@ public class SimulationViewer extends Composite implements TickListener, Control
 
 	@Override
 	public void tick(TimeInterval timeLapse) {
-		if (simulator.isPlaying() && lastRefresh + timeLapse.getTimeStep() * speedUp > timeLapse.getStartTime()) {
+		/*if (simulator.isPlaying()
+				&& lastRefresh + timeLapse.getTimeStep() * speedUp > timeLapse.getStartTime()) {
 			return;
-		}
-		lastRefresh = timeLapse.getStartTime();
+		}*/
+		
+		/*lastRefresh = timeLapse.getStartTime();
 		try {
 			Thread.sleep(30);
 		} catch (final InterruptedException e) {
 			throw new RuntimeException(e);
-		}
-		if (display.isDisposed()) {
+		}*/
+		/*if (display.isDisposed()) {
 			return;
-		}
-		display.syncExec(new Runnable() {
+		}*/
+		final CyclicBarrier barrier = new CyclicBarrier(2);
+		display.asyncExec(new Runnable() {
 			@Override
 			public void run() {
 				if (!canvas.isDisposed()) {
@@ -549,7 +554,25 @@ public class SimulationViewer extends Composite implements TickListener, Control
 					}
 					canvas.redraw();
 				}
+				try {
+					barrier.await();
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (BrokenBarrierException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 		});
+		try {
+			barrier.await();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (BrokenBarrierException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 }

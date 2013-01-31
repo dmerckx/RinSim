@@ -49,7 +49,7 @@ public class RoadUserRenderer implements ModelRenderer {
 		uiSchema.initialize(gc.getDevice());
 		gc.setBackground(uiSchema.getDefaultColor());
 
-		final Set<RoadUser<?>> objects = rs.getObjects();
+		final Set<RoadUser<?>> objects = rs.getAllRoadUsers();
 		synchronized (objects) {
 			for (final RoadUser<?> user : objects) {
 				final Point p = user.getRoadState().getLocation();

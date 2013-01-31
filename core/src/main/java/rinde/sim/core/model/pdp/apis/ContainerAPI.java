@@ -32,6 +32,12 @@ public interface ContainerAPI extends User<Data>{
     void init(RoadAPI api);
     
     /**
+     * Returns the current state of this container.
+     * @return The current state
+     */
+    public ContState getCurrentContState();
+    
+    /**
      * Returns all the parcels currently contained.
      * @return The list of contained parcels.
      */
@@ -102,12 +108,6 @@ public interface ContainerAPI extends User<Data>{
     
 
     void stopAdvertisingOrAccepting();
-    
-    /**
-     * Returns the current state of this container.
-     * @return The current state
-     */
-    public ContState getContState();
     
     ContainerState getState();
     

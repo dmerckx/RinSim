@@ -19,14 +19,6 @@ import rinde.sim.core.model.Model;
 import rinde.sim.core.model.ModelProvider;
 import rinde.sim.core.model.road.PlaneRoadModel;
 import rinde.sim.core.model.road.RoadModel;
-import rinde.sim.core.old.pdp.Depot_Old;
-import rinde.sim.core.old.pdp.PDPModel;
-import rinde.sim.core.old.pdp.PDPModel.PDPModelEventType;
-import rinde.sim.core.old.pdp.PDPModel.ParcelState;
-import rinde.sim.core.old.pdp.PDPModel.VehicleState;
-import rinde.sim.core.old.pdp.PDPObject;
-import rinde.sim.core.old.pdp.Parcel_Old;
-import rinde.sim.core.old.pdp.Vehicle_Old;
 import rinde.sim.core.simulation.TimeLapse;
 import rinde.sim.util.TimeWindow;
 

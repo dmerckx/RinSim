@@ -98,7 +98,7 @@ public class RandomWalkExample {
 
 		@Override
 		public void renderDynamic(GC gc, ViewPort vp, long time) {
-			final Set<RoadUser<?>> objects = rm.getObjects();
+			final Set<RoadUser<?>> objects = rm.getAllRoadUsers();
 
 			for (final RoadUser user : objects) {
 				Point pos = user.getRoadState().getLocation();

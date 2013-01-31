@@ -1,7 +1,14 @@
 package rinde.sim.core.model.road.apis;
 
+import java.util.Set;
+
+import com.google.common.base.Predicate;
+
 import rinde.sim.core.graph.Point;
+import rinde.sim.core.model.SafeIterator;
 import rinde.sim.core.model.road.RoadModel;
+import rinde.sim.core.model.road.users.FixedRoadUser;
+import rinde.sim.core.model.road.users.MovingRoadUser;
 import rinde.sim.core.model.road.users.RoadData;
 import rinde.sim.core.model.road.users.RoadUser;
 
@@ -48,6 +55,40 @@ public class RoadGuard extends RoadState implements RoadAPI{
     @Override
     public RoadState getState(){
         return this;
+    }
+    
+    
+    // ----- ROAD QUERIES ----- //
+
+    @Override
+    public SafeIterator<RoadUser<?>> queryRoadUsers() {
+        return model.queryRoadUsers();
+    }
+
+    @Override
+    public SafeIterator<FixedRoadUser<?>> queryFixedRoadUsers() {
+        return model.queryFixedRoadUsers();
+    }
+
+    @Override
+    public SafeIterator<MovingRoadUser<?>> queryMovingRoadUsers() {
+        return model.queryMovingRoadUsers();
+    }
+
+    @Override
+    public Set<RoadUser<?>> getRoadUsers(Predicate<RoadUser<?>> predicate) {
+        return model.getRoadUsers(predicate);
+    }
+
+    @Override
+    public <Y extends RoadUser<?>> Set<Y> getObjectsAt(Point location,
+            Class<Y> type) {
+        return getObjectsAt(location, type);
+    }
+
+    @Override
+    public <Y extends RoadUser<?>> Set<Y> getObjectsOfType(Class<Y> type) {
+        return getObjectsOfType(type);
     }
 
 }

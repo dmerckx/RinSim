@@ -10,6 +10,7 @@ import static rinde.sim.core.graph.Graphs.unmodifiableGraph;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
+import java.util.Set;
 
 import org.apache.commons.math3.random.RandomGenerator;
 
@@ -474,5 +475,4 @@ public class GraphRoadModel extends AbstractRoadModel<Loc> {
             return super.toString() + "{" + conn + "}";
         }
     }
-
 }

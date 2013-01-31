@@ -66,7 +66,7 @@ public class ContainerGuard extends ContainerState implements ContainerAPI, Inte
         handle.consume(parcel.pickupDuration);
         load.add(parcel);
         lastAction = Action.LOAD;
-        lastActionEnd = parcel.pickupDuration;
+        lastActionEnd = handle.getSchedualedUntil();
     }
     
     private void unload(Parcel parcel){
@@ -75,15 +75,16 @@ public class ContainerGuard extends ContainerState implements ContainerAPI, Inte
         handle.consume(parcel.deliveryDuration);
         load.remove(parcel);
         lastAction = Action.UNLOAD;
-        lastActionEnd = parcel.deliveryDuration;
+        lastActionEnd = handle.getSchedualedUntil();
     }
     
     private void updateBackup(){
         if(backupTime == handle.getStartTime())
             return;
         
+        backupTime = handle.getStartTime();
         backupState = getCurrentContState(handle.getStartTime());
-        backupLoad = load;
+        backupLoad = Lists.newArrayList(load);
     }
     
     private ContState getCurrentContState(long time){
@@ -112,6 +113,12 @@ public class ContainerGuard extends ContainerState implements ContainerAPI, Inte
     }
     
     // ----- CONTAINER API ----- //
+
+    @Override
+    public ContState getCurrentContState() {
+        updateBackup();
+        return getCurrentContState(handle.getCurrentTime());
+    }
 
     @Override
     public List<Parcel> getCurrentLoad() {
@@ -227,6 +234,13 @@ public class ContainerGuard extends ContainerState implements ContainerAPI, Inte
         updateBackup();
         interactiveAPI.stopAdvertising();
     }
+    
+    @Override
+    public ContainerState getState() {
+        return this;
+    }
+    
+    // ----- CONTAINER STATE ----- //
 
     @Override
     public ContState getContState() {
@@ -240,10 +254,6 @@ public class ContainerGuard extends ContainerState implements ContainerAPI, Inte
         return backupLoad;
     }
 
-    @Override
-    public ContainerState getState() {
-        return this;
-    }
 }
 
 enum Action{

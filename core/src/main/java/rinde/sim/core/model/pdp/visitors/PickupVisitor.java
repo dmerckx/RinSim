@@ -2,6 +2,8 @@ package rinde.sim.core.model.pdp.visitors;
 
 import java.util.List;
 
+import org.apache.commons.math3.stat.descriptive.rank.Percentile;
+
 import rinde.sim.core.graph.Point;
 import rinde.sim.core.model.interaction.Visitor;
 import rinde.sim.core.model.pdp.Parcel;
@@ -56,7 +58,7 @@ public class PickupVisitor extends Visitor<PickupReceiver, Parcel>{
     protected Parcel tryPickup(TimeLapse lapse, PickupReceiver receiver){
         for(Parcel p:receiver.getParcels()){
             if(canPickup(p) && receiver.canBePickedUp(lapse, p, this)){
-                receiver.pickup(p);
+                receiver.pickup(lapse, p);
                 return p;
             }
         }
@@ -69,7 +71,15 @@ public class PickupVisitor extends Visitor<PickupReceiver, Parcel>{
      * @return Returns whether or not the given parcel can be picked up.
      */
     protected boolean canPickup(Parcel parcel) {
-        return parcel.getClass().isAssignableFrom(parcelType)
+        return parcelType.isInstance(parcel)
                 && capacity >= parcel.magnitude;
     }
+}
+
+class A{
+    
+}
+
+class B extends A{
+   
 }

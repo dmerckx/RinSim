@@ -80,7 +80,7 @@ public class TimeLapseHandle extends TimeIntervalImpl implements TimeLapse{
      */
     @Override
     public long getTimeLeft() {
-        long timeLeft = getEndTime() - schedualedUntil;
+        long timeLeft = endTime - schedualedUntil;
         
         return timeLeft > 0 ? timeLeft : 0;
     }
@@ -125,6 +125,13 @@ public class TimeLapseHandle extends TimeIntervalImpl implements TimeLapse{
         schedualedUntil = endTime;
         
         blocked = true;
+    }
+
+    /**
+     * Unblocks this time lapse. 
+     */
+    public void unblock(){
+        unblock(0);
     }
 
     /**

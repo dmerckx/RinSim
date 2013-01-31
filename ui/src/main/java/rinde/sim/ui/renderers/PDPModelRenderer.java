@@ -51,7 +51,7 @@ public class PDPModelRenderer implements ModelRenderer {
 		uiSchema.initialize(gc.getDevice());
 		gc.setBackground(uiSchema.getDefaultColor());
 
-		final Set<RoadUser<?>> objects = rm.getObjects();
+		final Set<RoadUser<?>> objects = rm.getAllRoadUsers();
 		synchronized (objects) {
 			for (final RoadUser<?> user : objects) {
 				final Point p = user.getRoadState().getLocation();

@@ -83,12 +83,6 @@ public class CachedGraphRoadModel extends GraphRoadModel {
         classObjectMap.put(newObj.getClass(), newObj);
     }
 
-    @Override
-    public void clear() {
-        super.clear();
-        classObjectMap.clear();
-    }
-
     /**
      * O(1) using a direct lookup. {@inheritDoc}
      */

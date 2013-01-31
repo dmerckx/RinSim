@@ -60,9 +60,11 @@ public class PickupReceiver extends Receiver {
     /**
      * @param parcel Pickup the specified parcel.
      */
-    public void pickup(Parcel parcel){
+    public void pickup(TimeLapse lapse, Parcel parcel){
         assert !terminated;
         
-        terminate(parcel.pickupDuration);
+        //The pickup point will have to stay unavailable until the pickup duration is over
+        long timeCost = parcel.pickupDuration - lapse.getTimeLeft();
+        terminate(timeCost > 0 ? timeCost : 0);
     }
 }

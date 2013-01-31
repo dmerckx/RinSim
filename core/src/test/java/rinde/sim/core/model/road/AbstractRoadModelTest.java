@@ -177,9 +177,9 @@ public abstract class AbstractRoadModelTest<T extends RoadModel> {
         model.register(agent1.buildUnit());
         model.register(agent2.buildUnit());
         model.register(agent3.buildUnit());
-        assertEquals(3, model.getObjects().size());
+        assertEquals(3, model.getAllRoadUsers().size());
         model.clear();
-        assertTrue(model.getObjects().isEmpty());
+        assertTrue(model.getAllRoadUsers().isEmpty());
     }
 
     @Test
@@ -193,7 +193,7 @@ public abstract class AbstractRoadModelTest<T extends RoadModel> {
         model.register(agent3.buildUnit());
 
         final Map<RoadUser, Point> mapCopy = model.getObjectsAndPositions();
-        final Set<RoadUser> setCopy = model.getObjects();
+        final Set<RoadUser> setCopy = model.getAllRoadUsers();
         final Set<TestRoadUser> subsetCopy = model
                 .getObjectsOfType(TestRoadUser.class);
         final Collection<Point> posCopy = model.getObjectPositions();
@@ -363,7 +363,7 @@ public abstract class AbstractRoadModelTest<T extends RoadModel> {
 
         // checking whether the returned objects are in insertion order
         final List<RoadUser> modelObjects = new ArrayList<RoadUser>(
-                model.getObjects());
+                model.getAllRoadUsers());
         assertEquals(objects.size(), modelObjects.size());
         for (int i = 0; i < modelObjects.size(); i++) {
             assertTrue(modelObjects.get(i) == objects.get(i));
@@ -378,7 +378,7 @@ public abstract class AbstractRoadModelTest<T extends RoadModel> {
         // check to see if the objects are still in insertion order, event after
         // removals
         final List<RoadUser> modelObjects2 = new ArrayList<RoadUser>(
-                model.getObjects());
+                model.getAllRoadUsers());
         assertEquals(objects.size(), modelObjects2.size());
         for (int i = 0; i < modelObjects2.size(); i++) {
             assertTrue(modelObjects2.get(i) == objects.get(i));
@@ -386,7 +386,7 @@ public abstract class AbstractRoadModelTest<T extends RoadModel> {
 
         // make sure that the order is preserved, even when using a predicate
         final List<RoadUser> modelObjects3 = new ArrayList<RoadUser>(
-                model.getObjects(new Predicate<RoadUser>() {
+                model.getRoadUsers(new Predicate<RoadUser>() {
                     @Override
                     public boolean apply(RoadUser input) {
                         return true;

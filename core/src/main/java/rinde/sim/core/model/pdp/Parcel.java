@@ -6,7 +6,7 @@ import rinde.sim.core.graph.Point;
 import rinde.sim.core.model.interaction.Result;
 import rinde.sim.util.TimeWindow;
 
-public class Parcel extends Result implements Serializable{
+public class Parcel extends Result{
     
     public final Point location;
     public final Point destination;
