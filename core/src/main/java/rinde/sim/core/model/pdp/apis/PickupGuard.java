@@ -2,6 +2,7 @@ package rinde.sim.core.model.pdp.apis;
 
 import rinde.sim.core.model.Data;
 import rinde.sim.core.model.InitUser;
+import rinde.sim.core.model.interaction.Receiver;
 import rinde.sim.core.model.interaction.apis.InteractionAPI;
 import rinde.sim.core.model.interaction.users.InteractionUser;
 import rinde.sim.core.model.pdp.Parcel;
@@ -10,18 +11,20 @@ import rinde.sim.core.model.pdp.receivers.PickupReceiver;
 import rinde.sim.core.model.pdp.users.PickupPoint;
 import rinde.sim.core.model.pdp.users.PickupPointData;
 import rinde.sim.core.simulation.TimeInterval;
-import rinde.sim.core.simulation.TimeLapse;
 import rinde.sim.core.simulation.time.TimeLapseHandle;
 
 import com.google.common.collect.Lists;
 
 public class PickupGuard extends PickupPointState implements PickupAPI, InitUser, InteractionUser<Data>{
     
-    private Parcel parcel;
+    private final PdpModel pdpModel;
+    private final PickupPoint<?> user;
     private InteractionAPI interactionAPI;
-    private PdpModel pdpModel;
+    
+    private Parcel parcel;
     
     private long lastUpdatedState = -1;
+    private long pickedupTime = -1;
     private PickupState state;
     
     private final TimeLapseHandle handle;
@@ -29,18 +32,28 @@ public class PickupGuard extends PickupPointState implements PickupAPI, InitUser
     public PickupGuard(PickupPoint<?> user, PickupPointData data, PdpModel model, TimeLapseHandle handle) {
         this.parcel = data.getParcel();
         this.pdpModel = model;
+        this.user = user;
         this.handle = handle;
     }
 
     @Override
     public void setInteractionAPi(InteractionAPI api) {
+        assert interactionAPI == null;
         this.interactionAPI = api;
     }
 
     @Override
     public void init() {
+        //Advertise a receiver, waiting for the parcel to be picked up
         interactionAPI.advertise(
                 new PickupReceiver(parcel.location, Lists.newArrayList(parcel), pdpModel.getPolicy()));
+    }
+
+    @Override
+    public void notifyDone(Receiver receiver) {
+        pickedupTime = handle.getCurrentTime();
+        handle.consume(parcel.deliveryDuration);
+        pdpModel.notifyParcelPickup(user);
     }
     
     /**
@@ -52,7 +65,7 @@ public class PickupGuard extends PickupPointState implements PickupAPI, InitUser
         
         long time = handle.getStartTime();
        
-        if(interactionAPI.isAdvertising()){
+        if(pickedupTime == -1){
             if(time < parcel.pickupTimeWindow.begin)
                 state = PickupState.SETTING_UP;
             else if(time < parcel.pickupTimeWindow.end)
@@ -61,7 +74,7 @@ public class PickupGuard extends PickupPointState implements PickupAPI, InitUser
                 state = PickupState.LATE;
         }
         else {
-            if(time < handle.getSchedualedUntil())
+            if(time < pickedupTime + parcel.pickupDuration)
                 state = PickupState.BEING_PICKED_UP;
             else
                 state = PickupState.PICKED_UP;

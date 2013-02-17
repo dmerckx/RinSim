@@ -1,4 +1,4 @@
-package rinde.sim.examples.pdp;
+package rinde.sim.examples.benchmark;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -22,76 +22,88 @@ import rinde.sim.core.model.pdp.users.TruckData;
 import rinde.sim.core.model.road.GraphRoadModel;
 import rinde.sim.core.model.road.RoadModel;
 import rinde.sim.core.simulation.Simulator;
+import rinde.sim.examples.pdp.PdpTruck;
 import rinde.sim.serializers.DotGraphSerializer;
 import rinde.sim.serializers.SelfCycleFilter;
-import rinde.sim.ui.View;
-import rinde.sim.ui.renderers.GraphRoadModelRenderer;
-import rinde.sim.ui.renderers.PDPModelRenderer;
 import rinde.sim.util.TimeWindow;
 
 /**
  * @author Rinde van Lon <rinde.vanlon@cs.kuleuven.be>
- * 
  */
-public class ExamplePDP implements PdpObserver{
+public class PdpProblem implements PdpObserver{
 	
 	private static final int STEP = 10000;
+	
+	private int nrTrucks;
+	private int nrParcels;
+	
 	private Simulator sim;
 	
-	public ExamplePDP(Simulator sim) {
-		this.sim = sim;
+	
+	public PdpProblem(int cars, int packages, long seed) {
+		this.nrTrucks = cars;
+		this.nrParcels = packages;
+		
+		sim = new Simulator(STEP);
+		try{
+			init(seed);
+		}
+		catch(Exception e){
+			e.printStackTrace();
+		}
+	}
+	
+	public void run(){
+		while(nrParcels > 0){
+			sim.advanceTick();
+		}
 	}
 
 	@Override
 	public void packagePickedUp(PickupPoint<?> p) {
-		System.out.println("Package picked up");
 		sim.unregisterUser(p);
 	}
 
 	@Override
 	public void packageDelivered(DeliveryPoint<?> d) {
-		System.out.println("Package delivered");
 		sim.unregisterUser(d);
+		nrParcels--;
 	}
 
-	public static void main(String[] args) throws FileNotFoundException, IOException {
+	public void init(long seed) throws FileNotFoundException, IOException {
 
 		final String MAP_DIR = "../core/files/maps/";
 		// create a new simulator, load map of Leuven
-		final RandomGenerator rng = new MersenneTwister(123);
-		final Simulator simulator = new Simulator(STEP);
+		final RandomGenerator rng = new MersenneTwister(seed);
 		final Graph<MultiAttributeData> graph = DotGraphSerializer
 				.getMultiAttributeGraphSerializer(new SelfCycleFilter()).read(MAP_DIR + "leuven-simple.dot");
 		final RoadModel roadModel = new GraphRoadModel(graph);
 		final InteractionModel interModel = new InteractionModel();
-		final PdpModel pdpModel = new PdpModel(new LiberalPolicy(), new ExamplePDP(simulator));
+		final PdpModel pdpModel = new PdpModel(new LiberalPolicy(), this);
 		
-		simulator.registerModel(roadModel);
-		simulator.registerModel(interModel);
-		simulator.registerModel(pdpModel);
-		simulator.configure();
+		sim.registerModel(roadModel);
+		sim.registerModel(interModel);
+		sim.registerModel(pdpModel);
+		sim.configure();
 		
 
-		for (int i = 0; i < 10; i++) {
-			simulator.registerUser(
+		for (int i = 0; i < nrTrucks; i++) {
+			sim.registerUser(
 					new PdpTruck(),
 					new TruckData.Std(1000, roadModel.getRandomPosition(rng), 100));
 		}
 
-		for (int i = 0; i < 50; i++) {
+		for (int i = 0; i < nrParcels; i++) {
 			Point from = roadModel.getRandomPosition(rng);
 			Point to = roadModel.getRandomPosition(rng);
 			final Parcel parcel =
 					new Parcel(from, to, STEP * 3, TimeWindow.ALWAYS, STEP * 2, TimeWindow.ALWAYS, 1);
 			
 			//Register pickup point
-			simulator.registerUser(new PickupPoint.Std(), new PickupPointData.Std(parcel));
+			sim.registerUser(new PickupPoint.Std(), new PickupPointData.Std(parcel));
 			
 			//Register delivery point
-			simulator.registerUser(new DeliveryPoint.Std(), new DeliveryPointData.Std(parcel));
+			sim.registerUser(new DeliveryPoint.Std(), new DeliveryPointData.Std(parcel));
 		}
-		
-		//simulator.start();
-		View.startGui(simulator, 1, new GraphRoadModelRenderer(), new PDPModelRenderer());
 	}
 }

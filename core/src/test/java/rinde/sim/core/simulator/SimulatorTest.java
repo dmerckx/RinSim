@@ -13,9 +13,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import rinde.sim.core.dummies.Dummy2Data;
-import rinde.sim.core.dummies.Dummy2Model;
 import rinde.sim.core.dummies.Dummy2User;
-import rinde.sim.core.dummies.DummyModel;
 import rinde.sim.core.dummies.DummyTickListener;
 import rinde.sim.core.dummies.DummyUser;
 import rinde.sim.core.dummies.DummyUserAgent;

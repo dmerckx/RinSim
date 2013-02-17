@@ -1,7 +1,6 @@
 package rinde.sim.core.model.pdp.apis;
 
 import rinde.sim.core.model.pdp.Parcel;
-import rinde.sim.core.model.pdp.users.Container;
 import rinde.sim.core.model.pdp.users.PickupPoint;
 import rinde.sim.core.simulation.TimeInterval;
 
@@ -29,14 +28,14 @@ public interface PickupAPI {
     
     /**
      * Returns true iff the package contained by this pickup point is
-     * either being delivered or delivered.
+     * either being picked up or picked up.
      * @return Whether the contained package is picked up yet.
      */
     public boolean isPickedUp();
     
     /**
      * Data of the parcel that was originally contained by this pickup point.
-     * @return The parcel contained by this pickup point.
+     * @return The parcel associated with this point.
      */
     public Parcel getParcel();
     
@@ -73,7 +72,7 @@ public interface PickupAPI {
          */
         LATE,
         /**
-         * State that indicates that a {@link Container} is currently picking up
+         * State that indicates that someone is currently picking up
          * the {@link Parcel} from this {@link PickupPoint}.
          */
         BEING_PICKED_UP,

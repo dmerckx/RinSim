@@ -3,14 +3,11 @@ package rinde.sim.core.model.interaction;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map.Entry;
 
 import rinde.sim.core.graph.Point;
 import rinde.sim.core.model.Data;
 import rinde.sim.core.model.Model;
 import rinde.sim.core.model.User;
-import rinde.sim.core.model.communication.CommunicationModel;
-import rinde.sim.core.model.communication.users.SimpleCommData;
 import rinde.sim.core.model.interaction.apis.InteractiveGuard;
 import rinde.sim.core.model.interaction.users.InteractionUser;
 import rinde.sim.core.simulation.TimeInterval;
@@ -18,6 +15,7 @@ import rinde.sim.core.simulation.TimeLapse;
 import rinde.sim.core.simulation.UserInit;
 import rinde.sim.core.simulation.policies.ParallelExecution;
 import rinde.sim.core.simulation.time.TimeLapseHandle;
+import rinde.sim.util.Tuple;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
@@ -39,15 +37,13 @@ public class InteractionModel implements Model<Data, InteractionUser<?>> {
     
     private List<Receiver> schedualedForAdd = Lists.newArrayList();
     private List<Receiver> schedualedRemoval = Lists.newArrayList();
-    private HashMap<Receiver, Long> terminated = Maps.newHashMap();
+    private List<Tuple<Receiver,Long>> schedualedTermination = Lists.newArrayList();
     
     private HashMap<Receiver, InteractiveGuard> recGuards = Maps.newHashMap();
     
     /**
      * Create a new interaction model.
-     * @param commModel The required communication model.
      */
-    @SuppressWarnings("hiding")
     public InteractionModel() {
         
     }
@@ -73,15 +69,19 @@ public class InteractionModel implements Model<Data, InteractionUser<?>> {
         return visitor.visit(lapse, targets);
     }
     
-    public synchronized void terminate(Receiver receiver, long timeCost){
-        terminated.put(receiver, timeCost);
+    /**
+     * Terminate a receiver, along with the time at which this occured.
+     * @param receiver The receiver to be terminated.
+     * @param time The time at which the receiver terminates.
+     */
+    public synchronized void terminate(final Receiver receiver,final long time){
+        schedualedTermination.add(Tuple.create(receiver, time));
     }
     
     /**
-     * Schedule this receiver for removal. It will be removed at the end of that
-     * tick.
+     * Schedule this receiver for removal.
+     * It will be removed at the end of that tick.
      * @param receiver The receiver to schedule.
-     * @param timeCost The time cost to apply when removing.
      */
     public synchronized void schedualRemove(Receiver receiver){
         schedualedRemoval.add(receiver);
@@ -139,14 +139,14 @@ public class InteractionModel implements Model<Data, InteractionUser<?>> {
         }
         schedualedForAdd.clear();
         
-        for(Entry<Receiver, Long> entry:terminated.entrySet()){
+        for(Tuple<Receiver, Long> entry:schedualedTermination){
             if(schedualedRemoval.contains(entry.getKey()))
                 schedualedRemoval.remove(entry.getKey());
             receiversPos.remove(entry.getKey().location, entry.getKey());
             recGuards.get(entry.getKey()).unsetReceiver(entry.getValue());
             recGuards.remove(entry.getKey());
         }
-        terminated.clear();
+        schedualedTermination.clear();
         
         for(Receiver receiver:schedualedRemoval){
             receiversPos.remove(receiver.location, receiver);

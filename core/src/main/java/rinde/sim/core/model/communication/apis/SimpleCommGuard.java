@@ -53,6 +53,7 @@ public class SimpleCommGuard extends CommunicationState
 	 * @param data The initialization data for this API.
 	 * @param model The communication model.
 	 * @param seed The seed used for generating random number.
+	 * @param handle The handle to the user's time lapse.
 	 */
 	@SuppressWarnings("hiding")
     public SimpleCommGuard(CommUser<?> user, SimpleCommData data, CommunicationModel model, long seed, TimeLapseHandle handle){

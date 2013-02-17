@@ -1,9 +1,7 @@
 package rinde.sim.core.model.communication;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.SortedSet;
 import java.util.concurrent.CountDownLatch;
 
 import org.apache.commons.math3.random.MersenneTwister;
@@ -28,7 +26,6 @@ import rinde.sim.core.simulation.time.TimeLapseHandle;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 
 /**
  * A model allowing its users to broadcast messages, send private

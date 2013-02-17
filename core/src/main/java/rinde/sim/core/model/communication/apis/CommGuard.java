@@ -27,6 +27,7 @@ public class CommGuard extends SimpleCommGuard implements CommAPI{
      * @param data The initialization data for this API.
      * @param model The communication model.
      * @param seed The seed used for generating random number.
+     * @param handle The handle to the user's time lapse.
      */
     @SuppressWarnings("hiding")
     public CommGuard(FullCommUser<?> user, CommData data, CommunicationModel model, long seed, TimeLapseHandle handle) {

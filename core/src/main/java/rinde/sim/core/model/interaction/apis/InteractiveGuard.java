@@ -5,10 +5,7 @@ import java.util.List;
 
 import rinde.sim.core.model.communication.Delivery;
 import rinde.sim.core.model.communication.Message;
-import rinde.sim.core.model.communication.apis.CommunicationState;
 import rinde.sim.core.model.communication.apis.SimpleCommAPI;
-import rinde.sim.core.model.communication.users.SimpleCommData;
-import rinde.sim.core.model.communication.users.SimpleCommUser;
 import rinde.sim.core.model.interaction.InteractionModel;
 import rinde.sim.core.model.interaction.Receiver;
 import rinde.sim.core.model.interaction.Result;
@@ -34,9 +31,8 @@ import com.google.common.collect.Lists;
 public class InteractiveGuard implements InteractionAPI{
 
     private final InteractionModel interactionModel;
+    private final InteractionUser<?> user;
     private SimpleCommAPI commAPI;
-    
-    private long terminationTime = -1;
     
     private final TimeLapseHandle handle;
     
@@ -50,24 +46,28 @@ public class InteractiveGuard implements InteractionAPI{
      */
     @SuppressWarnings("hiding")
     public InteractiveGuard(InteractionUser<?> user, InteractionModel model, TimeLapseHandle handle) {
+        this.user = user;
         this.interactionModel = model;
         this.handle = handle;
+    }
+
+    /**
+     * The receiver advertised by this user, or null if there is no such receiver.
+     * @return The advertised receiver, or null otherwise.
+     */
+    public Receiver getReceiver() {
+        return receiver;
     }
     
     /**
      * Called at the end of a tick to unset the current advertised receiver.
-     * @param extraTime The extra time to subtract.
+     * @param time The extra time to subtract.
      */
-    public void unsetReceiver(long extraTime){
+    public void unsetReceiver(long time){
         assert receiver != null;
+        handle.unblock(time);
+        user.notifyDone(receiver);
         receiver = null;
-        handle.unblock(extraTime);
-        terminationTime = handle.getEndTime();
-    }
-
-
-    public Receiver getReceiver() {
-        return receiver;
     }
     
     @Override
@@ -92,7 +92,7 @@ public class InteractiveGuard implements InteractionAPI{
     
     @Override
     public void advertise(Receiver rec){
-        //Cannot add 2 receivers in the same turn
+        //Cannot add 2 receivers
         if(receiver != null)
             return;
         
@@ -111,10 +111,5 @@ public class InteractiveGuard implements InteractionAPI{
     public void stopAdvertising() {
         assert receiver != null;
         interactionModel.schedualRemove(receiver);
-    }
-
-    @Override
-    public long getTerminationTime() {
-        return terminationTime;
     }
 }

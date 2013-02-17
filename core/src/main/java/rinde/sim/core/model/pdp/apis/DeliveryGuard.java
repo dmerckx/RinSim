@@ -2,6 +2,7 @@ package rinde.sim.core.model.pdp.apis;
 
 import rinde.sim.core.model.Data;
 import rinde.sim.core.model.InitUser;
+import rinde.sim.core.model.interaction.Receiver;
 import rinde.sim.core.model.interaction.apis.InteractionAPI;
 import rinde.sim.core.model.interaction.users.InteractionUser;
 import rinde.sim.core.model.pdp.Parcel;
@@ -17,24 +18,27 @@ import com.google.common.collect.Lists;
 public class DeliveryGuard extends DeliveryPointState implements DeliveryAPI, InitUser, InteractionUser<Data>{
 
     private final PdpModel pdpModel;
+    private final DeliveryPoint<?> user;
     private InteractionAPI interactionAPI;
     
     private final Parcel parcel;
     
     private long lastUpdatedState = -1;
+    private long deliveredTime = -1;
     private DeliveryState state;
     
     private final TimeLapseHandle handle;
     
-    @SuppressWarnings("javadoc")
     public DeliveryGuard(DeliveryPoint<?> user, DeliveryPointData data, PdpModel model, TimeLapseHandle handle) {
         this.parcel = data.getParcel();
         this.pdpModel = model;
         this.handle = handle;
+        this.user = user;
     }
 
     @Override
     public void setInteractionAPi(InteractionAPI api) {
+        assert interactionAPI == null;
         this.interactionAPI = api;
     }
 
@@ -43,6 +47,13 @@ public class DeliveryGuard extends DeliveryPointState implements DeliveryAPI, In
         //Advertise a receiver, waiting for the parcel to be delivered
         interactionAPI.advertise(
             new DeliverySpecificReceiver(parcel.destination, Lists.newArrayList(parcel), pdpModel.getPolicy()));
+    }
+
+    @Override
+    public void notifyDone(Receiver receiver) {
+        deliveredTime = handle.getCurrentTime();
+        handle.consume(parcel.deliveryDuration);
+        pdpModel.notifyParcelDelivery(user);
     }
     
     /**
@@ -54,7 +65,7 @@ public class DeliveryGuard extends DeliveryPointState implements DeliveryAPI, In
         
         long time = handle.getStartTime();
         
-        if(interactionAPI.isAdvertising()){
+        if(deliveredTime == -1){
             if(time < parcel.deliveryTimeWindow.begin)
                 state = DeliveryState.SETTING_UP;
             else if(time < parcel.deliveryTimeWindow.end)
@@ -63,7 +74,7 @@ public class DeliveryGuard extends DeliveryPointState implements DeliveryAPI, In
                 state = DeliveryState.LATE;
         }
         else {
-            if(time < interactionAPI.getTerminationTime() + parcel.deliveryDuration)
+            if(time < deliveredTime + parcel.deliveryDuration)
                 state = DeliveryState.BEING_DELIVERED;
             else
                 state = DeliveryState.DELIVERED;

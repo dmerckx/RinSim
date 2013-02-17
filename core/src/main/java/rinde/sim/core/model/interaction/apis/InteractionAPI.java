@@ -32,7 +32,7 @@ import rinde.sim.core.simulation.TimeLapse;
 public interface InteractionAPI{
     
     /**
-     * Get all new notifications send by advertised receivers.
+     * Get all new notifications send by the advertised receiver.
      * Ones this list is requested the notifications inside will
      * not longer be available during a later inquiry.
      * @return A list with notifications.
@@ -71,10 +71,4 @@ public interface InteractionAPI{
      * @return True iff this user is advertising a receiver.
      */
     public boolean isAdvertising();
-
-    /**
-     * The time the last advertised receiver was terminated.
-     * @return The termination time of the last receiver.
-     */
-    public long getTerminationTime();
 }

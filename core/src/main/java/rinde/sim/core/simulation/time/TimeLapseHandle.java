@@ -139,10 +139,11 @@ public class TimeLapseHandle extends TimeIntervalImpl implements TimeLapse{
      * before time is available again. 
      * @param extraTime The extra time to add to the consumption.
      */
-    public void unblock(long extraTime){
+    public void unblock(long unblockTime){
         assert blocked && schedualedUntil == endTime;
+        assert unblockTime >= startTime && unblockTime <= endTime;
         
+        schedualedUntil = unblockTime;
         blocked = false;
-        schedualedUntil = endTime + extraTime;
     }
 }

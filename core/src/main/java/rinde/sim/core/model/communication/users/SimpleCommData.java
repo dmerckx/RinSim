@@ -23,16 +23,26 @@ public interface SimpleCommData extends Data {
      */
     Double getReliability();
     
+    
+    /**
+     * Standard implementation of a {@link SimpleCommData}, can be used by
+     * {@link SimpleCommUser}s that don't require extra initialization data.
+     */
     public static class Std implements SimpleCommData{
         private final double reliability;
         
+        /**
+         * Create a new standard {@link SimpleCommData} with given reliability.
+         * @param reliability The reliability to use.
+         */
+        @SuppressWarnings("hiding") 
         public Std(double reliability) {
             this.reliability = reliability;
         }
+        
         @Override
         public Double getReliability() {
             return reliability;
         }
-        
     }
 }

@@ -3,6 +3,7 @@ package rinde.sim.core.model.pdp.apis;
 import java.util.List;
 
 import rinde.sim.core.model.Data;
+import rinde.sim.core.model.interaction.Receiver;
 import rinde.sim.core.model.interaction.apis.InteractionAPI;
 import rinde.sim.core.model.interaction.users.InteractionUser;
 import rinde.sim.core.model.pdp.Parcel;
@@ -85,6 +86,21 @@ public class ContainerGuard extends ContainerState implements ContainerAPI, Inte
         backupTime = handle.getStartTime();
         backupState = getCurrentContState(handle.getStartTime());
         backupLoad = Lists.newArrayList(load);
+    }
+
+    @Override
+    public void notifyDone(Receiver rec) {
+        switch(lastAction){
+            case ACCEPT: 
+                Parcel pReceived = ((DeliveryReceiver) rec).getReceived();
+                handle.consume(pReceived.deliveryDuration);
+                break;
+            case ADVERTISE:
+                Parcel pDelivered = ((PickupReceiver) rec).getPickedup();
+                handle.consume(pDelivered.pickupDuration);
+                break;
+            default: throw new IllegalStateException();
+        }
     }
     
     private ContState getCurrentContState(long time){
@@ -190,6 +206,7 @@ public class ContainerGuard extends ContainerState implements ContainerAPI, Inte
 
     @Override
     public void acceptAll(TimeLapse lapse){
+        assert handle == lapse;
         if(interactiveAPI.isAdvertising()) return;
         if(!handle.hasTimeLeft()) return;
         updateBackup();
@@ -202,6 +219,7 @@ public class ContainerGuard extends ContainerState implements ContainerAPI, Inte
     
     @Override
     public void accept(TimeLapse lapse, List<Parcel> parcels){
+        assert handle == lapse;
         if(interactiveAPI.isAdvertising()) return;
         if(!handle.hasTimeLeft()) return;
         updateBackup();
@@ -219,6 +237,8 @@ public class ContainerGuard extends ContainerState implements ContainerAPI, Inte
     
     @Override
     public void advertise(TimeLapse lapse, List<Parcel> parcels) {
+        assert handle == lapse;
+        assert load.containsAll(parcels);
         if(interactiveAPI.isAdvertising()) return;
         if(!handle.hasTimeLeft()) return;
         updateBackup();
@@ -260,5 +280,5 @@ enum Action{
     LOAD,
     UNLOAD,
     ADVERTISE,
-    ACCEPT
+    ACCEPT,
 }

@@ -29,6 +29,5 @@ public class PickupPoint<D extends PickupPointData> implements FixedRoadUser<D>,
         return roadAPI.getState();
     }
     
-    
     public static class Std extends PickupPoint<PickupPointData>{}
 }

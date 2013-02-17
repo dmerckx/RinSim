@@ -89,12 +89,12 @@ public class Pickup3 {
     @Test
     public void testPositions() throws FileNotFoundException, IOException {
         setupSim();
-        simulator.advanceTicks(1500);
+        simulator.advanceTicks(5000);
         
         Point p1 = someTruck.getRoadState().getLocation();
         
         setupSim();
-        simulator.advanceTicks(1500);
+        simulator.advanceTicks(5000);
         
         assertEquals(p1, someTruck.getRoadState().getLocation());
     }

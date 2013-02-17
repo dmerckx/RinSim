@@ -25,6 +25,8 @@ public class PickupReceiver extends Receiver {
     private final List<? extends Parcel> parcels;
     private final TimeWindowPolicy policy;
     
+    private Parcel pickedup = null;
+    
     /**
      * @param location The location of this receiver.
      * @param parcels The parcels available to be picked up by visitors.
@@ -35,6 +37,14 @@ public class PickupReceiver extends Receiver {
         super(location);
         this.parcels = parcels;
         this.policy = policy;
+    }
+
+    /**
+     * Returns the parcel that is being picked up, if any.
+     * @return The received parcel;
+     */
+    public Parcel getPickedup(){
+        return pickedup;
     }
     
     /**
@@ -63,8 +73,6 @@ public class PickupReceiver extends Receiver {
     public void pickup(TimeLapse lapse, Parcel parcel){
         assert !terminated;
         
-        //The pickup point will have to stay unavailable until the pickup duration is over
-        long timeCost = parcel.pickupDuration - lapse.getTimeLeft();
-        terminate(timeCost > 0 ? timeCost : 0);
+        terminate(lapse.getCurrentTime());
     }
 }

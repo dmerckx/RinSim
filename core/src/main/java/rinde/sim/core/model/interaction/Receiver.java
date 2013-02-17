@@ -25,6 +25,9 @@ public class Receiver{
     public final Point location;
     private InteractionModel model;
     
+    /**
+     * Indicates whether this receiver is scheduled for termination.
+     */
     protected boolean terminated = false;
     
     /**
@@ -58,6 +61,8 @@ public class Receiver{
      * @param timeCost Additional time cost.
      */
     public final void terminate(long timeCost){
+        assert !terminated: "Receiver can not be terminated more then ones";
+        
         model.terminate(this, timeCost);
         terminated = true;
     }

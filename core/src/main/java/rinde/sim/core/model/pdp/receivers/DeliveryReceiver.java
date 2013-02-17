@@ -21,7 +21,9 @@ public class DeliveryReceiver extends Receiver {
 
     private final Class<? extends Parcel> target;
     private final TimeWindowPolicy policy;
-
+    
+    private Parcel received = null;
+    
     /**
      * @param location The location of this receiver.
      * @param target The target class that can be delivered to this receiver.
@@ -34,6 +36,14 @@ public class DeliveryReceiver extends Receiver {
         super(location);
         this.target = target;
         this.policy = policy;
+    }
+
+    /**
+     * Returns the parcel that is being received, if any.
+     * @return The received parcel;
+     */
+    public Parcel getReceived(){
+        return received;
     }
 
     /**
@@ -56,8 +66,7 @@ public class DeliveryReceiver extends Receiver {
     public void deliver(TimeLapse lapse, Parcel parcel) {
         assert !terminated;
         
-        //The delivery point will have to stay unavailable until the delivery duration is over
-        long timeCost = parcel.deliveryDuration - lapse.getCurrentTime();
-        terminate(timeCost > 0? timeCost : 0);
+        received = parcel;
+        terminate(lapse.getCurrentTime());
     }
 }

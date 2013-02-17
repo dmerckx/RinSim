@@ -211,14 +211,15 @@ public class PdpModel implements Model<Data, PdpUser<?>>, PdpAPI{
     public void tick(TimeInterval time) {
         this.time = time;
         
-        for(PickupPoint<?> p:pickupEvents){
-           observer.packagePickedUp(p); 
+        if(observer != null){
+            for(PickupPoint<?> p:pickupEvents){
+               observer.packagePickedUp(p); 
+            }
+            for(DeliveryPoint<?> d:deliveryEvents){
+                observer.packageDelivered(d);
+            }
         }
         pickupEvents.clear();
-        
-        for(DeliveryPoint<?> d:deliveryEvents){
-            observer.packageDelivered(d);
-        }
         deliveryEvents.clear();
     }
 

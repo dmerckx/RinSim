@@ -29,8 +29,14 @@ public interface SimpleCommUser<D extends SimpleCommData> extends CommUser<D>{
      */
     public void setCommunicationAPI(SimpleCommAPI api);
 
-    
+    /**
+     * Standard implementation of a {@link SimpleCommUser}, using only
+     * {@link SimpleCommData} for initialization.
+     */
     public static class Std implements SimpleCommUser<SimpleCommData>{
+        /**
+         * The api used for communication.
+         */
         protected SimpleCommAPI commAPI;
         
         @Override

@@ -28,6 +28,10 @@ public class Tuple<K, V> implements Entry<K, V> {
     public V setValue(V value) {
         return this.value = value;
     }
+    
+    public static <K, V> Tuple<K, V> create(K key, V value){
+        return new Tuple<K,V>(key, value);
+    }
 
     public static <K, V> Entry<K, V> copy(Entry<K, V> entry) {
         return new Tuple<K, V>(entry.getKey(), entry.getValue());
