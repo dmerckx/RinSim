@@ -4,7 +4,6 @@
 package rinde.sim.core.simulation;
 
 import java.util.List;
-import java.util.Random;
 
 import org.apache.commons.math3.random.MersenneTwister;
 import org.apache.commons.math3.random.RandomGenerator;
@@ -17,12 +16,11 @@ import rinde.sim.core.model.Model;
 import rinde.sim.core.model.ModelManager;
 import rinde.sim.core.model.ModelProvider;
 import rinde.sim.core.model.User;
-import rinde.sim.core.model.simulator.SimulatorModel;
 import rinde.sim.core.simulation.policies.ModelPolicy;
-import rinde.sim.core.simulation.policies.ParallelTimeUserPolicy;
 import rinde.sim.core.simulation.policies.TickListenerPolicy;
 import rinde.sim.core.simulation.policies.TickListenerSerialPolicy;
 import rinde.sim.core.simulation.policies.TimeUserPolicy;
+import rinde.sim.core.simulation.policies.parallel.PBatchTimeUserPolicy;
 import rinde.sim.core.simulation.time.TimeIntervalImpl;
 import rinde.sim.core.simulation.time.TimeLapseHandle;
 import rinde.sim.event.Event;
@@ -130,7 +128,8 @@ public class Simulator{
     
     public Simulator(long step, long seed) {
         modelPolicy = new ModelPolicy();
-        timeUserPolicy = new ParallelTimeUserPolicy();
+        //timeUserPolicy = new PSingleTimeUserPolicy();
+        timeUserPolicy = new PBatchTimeUserPolicy(10);
         externalPolicy = new TickListenerSerialPolicy(true);
         
         timeStep = step;
@@ -139,8 +138,6 @@ public class Simulator{
 
         dispatcher = new EventDispatcher(SimulatorEventType.values());
         eventAPI = dispatcher.getEventAPI();
-        
-        registerModel(new SimulatorModel(this));
         
         this.rnd = new MersenneTwister(seed);
     }

@@ -242,11 +242,11 @@ public class GraphRoadModel extends AbstractRoadModel<Loc> {
      * @throws IllegalArgumentException if the location is not valid.
      */
     protected Loc checkLocation(Loc l) {
-        checkArgument(l.isOnConnection() || graph.containsNode(l), "Location points to non-existing vertex: "
-                + l + ".");
-        checkArgument(!l.isOnConnection()
-                || graph.hasConnection(l.conn.from, l.conn.to), "Location points to non-existing connection: "
-                + l.conn + ".");
+        if(!(l.isOnConnection() || graph.containsNode(l)))
+            throw new IllegalArgumentException("Location points to non-existing vertex: " + l + ".");
+        if(!(!l.isOnConnection() || graph.hasConnection(l.conn.from, l.conn.to)))
+            throw new IllegalArgumentException("Location points to non-existing connection: " + l.conn + ".");
+        
         return l;
     }
 

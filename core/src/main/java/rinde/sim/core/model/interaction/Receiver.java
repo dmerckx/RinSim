@@ -1,6 +1,7 @@
 package rinde.sim.core.model.interaction;
 
 import rinde.sim.core.graph.Point;
+import rinde.sim.core.model.interaction.apis.InteractiveGuard;
 import rinde.sim.core.model.interaction.users.InteractionUser;
 
 /**
@@ -17,13 +18,15 @@ import rinde.sim.core.model.interaction.users.InteractionUser;
  *  
  * @author dmerckx
  */
-public class Receiver{
+@SuppressWarnings("hiding")
+public class Receiver implements Comparable<Receiver>{
     
     /**
      * The location at which this receiver is stationed.
      */
     public final Point location;
-    private InteractionModel model;
+    InteractionModel model;
+    InteractiveGuard guard;
     
     /**
      * Indicates whether this receiver is scheduled for termination.
@@ -34,18 +37,8 @@ public class Receiver{
      * Create a new receiver, which will be active at the given location.
      * @param location The location of the receiver.
      */
-    @SuppressWarnings("hiding")
     public Receiver(Point location) {
         this.location = location;
-    }
-    
-    /**
-     * Set the interaction model, this model is in no way accessible by subclasses.
-     * @param model The interaction model.
-     */
-    @SuppressWarnings("hiding")
-    public final void setModel(InteractionModel model){
-        this.model = model;
     }
     
     /**
@@ -65,5 +58,10 @@ public class Receiver{
         
         model.terminate(this, timeCost);
         terminated = true;
+    }
+
+    @Override
+    public int compareTo(Receiver o) {
+        return guard.compareTo(o.guard);
     }
 }

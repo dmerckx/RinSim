@@ -24,9 +24,6 @@ import rinde.sim.core.model.road.RoadModel;
 import rinde.sim.core.simulation.Simulator;
 import rinde.sim.serializers.DotGraphSerializer;
 import rinde.sim.serializers.SelfCycleFilter;
-import rinde.sim.ui.View;
-import rinde.sim.ui.renderers.GraphRoadModelRenderer;
-import rinde.sim.ui.renderers.PDPModelRenderer;
 import rinde.sim.util.TimeWindow;
 
 /**
@@ -36,26 +33,38 @@ import rinde.sim.util.TimeWindow;
 public class ExamplePDP implements PdpObserver{
 	
 	private static final int STEP = 10000;
+	private static final int TRUCKS = 5000;
+	private static final int PACKAGES = 0;
+	
+	
 	private Simulator sim;
+	private int packages;
 	
 	public ExamplePDP(Simulator sim) {
 		this.sim = sim;
+		this.packages = PACKAGES;
 	}
 
 	@Override
 	public void packagePickedUp(PickupPoint<?> p) {
-		System.out.println("Package picked up");
-		sim.unregisterUser(p);
+		//System.out.println("Package picked up");
+		//sim.unregisterUser(p);
 	}
 
 	@Override
 	public void packageDelivered(DeliveryPoint<?> d) {
-		System.out.println("Package delivered");
-		sim.unregisterUser(d);
+		//System.out.println("Package delivered");
+		//sim.unregisterUser(d);
+		packages--;
+	}
+	
+	public boolean isDone(){
+		return false;
+		//return packages == 0;
+		//return sim.getCurrentTime() > 3200 * STEP * 5;
 	}
 
 	public static void main(String[] args) throws FileNotFoundException, IOException {
-
 		final String MAP_DIR = "../core/files/maps/";
 		// create a new simulator, load map of Leuven
 		final RandomGenerator rng = new MersenneTwister(123);
@@ -64,7 +73,8 @@ public class ExamplePDP implements PdpObserver{
 				.getMultiAttributeGraphSerializer(new SelfCycleFilter()).read(MAP_DIR + "leuven-simple.dot");
 		final RoadModel roadModel = new GraphRoadModel(graph);
 		final InteractionModel interModel = new InteractionModel();
-		final PdpModel pdpModel = new PdpModel(new LiberalPolicy(), new ExamplePDP(simulator));
+		final ExamplePDP obs = new ExamplePDP(simulator);
+		final PdpModel pdpModel = new PdpModel(new LiberalPolicy(), obs);
 		
 		simulator.registerModel(roadModel);
 		simulator.registerModel(interModel);
@@ -72,14 +82,14 @@ public class ExamplePDP implements PdpObserver{
 		simulator.configure();
 		
 
-		for (int i = 0; i < 10; i++) {
+		for (int i = 0; i < TRUCKS; i++) {
 			simulator.registerUser(
 					new PdpTruck(),
 					new TruckData.Std(1000, roadModel.getRandomPosition(rng), 100));
 		}
 
-		for (int i = 0; i < 50; i++) {
-			Point from = roadModel.getRandomPosition(rng);
+		Point from = roadModel.getRandomPosition(rng);
+		for (int i = 0; i < PACKAGES; i++) {
 			Point to = roadModel.getRandomPosition(rng);
 			final Parcel parcel =
 					new Parcel(from, to, STEP * 3, TimeWindow.ALWAYS, STEP * 2, TimeWindow.ALWAYS, 1);
@@ -91,7 +101,11 @@ public class ExamplePDP implements PdpObserver{
 			simulator.registerUser(new DeliveryPoint.Std(), new DeliveryPointData.Std(parcel));
 		}
 		
-		//simulator.start();
-		View.startGui(simulator, 1, new GraphRoadModelRenderer(), new PDPModelRenderer());
+		//View.startGui(simulator, 10, new GraphRoadModelRenderer(), new PDPModelRenderer());
+		
+		while(!obs.isDone()){
+			simulator.advanceTick();
+		}
+		System.out.println("DONE!" + (simulator.getCurrentTime() / STEP));
 	}
 }

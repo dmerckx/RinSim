@@ -9,8 +9,8 @@ import rinde.sim.core.simulation.policies.ParallelExecution;
 public class PdpBenchmark {
 
 	public static final int CORES = 4;
-	public static final int CARS = 10;
-	public static final int PARCELS = 40;
+	public static final int CARS = 1000;
+	public static final int PARCELS = 4000;
 	
 	public static final int REPS = 9;
 	public static final String PATH = "/home/dmerckx/Documents/";
@@ -39,6 +39,7 @@ public class PdpBenchmark {
 				long before = System.currentTimeMillis();
 				problem.run();
 				results[i] += System.currentTimeMillis() - before;
+				System.out.println("Sim done");
 			}
 			results[i] /= REPS;
 			System.out.println(i + " runtime: " + results[i]);

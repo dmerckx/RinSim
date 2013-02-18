@@ -2,6 +2,8 @@ package rinde.sim.core.model.pdp.apis;
 
 import java.util.List;
 
+import com.google.common.collect.Lists;
+
 import rinde.sim.core.graph.Point;
 import rinde.sim.core.model.SafeIterator;
 import rinde.sim.core.model.pdp.Parcel;
@@ -60,7 +62,20 @@ public class TruckGuard implements TruckAPI{
     
     @Override
     public List<Parcel> locateAvailableParcels() {
-        return null;
+        List<Parcel> result = Lists.newArrayList();
+    
+        SafeIterator<PickupPoint<?>> it = pdpModel.queryPickups();
+        while(it.hasNext()){
+            PickupPoint<?> p = it.next();
+            
+            switch(p.getPickupPointState().getPickupState()){
+                case BEING_PICKED_UP: continue;
+                case PICKED_UP: continue;
+            }
+            
+            result.add(p.getPickupPointState().getParcel());
+        }
+        
+        return result;
     }
-
 }

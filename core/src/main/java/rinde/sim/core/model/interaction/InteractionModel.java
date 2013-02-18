@@ -3,6 +3,7 @@ package rinde.sim.core.model.interaction;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.SortedSet;
 
 import rinde.sim.core.graph.Point;
 import rinde.sim.core.model.Data;
@@ -17,9 +18,10 @@ import rinde.sim.core.simulation.policies.ParallelExecution;
 import rinde.sim.core.simulation.time.TimeLapseHandle;
 import rinde.sim.util.Tuple;
 
-import com.google.common.collect.HashMultimap;
+import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 
 /**
  * A model allowing its users to advertise {@link Receiver}s and visit
@@ -32,14 +34,14 @@ import com.google.common.collect.Maps;
  */
 public class InteractionModel implements Model<Data, InteractionUser<?>> {
     
-    private HashMultimap<Point, Receiver> receiversPos = HashMultimap.create();
+    private LinkedHashMultimap<Point, Receiver> receiversPos = LinkedHashMultimap.create();
     private HashMap<InteractionUser<?>, InteractiveGuard> mapping = Maps.newHashMap();
     
-    private List<Receiver> schedualedForAdd = Lists.newArrayList();
+    private SortedSet<Receiver> schedualedForAdd = Sets.newTreeSet();
     private List<Receiver> schedualedRemoval = Lists.newArrayList();
     private List<Tuple<Receiver,Long>> schedualedTermination = Lists.newArrayList();
     
-    private HashMap<Receiver, InteractiveGuard> recGuards = Maps.newHashMap();
+    private int guardId = 0;
     
     /**
      * Create a new interaction model.
@@ -94,7 +96,9 @@ public class InteractionModel implements Model<Data, InteractionUser<?>> {
      * @param guard The guard that created the guard.
      */
     public synchronized void schedualAdd(Receiver receiver, InteractiveGuard guard){
-        recGuards.put(receiver, guard);
+        receiver.model = this;
+        receiver.guard = guard;
+        
         schedualedForAdd.add(receiver);
     }
     
@@ -105,7 +109,7 @@ public class InteractionModel implements Model<Data, InteractionUser<?>> {
     public List<UserInit<?>> register(InteractionUser<?> user, Data d, TimeLapseHandle handle) {
         assert user!=null : "User can not be null.";
         
-        InteractiveGuard guard = new InteractiveGuard(user, this, handle);
+        InteractiveGuard guard = new InteractiveGuard(user, this, handle, guardId++);
         user.setInteractionAPi(guard);
         
         mapping.put(user, guard);
@@ -143,15 +147,13 @@ public class InteractionModel implements Model<Data, InteractionUser<?>> {
             if(schedualedRemoval.contains(entry.getKey()))
                 schedualedRemoval.remove(entry.getKey());
             receiversPos.remove(entry.getKey().location, entry.getKey());
-            recGuards.get(entry.getKey()).unsetReceiver(entry.getValue());
-            recGuards.remove(entry.getKey());
+            entry.getKey().guard.unsetReceiver(entry.getValue());
         }
         schedualedTermination.clear();
         
         for(Receiver receiver:schedualedRemoval){
             receiversPos.remove(receiver.location, receiver);
-            recGuards.get(receiver).unsetReceiver(0);
-            recGuards.remove(receiver);
+            receiver.guard.unsetReceiver(time.getEndTime());
         }
         schedualedRemoval.clear();
     }

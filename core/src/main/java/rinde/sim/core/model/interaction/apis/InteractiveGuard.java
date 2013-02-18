@@ -28,11 +28,11 @@ import com.google.common.collect.Lists;
  * 
  * @author dmerckx
  */
-public class InteractiveGuard implements InteractionAPI{
-
+public class InteractiveGuard implements InteractionAPI, Comparable<InteractiveGuard>{
     private final InteractionModel interactionModel;
     private final InteractionUser<?> user;
     private SimpleCommAPI commAPI;
+    private Integer id;
     
     private final TimeLapseHandle handle;
     
@@ -45,10 +45,11 @@ public class InteractiveGuard implements InteractionAPI{
      * @param handle A handle to the users time lapse.
      */
     @SuppressWarnings("hiding")
-    public InteractiveGuard(InteractionUser<?> user, InteractionModel model, TimeLapseHandle handle) {
+    public InteractiveGuard(InteractionUser<?> user, InteractionModel model, TimeLapseHandle handle, int id) {
         this.user = user;
         this.interactionModel = model;
         this.handle = handle;
+        this.id = id;
     }
 
     /**
@@ -96,7 +97,6 @@ public class InteractiveGuard implements InteractionAPI{
         if(receiver != null)
             return;
         
-        rec.setModel(interactionModel);
         interactionModel.schedualAdd(rec, this);
         handle.block();
         receiver = rec; 
@@ -111,5 +111,10 @@ public class InteractiveGuard implements InteractionAPI{
     public void stopAdvertising() {
         assert receiver != null;
         interactionModel.schedualRemove(receiver);
+    }
+
+    @Override
+    public int compareTo(InteractiveGuard o) {
+        return id.compareTo(o.id);
     }
 }

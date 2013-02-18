@@ -10,8 +10,6 @@ public interface TruckAPI{
     
     void init(RoadAPI roadAPI, ContainerAPI containerAPI);
     
-    //public List<Parcel> scanLocation();
-    
     Parcel findClosestAvailableParcel(TimeLapse time);
     
     List<Parcel> locateAvailableParcels();

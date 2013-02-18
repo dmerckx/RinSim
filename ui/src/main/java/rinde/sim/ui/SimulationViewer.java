@@ -528,10 +528,10 @@ public class SimulationViewer extends Composite implements TickListener, Control
 
 	@Override
 	public void tick(TimeInterval timeLapse) {
-		/*if (simulator.isPlaying()
+		if (simulator.isPlaying()
 				&& lastRefresh + timeLapse.getTimeStep() * speedUp > timeLapse.getStartTime()) {
 			return;
-		}*/
+		}
 		
 		/*lastRefresh = timeLapse.getStartTime();
 		try {
@@ -539,9 +539,9 @@ public class SimulationViewer extends Composite implements TickListener, Control
 		} catch (final InterruptedException e) {
 			throw new RuntimeException(e);
 		}*/
-		/*if (display.isDisposed()) {
+		if (display.isDisposed()) {
 			return;
-		}*/
+		}
 		final CyclicBarrier barrier = new CyclicBarrier(2);
 		display.asyncExec(new Runnable() {
 			@Override

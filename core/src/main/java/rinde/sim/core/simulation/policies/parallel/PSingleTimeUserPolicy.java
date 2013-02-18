@@ -1,7 +1,6 @@
-package rinde.sim.core.simulation.policies;
+package rinde.sim.core.simulation.policies.parallel;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.concurrent.CountDownLatch;
@@ -10,36 +9,16 @@ import java.util.concurrent.Future;
 
 import rinde.sim.core.model.Agent;
 import rinde.sim.core.model.InitUser;
-import rinde.sim.core.model.User;
 import rinde.sim.core.simulation.TimeInterval;
 import rinde.sim.core.simulation.time.TimeLapseHandle;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-
-public class ParallelTimeUserPolicy extends ParallelExecution implements TimeUserPolicy{
-    
-    private HashMap<User<?>, TimeLapseHandle> agents = Maps.newLinkedHashMap();
-    private List<InitUser> initUsers = Lists.newArrayList();
-    
-    public void register(User<?> agent, TimeLapseHandle handle){
-        assert agent != null;
-        assert handle != null;
-        assert !agents.containsKey(handle);
-        
-        agents.put(agent, handle);
-    }
-
-    public void unregister(User<?> agent) {
-        assert agents.containsKey(agent);
-        
-        agents.remove(agent);
-    }
-
-    @Override
-    public void addInituser(InitUser user) {
-        initUsers.add(user);
-    }
+/**
+ * Parallel time user policy which threads the tick operation of every single agent
+ * as an individuel task.
+ * 
+ * @author dmerckx
+ */
+public class PSingleTimeUserPolicy extends PTimeUserPolicy{
 
     @Override
     public void performTicks(TimeInterval interval) {
@@ -51,15 +30,10 @@ public class ParallelTimeUserPolicy extends ParallelExecution implements TimeUse
         List<Future<?>> futures = new ArrayList<Future<?>>();
         List<CountDownLatch> barriers = new ArrayList<CountDownLatch>();
         
-        for(Entry<User<?>,TimeLapseHandle> entry:agents.entrySet()){
-            entry.getValue().nextStep();
-        }
-            
-        for(Entry<User<?>,TimeLapseHandle> entry:agents.entrySet()){
-            if(!(entry.getKey() instanceof Agent))
-                continue;
-                
-            final Agent agent = (Agent) entry.getKey();
+        updateLapses();
+        
+        for(Entry<Agent,TimeLapseHandle> entry:agents.entrySet()){
+            final Agent agent = entry.getKey();
             final TimeLapseHandle lapse = entry.getValue();
             
             final CountDownLatch barrier = new CountDownLatch(1);
@@ -90,15 +64,4 @@ public class ParallelTimeUserPolicy extends ParallelExecution implements TimeUse
             }
         }
     }
-
-    @Override
-    public boolean canRegisterDuringExecution() {
-        return false;
-    }
-
-    @Override
-    public boolean canUnregisterDuringExecution() {
-        return false;
-    }
-
 }
