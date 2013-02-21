@@ -4,20 +4,21 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
+import rinde.sim.core.Monitor;
 import rinde.sim.core.model.Agent;
 import rinde.sim.core.model.InitUser;
 import rinde.sim.core.model.User;
-import rinde.sim.core.model.communication.apis.SimpleCommGuard;
 import rinde.sim.core.simulation.TimeInterval;
-import rinde.sim.core.simulation.policies.ParallelExecution;
+import rinde.sim.core.simulation.policies.InteractionRules;
 import rinde.sim.core.simulation.policies.TimeUserPolicy;
 import rinde.sim.core.simulation.time.TimeLapseHandle;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.util.concurrent.Monitor.Guard;
 
-public abstract class PTimeUserPolicy extends ParallelExecution implements TimeUserPolicy{
+public abstract class PTimeUserPolicy implements TimeUserPolicy{
+    
+    public static final int NR_CORES = 4;
 
     //TODO lapses are not removed
     protected List<TimeLapseHandle> lapses = Lists.newArrayList();
@@ -47,11 +48,20 @@ public abstract class PTimeUserPolicy extends ParallelExecution implements TimeU
     }
 
     @Override
-    abstract public void performTicks(TimeInterval interval);
-    
-    public void updateLapses(){
+    public final void performTicks(TimeInterval interval){
+        for(InitUser user:initUsers){
+            user.init();
+        }
+        initUsers.clear();
+        
+        Monitor.get().startLapses();
         updateLapsesSerial();
+        Monitor.get().endLapses();
+        
+        doTicks(interval);
     }
+    
+    protected abstract void doTicks(TimeInterval interval);
     
     public void updateLapsesSerial(){
         for(TimeLapseHandle lapse:lapses){
@@ -59,7 +69,7 @@ public abstract class PTimeUserPolicy extends ParallelExecution implements TimeU
         }
     }
     
-    public void updateLapsesParallel(){
+    /*public void updateLapsesParallel(){
         int nrBatches = NR_CORES * 4;
         
         final CountDownLatch latch = new CountDownLatch(nrBatches);
@@ -93,7 +103,7 @@ public abstract class PTimeUserPolicy extends ParallelExecution implements TimeU
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-    }
+    }*/
 
     @Override
     public boolean canRegisterDuringExecution() {
@@ -105,4 +115,25 @@ public abstract class PTimeUserPolicy extends ParallelExecution implements TimeU
         return false;
     }
 
+}
+
+class Rules implements InteractionRules {
+    public final ThreadLocal<CountDownLatch> previousLatch = new ThreadLocal<CountDownLatch>();
+    
+    @Override
+    public void awaitAllPrevious() {
+        if( previousLatch.get() == null)
+            return;
+
+        try {
+            previousLatch.get().await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public boolean isDeterministic() {
+        return true;
+    }
 }

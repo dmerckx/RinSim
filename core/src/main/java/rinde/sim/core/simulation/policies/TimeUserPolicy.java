@@ -12,4 +12,24 @@ public interface TimeUserPolicy extends TickPolicy{
     public void unregister(User<?> agent);
     
     public void addInituser(InitUser user);
+    
+    /**
+     * Returns an object which will determine how interactions
+     * are processed. This can be used to handle interactions
+     * deterministically or not.
+     * @return The policy used when interactions occur.
+     */
+    public InteractionRules getInteractionRules();
+
+    /**
+     * Policies using thread pools get the chance to warm up
+     * (initialize threads etc).
+     */
+    public void warmUp();
+    
+    /**
+     * Let policies using thread pools shut down, kill all additional
+     * threads.
+     */
+    public void shutDown();
 }

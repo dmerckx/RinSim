@@ -4,6 +4,7 @@ import java.util.List;
 
 import rinde.sim.core.simulation.TimeInterval;
 import rinde.sim.core.simulation.UserInit;
+import rinde.sim.core.simulation.policies.InteractionRules;
 import rinde.sim.core.simulation.time.TimeLapseHandle;
 
 
@@ -20,8 +21,6 @@ public interface Model<D extends Data, T extends User<? extends D>>{
      */
     List<UserInit<?>> register(T user, D data, TimeLapseHandle handle);
     
-    void setSeed(long seed);
-    
     /**
      * Unregister element from a model.
      * @param element the <code>! null</code> should be imposed
@@ -35,4 +34,8 @@ public interface Model<D extends Data, T extends User<? extends D>>{
     
     
     void tick(TimeInterval time);
+    
+    void setSeed(long seed);
+    
+    void setInteractionRules(InteractionRules rules);
 }

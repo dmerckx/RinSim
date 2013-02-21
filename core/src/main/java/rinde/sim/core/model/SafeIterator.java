@@ -10,7 +10,6 @@ public interface SafeIterator<T> {
     T next();
     
     
-    
     public static class Std<T> implements SafeIterator<T>{
         private final Iterator<T> it;
         

@@ -27,7 +27,7 @@ import rinde.sim.core.model.road.PlaneRoadModel;
 import rinde.sim.core.model.road.RoadModel;
 import rinde.sim.core.simulation.Simulator;
 import rinde.sim.core.simulation.TimeLapse;
-import rinde.sim.core.simulation.policies.ParallelExecution;
+import rinde.sim.core.simulation.policies.InteractionRules;
 import rinde.sim.util.TimeWindow;
 
 public class Pickup1 {

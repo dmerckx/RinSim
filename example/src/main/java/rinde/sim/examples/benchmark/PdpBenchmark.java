@@ -4,7 +4,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
-import rinde.sim.core.simulation.policies.ParallelExecution;
+import rinde.sim.core.simulation.policies.InteractionRules;
 
 public class PdpBenchmark {
 
@@ -44,9 +44,6 @@ public class PdpBenchmark {
 			results[i] /= REPS;
 			System.out.println(i + " runtime: " + results[i]);
 		}
-		
-		ParallelExecution.close();
-		
 		
 		try {
 			FileWriter writer = new FileWriter(new File(PATH + "PDP" + CORES));

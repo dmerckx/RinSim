@@ -5,11 +5,13 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import rinde.sim.core.model.Agent;
-import rinde.sim.core.model.InitUser;
 import rinde.sim.core.simulation.TimeInterval;
+import rinde.sim.core.simulation.policies.InteractionRules;
 import rinde.sim.core.simulation.time.TimeLapseHandle;
 
 /**
@@ -20,17 +22,16 @@ import rinde.sim.core.simulation.time.TimeLapseHandle;
  */
 public class PSingleTimeUserPolicy extends PTimeUserPolicy{
 
+    private final ExecutorService pool = Executors.newFixedThreadPool(NR_CORES);
+    
+    private final Rules rules = new Rules();
+
+    public PSingleTimeUserPolicy() {}
+    
     @Override
-    public void performTicks(TimeInterval interval) {
-        for(InitUser user:initUsers){
-            user.init();
-        }
-        initUsers.clear();
-        
+    public void doTicks(TimeInterval interval) {
         List<Future<?>> futures = new ArrayList<Future<?>>();
         List<CountDownLatch> barriers = new ArrayList<CountDownLatch>();
-        
-        updateLapses();
         
         for(Entry<Agent,TimeLapseHandle> entry:agents.entrySet()){
             final Agent agent = entry.getKey();
@@ -42,11 +43,9 @@ public class PSingleTimeUserPolicy extends PTimeUserPolicy{
             Future<?> f = pool.submit(new Runnable() {
                 @Override
                 public void run() {
-                    previousBarrier.set(barrier);
+                    rules.previousLatch.set(barrier);
                     
                     agent.tick(lapse);
-                    
-                    previousBarrier.set(null);
                 }
             });
             
@@ -63,5 +62,20 @@ public class PSingleTimeUserPolicy extends PTimeUserPolicy{
                 e.printStackTrace();
             }
         }
+    }
+
+    @Override
+    public InteractionRules getInteractionRules() {
+        return rules;
+    }
+
+    @Override
+    public void warmUp() {
+        
+    }
+
+    @Override
+    public void shutDown() {
+        pool.shutdown();
     }
 }

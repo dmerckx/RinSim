@@ -25,7 +25,7 @@ public class ViewPort {
 	public final double scale;
 	public final Map<String, Color> colorRegistry;
 
-	public ViewPort(Point pOrigin, ViewRect pViewRect, double pZoom, Map<String, Color> registry) {
+	public ViewPort(Point pOrigin, ViewRect pViewRect, double pZoom, Map<String, Color> registry){
 		origin = pOrigin;
 		rect = pViewRect;
 		scale = pZoom;

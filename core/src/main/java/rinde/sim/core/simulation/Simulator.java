@@ -1,6 +1,3 @@
-/**
- * 
- */
 package rinde.sim.core.simulation;
 
 import java.util.List;
@@ -10,17 +7,19 @@ import org.apache.commons.math3.random.RandomGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import rinde.sim.core.Monitor;
 import rinde.sim.core.model.Data;
 import rinde.sim.core.model.InitUser;
 import rinde.sim.core.model.Model;
 import rinde.sim.core.model.ModelManager;
 import rinde.sim.core.model.ModelProvider;
 import rinde.sim.core.model.User;
+import rinde.sim.core.simulation.policies.InteractionRules;
 import rinde.sim.core.simulation.policies.ModelPolicy;
 import rinde.sim.core.simulation.policies.TickListenerPolicy;
 import rinde.sim.core.simulation.policies.TickListenerSerialPolicy;
 import rinde.sim.core.simulation.policies.TimeUserPolicy;
-import rinde.sim.core.simulation.policies.parallel.PBatchTimeUserPolicy;
+import rinde.sim.core.simulation.policies.parallel.CustomPool;
 import rinde.sim.core.simulation.time.TimeIntervalImpl;
 import rinde.sim.core.simulation.time.TimeLapseHandle;
 import rinde.sim.event.Event;
@@ -123,13 +122,20 @@ public class Simulator{
     private final long timeStep;
     
     public Simulator(long step){
-        this(step, 19);
+        this(step, 19, null);
     }
     
-    public Simulator(long step, long seed) {
+    public Simulator(long step, long seed){
+        this(step, seed, null);
+    }
+    
+    public Simulator(long step, TimeUserPolicy policy){
+        this(step, 19, policy);
+    }
+    
+    public Simulator(long step, long seed, TimeUserPolicy policy) {
         modelPolicy = new ModelPolicy();
-        //timeUserPolicy = new PSingleTimeUserPolicy();
-        timeUserPolicy = new PBatchTimeUserPolicy(10);
+        timeUserPolicy = policy == null? new CustomPool(5) : policy;
         externalPolicy = new TickListenerSerialPolicy(true);
         
         timeStep = step;
@@ -154,8 +160,11 @@ public class Simulator{
         dispatcher
                 .dispatchEvent(new Event(SimulatorEventType.CONFIGURED, this));
         
+        InteractionRules rules = timeUserPolicy.getInteractionRules();
+        
         for(Model<?,?> model:modelManager.getModels()){
             model.setSeed(rnd.nextLong());
+            model.setInteractionRules(rules);
         }
     }
     
@@ -296,20 +305,19 @@ public class Simulator{
      * step).
      */
     private void tick() {
-        long timeS = System.currentTimeMillis();
-        
+        Monitor.get().startModels();
         TimeInterval interval = new TimeIntervalImpl(time, time+timeStep);
-        
         performTicks(modelPolicy, interval);
+        Monitor.get().startModels();
+        
+        Monitor.get().startAgents();
         performTicks(timeUserPolicy, interval);
+        Monitor.get().endAgents();
+        
+        Monitor.get().startModels();
         performTicks(externalPolicy, interval);
+        Monitor.get().endModels();
         
-        
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("tick(): " + (System.currentTimeMillis() - timeS));
-            timeS = System.currentTimeMillis();
-        }
-
         time += timeStep;
     }
 
@@ -335,6 +343,11 @@ public class Simulator{
      */
     public void stop() {
         isPlaying = false;
+    }
+    
+    public void shutdown(){
+        stop();
+        timeUserPolicy.shutDown();
     }
 
     /**

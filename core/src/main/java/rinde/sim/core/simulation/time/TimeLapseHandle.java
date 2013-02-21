@@ -10,6 +10,7 @@ public class TimeLapseHandle extends TimeIntervalImpl implements TimeLapse{
     private long schedualedUntil;
     private boolean blocked = false;
     
+    
     public TimeLapseHandle(long start, long step) {
         super(start, start+step);
         this.step = step;

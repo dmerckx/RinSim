@@ -8,7 +8,6 @@ import rinde.sim.core.model.road.apis.RoadState;
 import rinde.sim.core.model.road.users.MovingRoadUser;
 
 public class Truck<D extends TruckData> implements Container<D>, MovingRoadUser<D>{
-   
     protected MovingRoadAPI roadAPI;
     protected ContainerAPI containerAPI;
     protected TruckAPI truckAPI;

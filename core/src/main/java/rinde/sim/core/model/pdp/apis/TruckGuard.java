@@ -2,9 +2,6 @@ package rinde.sim.core.model.pdp.apis;
 
 import java.util.List;
 
-import com.google.common.collect.Lists;
-
-import rinde.sim.core.graph.Point;
 import rinde.sim.core.model.SafeIterator;
 import rinde.sim.core.model.pdp.Parcel;
 import rinde.sim.core.model.pdp.PdpModel;
@@ -13,6 +10,9 @@ import rinde.sim.core.model.pdp.users.Truck;
 import rinde.sim.core.model.pdp.users.TruckData;
 import rinde.sim.core.model.road.apis.RoadAPI;
 import rinde.sim.core.simulation.TimeLapse;
+import rinde.sim.util.positions.Filter;
+
+import com.google.common.collect.Lists;
 
 //TODO
 public class TruckGuard implements TruckAPI{
@@ -30,34 +30,28 @@ public class TruckGuard implements TruckAPI{
     }
     
     @Override
-    public Parcel findClosestAvailableParcel(TimeLapse time) {
+    public Parcel findClosestAvailableParcel(final TimeLapse time) {
         assert roadAPI != null: "Init has to be called first";
         
-        double minDist = Double.POSITIVE_INFINITY;
-        Parcel closestParcel = null;
-        
-        Point pos = roadAPI.getCurrentLocation();
-        SafeIterator<PickupPoint<?>> it = pdpModel.queryPickups();
-        while(it.hasNext()){
-            PickupPoint<?> p = it.next();
-            
-            switch(p.getPickupPointState().getPickupState()){
-                case BEING_PICKED_UP: continue;
-                case PICKED_UP: continue;
+        PickupPoint<?> p = pdpModel.queryClosestPickup(roadAPI.getCurrentLocation(), new Filter<PickupPoint<?>>() {
+            @Override
+            public boolean matches(PickupPoint<?> p) {
+                switch(p.getPickupPointState().getPickupState()){
+                    case BEING_PICKED_UP: return true;
+                    case PICKED_UP: return true;
+                }
+
+                Parcel parcel = p.getPickupPointState().getParcel();
+                if(!pdpModel.getPolicy().canPickup(parcel.pickupTimeWindow, time.getTimeLeft(), parcel.pickupDuration))
+                    return true;
+                
+                return false;
             }
-            
-            Parcel parcel = p.getPickupPointState().getParcel();
-            if(!pdpModel.getPolicy().canPickup(parcel.pickupTimeWindow, time.getTimeLeft(), parcel.pickupDuration))
-                continue;
-            
-            double dist = Point.distance(pos, parcel.location);
-            if(dist < minDist){
-                minDist = dist;
-                closestParcel = parcel;
-            }
-        }
+        });
         
-        return closestParcel;
+        if(p == null) return null;
+        
+        return p.getPickupPointState().getParcel();
     }
     
     @Override

@@ -35,6 +35,7 @@ import rinde.sim.core.model.road.users.RoadUser;
 import rinde.sim.core.simulation.TimeInterval;
 import rinde.sim.core.simulation.TimeLapse;
 import rinde.sim.core.simulation.UserInit;
+import rinde.sim.core.simulation.policies.InteractionRules;
 import rinde.sim.core.simulation.time.TimeLapseHandle;
 import rinde.sim.event.EventAPI;
 import rinde.sim.event.EventDispatcher;
@@ -406,6 +407,11 @@ public abstract class AbstractRoadModel<T> implements RoadModel{
 
     @Override
     public void tick(TimeInterval time) {
+        
+    }
+    
+    @Override
+    public void setInteractionRules(InteractionRules rules) {
         
     }
 }

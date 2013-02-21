@@ -2,7 +2,6 @@ package rinde.sim.core.model.communication;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
 
 import org.apache.commons.math3.random.MersenneTwister;
 import org.apache.commons.math3.random.RandomGenerator;
@@ -21,7 +20,7 @@ import rinde.sim.core.model.communication.users.SimpleCommUser;
 import rinde.sim.core.simulation.Simulator;
 import rinde.sim.core.simulation.TimeInterval;
 import rinde.sim.core.simulation.UserInit;
-import rinde.sim.core.simulation.policies.ParallelExecution;
+import rinde.sim.core.simulation.policies.InteractionRules;
 import rinde.sim.core.simulation.time.TimeLapseHandle;
 
 import com.google.common.collect.Lists;
@@ -37,7 +36,7 @@ import com.google.common.collect.Maps;
  *  
  * @author dmerckx
  */
-public class CommunicationModel extends ParallelExecution implements Model<Data, CommUser<?>>{
+public class CommunicationModel implements Model<Data, CommUser<?>>{
 
 	private final HashMap<Address, CommGuard> fullComms = Maps.newHashMap();
 	private final HashMap<Address, SimpleCommGuard> simpleComms = Maps.newHashMap();
@@ -171,7 +170,12 @@ public class CommunicationModel extends ParallelExecution implements Model<Data,
 
     @Override
     public void tick(TimeInterval time) {
-        final CountDownLatch latch = new CountDownLatch(activeGuards.size());
+        for(SimpleCommGuard guard:activeGuards){
+            guard.process();
+        }
+        
+        //TODO
+        /*final CountDownLatch latch = new CountDownLatch(activeGuards.size());
         
         for(final SimpleCommGuard guard:activeGuards){
             pool.submit(new Runnable() {
@@ -187,8 +191,13 @@ public class CommunicationModel extends ParallelExecution implements Model<Data,
             latch.await();
         } catch (InterruptedException e) {
             e.printStackTrace();
-        }
+        }*/
         
         activeGuards.clear();
+    }
+    
+    @Override
+    public void setInteractionRules(InteractionRules rules) {
+        
     }
 }

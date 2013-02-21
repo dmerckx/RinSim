@@ -14,7 +14,7 @@ import rinde.sim.core.model.interaction.users.InteractionUser;
 import rinde.sim.core.simulation.TimeInterval;
 import rinde.sim.core.simulation.TimeLapse;
 import rinde.sim.core.simulation.UserInit;
-import rinde.sim.core.simulation.policies.ParallelExecution;
+import rinde.sim.core.simulation.policies.InteractionRules;
 import rinde.sim.core.simulation.time.TimeLapseHandle;
 import rinde.sim.util.Tuple;
 
@@ -43,6 +43,8 @@ public class InteractionModel implements Model<Data, InteractionUser<?>> {
     
     private int guardId = 0;
     
+    private InteractionRules interactionRules;
+    
     /**
      * Create a new interaction model.
      */
@@ -58,7 +60,7 @@ public class InteractionModel implements Model<Data, InteractionUser<?>> {
      */
     @SuppressWarnings("unchecked")
     public <T extends Receiver, R extends Result> R visit(TimeLapse lapse, Visitor<T, R> visitor){
-        ParallelExecution.awaitAllPrevious();
+        interactionRules.awaitAllPrevious();
         
         List<T> targets = new ArrayList<T>();
         
@@ -161,5 +163,10 @@ public class InteractionModel implements Model<Data, InteractionUser<?>> {
     @Override
     public void setSeed(long seed) {
         
+    }
+
+    @Override
+    public void setInteractionRules(InteractionRules rules) {
+        this.interactionRules = rules;
     }
 }

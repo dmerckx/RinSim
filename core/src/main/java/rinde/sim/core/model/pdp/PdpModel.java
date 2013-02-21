@@ -1,11 +1,11 @@
 package rinde.sim.core.model.pdp;
 
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import rinde.sim.core.graph.Point;
 import rinde.sim.core.model.Data;
 import rinde.sim.core.model.Model;
 import rinde.sim.core.model.SafeIterator;
@@ -27,7 +27,9 @@ import rinde.sim.core.model.pdp.users.Truck;
 import rinde.sim.core.model.pdp.users.TruckData;
 import rinde.sim.core.simulation.TimeInterval;
 import rinde.sim.core.simulation.UserInit;
+import rinde.sim.core.simulation.policies.InteractionRules;
 import rinde.sim.core.simulation.time.TimeLapseHandle;
+import rinde.sim.util.positions.Filter;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -67,7 +69,31 @@ public class PdpModel implements Model<Data, PdpUser<?>>, PdpAPI{
         return time;
     }
     
+    protected void registerPickupPoint(PickupPoint<?> p){
+        
+    }
+
+    protected void unregisterPickupPoint(PickupPoint<?> p){
+        
+    }
+    
     // ----- QUERIES ----- //
+    
+
+    public PickupPoint<?> queryClosestPickup(Point pos, Filter<PickupPoint<?>> filter){
+        double minDist = Double.POSITIVE_INFINITY;
+        PickupPoint<?> closestPp = null;
+        
+        for(PickupPoint<?> p:pickups.keySet()){
+            if(filter.matches(p)) continue;
+            if(Point.distance(p.getRoadState().getLocation(), pos) < minDist){
+                minDist = Point.distance(p.getRoadState().getLocation(), pos);
+                closestPp = p;
+            }
+        }
+        
+        return closestPp;
+    }
     
     @Override
     public SafeIterator<Truck<?>> queryTrucks(){
@@ -147,6 +173,7 @@ public class PdpModel implements Model<Data, PdpUser<?>>, PdpAPI{
             
             result.add(UserInit.create(guard));
             pickups.put((PickupPoint<?>) user, guard);
+            registerPickupPoint((PickupPoint<?>) user);
         }
         else if(user instanceof DeliveryPoint){
             DeliveryGuard guard = new DeliveryGuard((DeliveryPoint<?>) user, (DeliveryPointData) data, this, handle);
@@ -188,6 +215,7 @@ public class PdpModel implements Model<Data, PdpUser<?>>, PdpAPI{
             
             result.add(pickups.get(user));
             pickups.remove(user);
+            unregisterPickupPoint((PickupPoint<?>) user);
         }
         else if(user instanceof DeliveryPoint){
             assert deliveries.containsKey(user);
@@ -225,6 +253,11 @@ public class PdpModel implements Model<Data, PdpUser<?>>, PdpAPI{
 
     @Override
     public void setSeed(long seed) {
+        
+    }
+
+    @Override
+    public void setInteractionRules(InteractionRules rules) {
         
     }
 }

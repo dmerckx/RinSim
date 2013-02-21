@@ -4,13 +4,14 @@
 package rinde.sim.core.model.road;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkState;
 import static rinde.sim.core.graph.Graphs.shortestPathEuclideanDistance;
 import static rinde.sim.core.graph.Graphs.unmodifiableGraph;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Queue;
-import java.util.Set;
 
 import org.apache.commons.math3.random.RandomGenerator;
 
@@ -23,6 +24,7 @@ import rinde.sim.core.model.road.GraphRoadModel.Loc;
 import rinde.sim.core.model.road.users.MovingRoadUser;
 import rinde.sim.core.model.road.users.RoadUser;
 import rinde.sim.core.simulation.TimeLapse;
+import rinde.sim.util.Rectangle;
 import rinde.sim.util.SpeedConverter;
 import rinde.sim.util.TimeUnit;
 
@@ -475,4 +477,25 @@ public class GraphRoadModel extends AbstractRoadModel<Loc> {
             return super.toString() + "{" + conn + "}";
         }
     }
+    
+
+    @Override
+    public Rectangle getViewRect() {
+        checkState(!graph.isEmpty(), "graph may not be empty at this point");
+        final Collection<Point> nodes = graph.getNodes();
+
+        double minX = Double.POSITIVE_INFINITY;
+        double maxX = Double.NEGATIVE_INFINITY;
+        double minY = Double.POSITIVE_INFINITY;
+        double maxY = Double.NEGATIVE_INFINITY;
+
+        for (final Point p : nodes) {
+            minX = Math.min(minX, p.x);
+            maxX = Math.max(maxX, p.x);
+            minY = Math.min(minY, p.y);
+            maxY = Math.max(maxY, p.y);
+        }
+        return new Rectangle(minX, maxX, minY, maxY);
+    }
+
 }

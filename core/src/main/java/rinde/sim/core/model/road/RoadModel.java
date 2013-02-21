@@ -16,6 +16,7 @@ import rinde.sim.core.model.road.users.RoadData;
 import rinde.sim.core.model.road.users.RoadUser;
 import rinde.sim.core.simulation.TimeLapse;
 import rinde.sim.event.EventAPI;
+import rinde.sim.util.Rectangle;
 
 /**
  * RoadModel is a model that manages a fleet of vehicles ({@link RoadUser}s) on
@@ -124,6 +125,8 @@ public interface RoadModel extends Model<RoadData, RoadUser<?>>, RoadQueries {
      * @return The shortest path.
      */
     List<Point> getShortestPathTo(Point from, Point to);
-
+    
+    Rectangle getViewRect();
+    
     EventAPI getEventAPI();
 }

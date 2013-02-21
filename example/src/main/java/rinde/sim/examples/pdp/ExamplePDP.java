@@ -6,10 +6,12 @@ import java.io.IOException;
 import org.apache.commons.math3.random.MersenneTwister;
 import org.apache.commons.math3.random.RandomGenerator;
 
+import rinde.sim.core.Monitor;
 import rinde.sim.core.graph.Graph;
 import rinde.sim.core.graph.MultiAttributeData;
 import rinde.sim.core.graph.Point;
 import rinde.sim.core.model.interaction.InteractionModel;
+import rinde.sim.core.model.pdp.CachedPDPModel;
 import rinde.sim.core.model.pdp.Parcel;
 import rinde.sim.core.model.pdp.PdpModel;
 import rinde.sim.core.model.pdp.PdpObserver;
@@ -26,16 +28,15 @@ import rinde.sim.serializers.DotGraphSerializer;
 import rinde.sim.serializers.SelfCycleFilter;
 import rinde.sim.util.TimeWindow;
 
+
 /**
  * @author Rinde van Lon <rinde.vanlon@cs.kuleuven.be>
  * 
  */
 public class ExamplePDP implements PdpObserver{
-	
 	private static final int STEP = 10000;
-	private static final int TRUCKS = 5000;
-	private static final int PACKAGES = 0;
-	
+	private static final int TRUCKS = 500;
+	private static final int PACKAGES = 10000;
 	
 	private Simulator sim;
 	private int packages;
@@ -59,8 +60,8 @@ public class ExamplePDP implements PdpObserver{
 	}
 	
 	public boolean isDone(){
-		return false;
-		//return packages == 0;
+		//return false;
+		return packages == 0;
 		//return sim.getCurrentTime() > 3200 * STEP * 5;
 	}
 
@@ -74,13 +75,13 @@ public class ExamplePDP implements PdpObserver{
 		final RoadModel roadModel = new GraphRoadModel(graph);
 		final InteractionModel interModel = new InteractionModel();
 		final ExamplePDP obs = new ExamplePDP(simulator);
-		final PdpModel pdpModel = new PdpModel(new LiberalPolicy(), obs);
+		//final PdpModel pdpModel = new PdpModel(new LiberalPolicy(), obs);
+		final PdpModel pdpModel = new CachedPDPModel(new LiberalPolicy(), obs, roadModel);
 		
 		simulator.registerModel(roadModel);
 		simulator.registerModel(interModel);
 		simulator.registerModel(pdpModel);
-		simulator.configure();
-		
+		simulator.configure();	
 
 		for (int i = 0; i < TRUCKS; i++) {
 			simulator.registerUser(
@@ -88,8 +89,8 @@ public class ExamplePDP implements PdpObserver{
 					new TruckData.Std(1000, roadModel.getRandomPosition(rng), 100));
 		}
 
-		Point from = roadModel.getRandomPosition(rng);
 		for (int i = 0; i < PACKAGES; i++) {
+			Point from = roadModel.getRandomPosition(rng);
 			Point to = roadModel.getRandomPosition(rng);
 			final Parcel parcel =
 					new Parcel(from, to, STEP * 3, TimeWindow.ALWAYS, STEP * 2, TimeWindow.ALWAYS, 1);
@@ -102,10 +103,13 @@ public class ExamplePDP implements PdpObserver{
 		}
 		
 		//View.startGui(simulator, 10, new GraphRoadModelRenderer(), new PDPModelRenderer());
-		
+		long start = System.currentTimeMillis();
 		while(!obs.isDone()){
 			simulator.advanceTick();
+			Monitor.get().printReport();
 		}
+		simulator.shutdown();
+		System.out.println("Total time: " + (System.currentTimeMillis() - start));
 		System.out.println("DONE!" + (simulator.getCurrentTime() / STEP));
 	}
 }

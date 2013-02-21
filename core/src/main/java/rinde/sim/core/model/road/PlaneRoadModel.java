@@ -15,8 +15,8 @@ import org.apache.commons.math3.random.RandomGenerator;
 
 import rinde.sim.core.graph.Point;
 import rinde.sim.core.model.road.users.MovingRoadUser;
-import rinde.sim.core.model.road.users.RoadUser;
 import rinde.sim.core.simulation.TimeLapse;
+import rinde.sim.util.Rectangle;
 import rinde.sim.util.SpeedConverter;
 
 /**
@@ -155,5 +155,10 @@ public class PlaneRoadModel extends AbstractRoadModel<Point> {
     protected boolean isPointInBoundary(Point p) {
         return p.x >= min.x && p.x <= max.x && p.y >= min.y && p.y <= max.y;
     }
+    
 
+    @Override
+    public Rectangle getViewRect() {
+        return new Rectangle(min.x, min.y, max.x, max.y);
+    }
 }
