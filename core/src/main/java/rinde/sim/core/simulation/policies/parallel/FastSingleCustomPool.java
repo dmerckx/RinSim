@@ -1,7 +1,5 @@
 package rinde.sim.core.simulation.policies.parallel;
 
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map.Entry;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -10,26 +8,18 @@ import rinde.sim.core.simulation.TimeInterval;
 import rinde.sim.core.simulation.policies.InteractionRules;
 import rinde.sim.core.simulation.time.TimeLapseHandle;
 
-import com.google.common.collect.Lists;
-
-/**
- * Parallel time user policy which takes a batch of tick operations from multiple different
- * agents and threads that as an individual task.
- * 
- * @author dmerckx
- */
-public class CustomPool extends PTimeUserPolicy{
+public class FastSingleCustomPool extends PTimeUserPolicy{
     protected int batchSize;
     protected Thread[] workers = new Thread[3];
     protected LinkedBlockingQueue<Task> tasks = new LinkedBlockingQueue<Task>();
     
     protected final Rules rules = createRules();
     
-    public CustomPool(int batchSize) {
+    public FastSingleCustomPool(int batchSize) {
         this(batchSize, NR_CORES-1);
     }
     
-    public CustomPool(int batchSize, int nrThreads) {
+    public FastSingleCustomPool(int batchSize, int nrThreads) {
         this.batchSize = batchSize;
         
         workers = new Thread[nrThreads];
@@ -49,34 +39,22 @@ public class CustomPool extends PTimeUserPolicy{
         return new Worker(tasks);
     }
     
-    protected Task makeTask(List<Entry<Agent,TimeLapseHandle>> batch, LatchNode node){
-        return new RealTask(batch, node, rules);
+    protected Task makeTask(Agent agent, TimeLapseHandle handle, LatchNode node){
+        return new RealSingleTask(agent, handle, node, rules);
     }
 
     @Override
     public void doTicks(TimeInterval interval) {
         LatchNode lastNode = new LatchNode();
-        Iterator<Entry<Agent, TimeLapseHandle>> it = agents.entrySet().iterator();
-        
-        int c = 0;
-        List<Entry<Agent,TimeLapseHandle>> batch = Lists.newArrayList();
         
         //The main thread start by dividing the work in pieces
-        while(it.hasNext()){
-            Entry<Agent, TimeLapseHandle> entry = it.next();
-            batch.add(entry);
-            c = (c + 1) % batchSize;
-            
-            if(c == 0 || !it.hasNext()){
-                try {
-                    tasks.put(makeTask(batch, lastNode));
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                
-                lastNode = lastNode.makeNext();
-                batch = Lists.newArrayList();
+        for(Entry<Agent, TimeLapseHandle> entry:agents.entrySet()){
+            try {
+                tasks.put(makeTask(entry.getKey(), entry.getValue(), lastNode));
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
+            lastNode = lastNode.makeNext();
         }
         
         //Afterwards he helps out with doing the work
@@ -120,28 +98,15 @@ public class CustomPool extends PTimeUserPolicy{
     }
 }
 
-interface Task{
-    public void perform();
-}
-
-class WarmupTask implements Task{
-    public String warmup;
-    
-    @Override
-    public void perform() {
-        for(int i = 0; i < 500; i++){
-            warmup += i + "j*";
-        }
-    }
-}
-
-class RealTask implements Task{
-    protected final List<Entry<Agent, TimeLapseHandle>> batch;
+class RealSingleTask implements Task{
+    protected final Agent agent;
+    protected final TimeLapseHandle handle;
     protected final LatchNode node;
     protected final Rules rules;
     
-    public RealTask(List<Entry<Agent,TimeLapseHandle>> batch, LatchNode node, Rules rules) {
-        this.batch = batch;
+    public RealSingleTask(Agent agent, TimeLapseHandle handle, LatchNode node, Rules rules) {
+        this.agent = agent;
+        this.handle = handle;
         this.node = node;
         this.rules = rules;
     }
@@ -149,30 +114,8 @@ class RealTask implements Task{
     public void perform(){
         rules.previousLatch.set(node.getPrevious());
         
-        for(Entry<Agent, TimeLapseHandle> e:batch){
-            e.getKey().tick(e.getValue());
-        }
+        agent.tick(handle);
         
         node.done();
-    }
-}
-
-class Worker extends Thread {
-    private LinkedBlockingQueue<Task> tasks;
-    
-    public Worker(LinkedBlockingQueue<Task> tasks) {
-        this.tasks = tasks;
-        setDaemon(true);
-    }
-    
-    @Override
-    public void run() {
-        while(true){
-            try {
-                tasks.take().perform();
-            } catch (InterruptedException e) {
-                break;
-            } 
-        }
     }
 }

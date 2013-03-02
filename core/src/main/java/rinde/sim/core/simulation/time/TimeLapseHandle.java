@@ -1,20 +1,19 @@
 package rinde.sim.core.simulation.time;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import rinde.sim.core.simulation.Simulator;
+import rinde.sim.core.simulation.TimeInterval;
 import rinde.sim.core.simulation.TimeLapse;
 
-public class TimeLapseHandle extends TimeIntervalImpl implements TimeLapse{
+public class TimeLapseHandle implements TimeLapse{
     
-    private long step;
+    private final TimeInterval masterTime;
+    
     private long schedualedUntil;
     private boolean blocked = false;
     
     
-    public TimeLapseHandle(long start, long step) {
-        super(start, start+step);
-        this.step = step;
-        this.schedualedUntil = start;
+    public TimeLapseHandle(TimeInterval masterTime) {
+        this.masterTime = masterTime;
     }
     
     public boolean isBlocked(){
@@ -22,24 +21,7 @@ public class TimeLapseHandle extends TimeIntervalImpl implements TimeLapse{
     }
     
     public long getSchedualedUntil(){
-        return schedualedUntil;
-    }
-    
-    /**
-     * Set the timelapse to the next interval.
-     * Should only be called by the {@link Simulator} after an entire
-     * tick has been handled.
-     */
-    public void nextStep(){
-        
-        startTime += step;
-        endTime += step;
-        
-        if(schedualedUntil < startTime)
-            schedualedUntil = startTime;
-        
-        if(blocked) 
-            schedualedUntil = endTime;
+        return schedualedUntil < getStartTime()? getStartTime():schedualedUntil;
     }
 
     /**
@@ -53,7 +35,10 @@ public class TimeLapseHandle extends TimeIntervalImpl implements TimeLapse{
         checkArgument(time >= 0, "the time to consume must be a positive value");
         checkArgument(hasTimeLeft(),
                 "there must be some amount of time left to perform a new action");
-        schedualedUntil += time;
+        
+        schedualedUntil = schedualedUntil < getStartTime()?
+                    getStartTime() + time :
+                    schedualedUntil + time;
     }
 
     /**
@@ -81,7 +66,7 @@ public class TimeLapseHandle extends TimeIntervalImpl implements TimeLapse{
      */
     @Override
     public long getTimeLeft() {
-        long timeLeft = endTime - schedualedUntil;
+        long timeLeft = getEndTime() - getSchedualedUntil();
         
         return timeLeft > 0 ? timeLeft : 0;
     }
@@ -93,15 +78,7 @@ public class TimeLapseHandle extends TimeIntervalImpl implements TimeLapse{
      */
     @Override
     public long getCurrentTime() {
-        return endTime - getTimeLeft();
-    }
-
-    /**
-     * @return The step (or length) of this time lapse.
-     */
-    @Override
-    public long getTimeStep() {
-        return step;
+        return getEndTime() - getTimeLeft();
     }
 
     /**
@@ -109,7 +86,7 @@ public class TimeLapseHandle extends TimeIntervalImpl implements TimeLapse{
      */
     @Override
     public long getTimeConsumed() {
-        return step - getTimeLeft();
+        return getTimeStep() - getTimeLeft();
     }
 
     @Override
@@ -122,8 +99,7 @@ public class TimeLapseHandle extends TimeIntervalImpl implements TimeLapse{
      * until this block wears off. 
      */
     public void block() {
-        assert schedualedUntil <= endTime;
-        schedualedUntil = endTime;
+        schedualedUntil = Long.MAX_VALUE;
         
         blocked = true;
     }
@@ -132,7 +108,7 @@ public class TimeLapseHandle extends TimeIntervalImpl implements TimeLapse{
      * Unblocks this time lapse. 
      */
     public void unblock(){
-        unblock(0);
+        unblock(getStartTime());
     }
 
     /**
@@ -141,10 +117,27 @@ public class TimeLapseHandle extends TimeIntervalImpl implements TimeLapse{
      * @param extraTime The extra time to add to the consumption.
      */
     public void unblock(long unblockTime){
-        assert blocked && schedualedUntil == endTime;
-        assert unblockTime >= startTime && unblockTime <= endTime;
+        assert blocked && schedualedUntil == Long.MAX_VALUE;
+        assert unblockTime >= getStartTime();
         
         schedualedUntil = unblockTime;
         blocked = false;
+    }
+    
+    //-----TIME INTERVAL-----//
+
+    @Override
+    public long getStartTime() {
+        return masterTime.getStartTime();
+    }
+
+    @Override
+    public long getEndTime() {
+        return masterTime.getEndTime();
+    }
+    
+    @Override
+    public long getTimeStep() {
+        return masterTime.getTimeStep();
     }
 }

@@ -6,14 +6,12 @@ package rinde.sim.core.model.road;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Maps.newLinkedHashMap;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
@@ -68,11 +66,6 @@ public abstract class AbstractRoadModel<T> implements RoadModel{
     // TODO event dispatching has to be tested
     protected final EventDispatcher eventDispatcher;
     protected final EventAPI eventAPI;
-    
-    @Override
-    public void setSeed(long seed) {
-        this.rnd = new MersenneTwister(seed);
-    }
 
     public enum RoadEvent {
         MOVE
@@ -411,7 +404,7 @@ public abstract class AbstractRoadModel<T> implements RoadModel{
     }
     
     @Override
-    public void setInteractionRules(InteractionRules rules) {
-        
+    public void init(long seed, InteractionRules rules, TimeInterval masterTime) {
+        this.rnd = new MersenneTwister(seed);
     }
 }

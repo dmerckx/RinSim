@@ -24,6 +24,8 @@ import rinde.sim.core.model.pdp.users.TruckData;
 import rinde.sim.core.model.road.GraphRoadModel;
 import rinde.sim.core.model.road.RoadModel;
 import rinde.sim.core.simulation.Simulator;
+import rinde.sim.core.simulation.policies.TimeUserPolicy;
+import rinde.sim.core.simulation.policies.parallel.PBatchTimeUserPolicy;
 import rinde.sim.serializers.DotGraphSerializer;
 import rinde.sim.serializers.SelfCycleFilter;
 import rinde.sim.util.TimeWindow;
@@ -35,8 +37,8 @@ import rinde.sim.util.TimeWindow;
  */
 public class ExamplePDP implements PdpObserver{
 	private static final int STEP = 10000;
-	private static final int TRUCKS = 500;
-	private static final int PACKAGES = 10000;
+	private static final int TRUCKS = 1000;
+	private static final int PACKAGES = 0;
 	
 	private Simulator sim;
 	private int packages;
@@ -60,8 +62,8 @@ public class ExamplePDP implements PdpObserver{
 	}
 	
 	public boolean isDone(){
-		//return false;
-		return packages == 0;
+		return false;
+		//return packages == 0;
 		//return sim.getCurrentTime() > 3200 * STEP * 5;
 	}
 
@@ -69,7 +71,9 @@ public class ExamplePDP implements PdpObserver{
 		final String MAP_DIR = "../core/files/maps/";
 		// create a new simulator, load map of Leuven
 		final RandomGenerator rng = new MersenneTwister(123);
-		final Simulator simulator = new Simulator(STEP);
+		
+		TimeUserPolicy policy = null;//new PBatchTimeUserPolicy(15,12);
+		final Simulator simulator = new Simulator(STEP, policy);
 		final Graph<MultiAttributeData> graph = DotGraphSerializer
 				.getMultiAttributeGraphSerializer(new SelfCycleFilter()).read(MAP_DIR + "leuven-simple.dot");
 		final RoadModel roadModel = new GraphRoadModel(graph);
@@ -106,10 +110,11 @@ public class ExamplePDP implements PdpObserver{
 		long start = System.currentTimeMillis();
 		while(!obs.isDone()){
 			simulator.advanceTick();
-			Monitor.get().printReport();
 		}
+		Monitor.get().printReport();
 		simulator.shutdown();
 		System.out.println("Total time: " + (System.currentTimeMillis() - start));
+		System.out.println("Interactions: " + (interModel.getAverageInteractions() / 500));
 		System.out.println("DONE!" + (simulator.getCurrentTime() / STEP));
 	}
 }

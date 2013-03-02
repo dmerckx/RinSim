@@ -250,14 +250,10 @@ public class PdpModel implements Model<Data, PdpUser<?>>, PdpAPI{
         pickupEvents.clear();
         deliveryEvents.clear();
     }
-
+    
     @Override
-    public void setSeed(long seed) {
+    public void init(long seed, InteractionRules rules, TimeInterval masterTime) {
         
     }
 
-    @Override
-    public void setInteractionRules(InteractionRules rules) {
-        
-    }
 }

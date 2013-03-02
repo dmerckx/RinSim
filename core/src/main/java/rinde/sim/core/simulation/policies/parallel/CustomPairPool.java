@@ -11,7 +11,7 @@ import rinde.sim.core.simulation.time.TimeLapseHandle;
 
 /**
  * Parallel time user policy which takes a batch of tick operations from multiple different
- * agents and threads that as an individuel task.
+ * agents and threads that as an individual task.
  * 
  * @author dmerckx
  */

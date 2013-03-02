@@ -61,7 +61,7 @@ public class Receiver implements Comparable<Receiver>{
     }
 
     @Override
-    public int compareTo(Receiver o) {
+    public final int compareTo(Receiver o) {
         return guard.compareTo(o.guard);
     }
 }

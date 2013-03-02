@@ -5,34 +5,38 @@ import rinde.sim.core.simulation.TimeInterval;
 
 public class TimeIntervalImpl implements TimeInterval {
 
-    protected long startTime;
-    protected long endTime;
+    private long time;
+    private final long step;
 
-    public TimeIntervalImpl(long start, long end) {
+    public TimeIntervalImpl(long start, long step) {
         checkArgument(start >= 0, "time must be positive");
-        checkArgument(end > start, "end time must be after start time");
+        checkArgument(step > 0, "time must advance");
         
-        this.startTime = start;
-        this.endTime = end;
+        this.time = start;
+        this.step = step;
+    }
+    
+    public void nextStep(){
+        time += step;
     }
     
     @Override
     public long getStartTime() {
-        return startTime;
+        return time;
     }
     
     @Override
     public long getEndTime() {
-        return endTime;
+        return time + step;
     }
 
     @Override
     public long getTimeStep() {
-        return startTime - endTime;
+        return step;
     }
 
     @Override
     public String toString() {
-        return /*super.toString() +*/ "[" + startTime + "," + endTime + "]";
+        return "[" + getStartTime() + "," + getEndTime() + "]";
     }
 }

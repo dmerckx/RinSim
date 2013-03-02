@@ -13,6 +13,9 @@ import rinde.sim.core.simulation.time.TimeLapseHandle;
  * @param <T> basic type of element supported by model
  */
 public interface Model<D extends Data, T extends User<? extends D>>{
+
+    
+    void init(long seed, InteractionRules rules, TimeInterval masterTime);
     
     /**
      * Register element in a model. 
@@ -34,8 +37,4 @@ public interface Model<D extends Data, T extends User<? extends D>>{
     
     
     void tick(TimeInterval time);
-    
-    void setSeed(long seed);
-    
-    void setInteractionRules(InteractionRules rules);
 }

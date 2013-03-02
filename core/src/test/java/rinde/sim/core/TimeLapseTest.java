@@ -10,6 +10,7 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import rinde.sim.core.simulation.TimeLapse;
+import rinde.sim.core.simulation.time.TimeIntervalImpl;
 import rinde.sim.core.simulation.time.TimeLapseHandle;
 
 /**
@@ -20,7 +21,8 @@ public class TimeLapseTest {
     
 	@Test
 	public void constructor() {
-		TimeLapse tl = new TimeLapseHandle(0, 10);
+	    TimeIntervalImpl master = new TimeIntervalImpl(0, 10);
+		TimeLapse tl = new TimeLapseHandle(master);
 
 		assertEquals(0, tl.getCurrentTime());
 		assertEquals(0, tl.getTimeConsumed());
@@ -33,19 +35,21 @@ public class TimeLapseTest {
 	@SuppressWarnings("unused")
 	@Test(expected = IllegalArgumentException.class)
 	public void constructorFail1() {
-		new TimeLapseHandle(-1, 0);
+        new TimeIntervalImpl(-1, 10);
 	}
 
 	@SuppressWarnings("unused")
 	@Test(expected = IllegalArgumentException.class)
 	public void constructorFail2() {
-		new TimeLapseHandle(1, 0);
+	    new TimeIntervalImpl(0, 0);
 	}
 
 	@Test
 	public void consume1(){
+	    TimeIntervalImpl master = new TimeIntervalImpl(0, 10);
+	    
 	    //View that controller/guards have
-	    TimeLapseHandle handle = new TimeLapseHandle(0,10); 
+	    TimeLapseHandle handle = new TimeLapseHandle(master); 
 	    //View that users have
 	    TimeLapse tl = handle;
 	    
@@ -61,8 +65,8 @@ public class TimeLapseTest {
         assertEquals(10, tl.getEndTime());
         assertEquals(6, tl.getCurrentTime());
         assertEquals(4, tl.getTimeLeft());
-        
-        handle.nextStep();
+
+        master.nextStep();
 
         assertEquals(10, tl.getStartTime());
         assertEquals(20, tl.getEndTime());
@@ -88,7 +92,9 @@ public class TimeLapseTest {
             int step = stepL[i];
             int consume = consumeL[i];
             
-            TimeLapseHandle handle = new TimeLapseHandle(start,step); 
+
+            TimeIntervalImpl master = new TimeIntervalImpl(start, step);
+            TimeLapseHandle handle = new TimeLapseHandle(master); 
             TimeLapse tl = handle;
             assertEquals(start, tl.getStartTime());
             assertEquals(start+step, tl.getEndTime());
@@ -123,7 +129,10 @@ public class TimeLapseTest {
             int step = stepL[i];
             int consume = consumeL[i];
             
-            TimeLapseHandle handle = new TimeLapseHandle(start,step); 
+
+            TimeIntervalImpl master = new TimeIntervalImpl(start, step);
+            TimeLapseHandle handle = new TimeLapseHandle(master);
+            
             TimeLapse tl = handle;
             assertEquals(start, tl.getStartTime());
             assertEquals(start+step, tl.getEndTime());
@@ -139,7 +148,7 @@ public class TimeLapseTest {
             assertEquals(start+step, tl.getCurrentTime());
             assertEquals(0, tl.getTimeLeft());
             
-            handle.nextStep();
+            master.nextStep();
             
             int left = consume - step;
             
@@ -153,7 +162,8 @@ public class TimeLapseTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void negativeConsumption() {
-        TimeLapse tl = new TimeLapseHandle(0, 10);
+        TimeIntervalImpl master = new TimeIntervalImpl(0, 10);
+        TimeLapse tl = new TimeLapseHandle(master);
         tl.consume(-1);
     }
     
@@ -162,7 +172,8 @@ public class TimeLapseTest {
      */
     @Test(expected = IllegalArgumentException.class)
     public void consumptionWhenTimeLeftIsZero() {
-        TimeLapse tl = new TimeLapseHandle(0, 10);
+        TimeIntervalImpl master = new TimeIntervalImpl(0, 10);
+        TimeLapse tl = new TimeLapseHandle(master);
         tl.consume(10);
         tl.consume(10);
     }
@@ -173,7 +184,8 @@ public class TimeLapseTest {
      */
     @Test
     public void lockTimeLapse() {
-        TimeLapseHandle handle = new TimeLapseHandle(0, 10);
+        TimeIntervalImpl master = new TimeIntervalImpl(0, 10);
+        TimeLapseHandle handle = new TimeLapseHandle(master);
         handle.consume(4);
         assertEquals(6, handle.getTimeLeft());
         
@@ -183,25 +195,25 @@ public class TimeLapseTest {
         
         //Indefinitely..
         for(int i = 0; i < 100; i++){
-            handle.nextStep();
+            master.nextStep();
             assertEquals(0, handle.getTimeLeft());
         }
         
         //Until it is unblocked
         handle.unblock();
-        //That same turn nothing will be available
-        assertEquals(0, handle.getTimeLeft());
+        assertEquals(10, handle.getTimeLeft());
         
         
         //But if we proceed to the next turn..
-        handle.nextStep();
+        master.nextStep();
         //Time is available again
         assertEquals(10, handle.getTimeLeft());
     }
     
     @Test
     public void lockTimeLapse2() {
-        TimeLapseHandle handle = new TimeLapseHandle(0, 10);
+        TimeIntervalImpl master = new TimeIntervalImpl(0, 10);
+        TimeLapseHandle handle = new TimeLapseHandle(master);
         handle.consume(4);
         assertEquals(6, handle.getTimeLeft());
         
@@ -213,14 +225,9 @@ public class TimeLapseTest {
         handle.unblock(15);
         assertEquals(0, handle.getTimeLeft());
         
-        handle.nextStep();
+        master.nextStep();
         //10 time is available but we consumed an additional 15,
         //so nothing is available yet
-        assertEquals(0, handle.getTimeLeft());
-        
-        handle.nextStep();
-        //10 time is available and we still have to consume 5,
-        //so after we do this 5 time is available
         assertEquals(5, handle.getTimeLeft());
     }
 

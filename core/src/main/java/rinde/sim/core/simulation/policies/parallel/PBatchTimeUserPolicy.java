@@ -3,6 +3,7 @@ package rinde.sim.core.simulation.policies.parallel;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -22,13 +23,18 @@ import com.google.common.collect.Lists;
  */
 public class PBatchTimeUserPolicy extends PTimeUserPolicy{
 
-    private final ExecutorService pool = Executors.newFixedThreadPool(NR_CORES);
+    private final ExecutorService pool;
     private int batchSize;
     
     private final Rules rules = new Rules();
     
     public PBatchTimeUserPolicy(int batchSize) {
+        this(batchSize, NR_CORES);
+    }
+    
+    public PBatchTimeUserPolicy(int batchSize, int nrThreads) {
         this.batchSize = batchSize;
+        pool = Executors.newFixedThreadPool(nrThreads);
     }
 
     @Override
@@ -81,7 +87,25 @@ public class PBatchTimeUserPolicy extends PTimeUserPolicy{
 
     @Override
     public void warmUp() {
-        
+        int nrDummyTasks = 4000;
+        final CountDownLatch latch = new CountDownLatch(nrDummyTasks);
+        for(int i = 0; i < nrDummyTasks; i++){
+            pool.submit(new Runnable() {
+                @Override
+                public void run() {
+                    String warmup = "";
+                    for(int i = 0; i < 500; i++){
+                        warmup += i + "j*";
+                    }
+                    latch.countDown();
+                }
+            });
+        }
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override

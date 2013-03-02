@@ -135,11 +135,6 @@ public class CommunicationModel implements Model<Data, CommUser<?>>{
         
         return Lists.newArrayList();
 	}
-	
-	@Override
-	public void setSeed(long seed) {
-	    this.rnd = new MersenneTwister(seed);
-	}
 
 	@Override
 	public List<User<?>> unregister(CommUser<?> user) {
@@ -197,7 +192,7 @@ public class CommunicationModel implements Model<Data, CommUser<?>>{
     }
     
     @Override
-    public void setInteractionRules(InteractionRules rules) {
-        
+    public void init(long seed, InteractionRules rules, TimeInterval masterTime) {
+        this.rnd = new MersenneTwister(seed);
     }
 }

@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import rinde.sim.core.Monitor;
+import rinde.sim.core.model.Agent;
 import rinde.sim.core.model.Data;
 import rinde.sim.core.model.InitUser;
 import rinde.sim.core.model.Model;
@@ -52,6 +53,7 @@ import rinde.sim.event.EventDispatcher;
  * @author dmerckx
  */
 public class Simulator{
+    private TimeIntervalImpl masterTime;
     
     protected final ModelPolicy modelPolicy;
     protected final TimeUserPolicy timeUserPolicy;
@@ -109,11 +111,6 @@ public class Simulator{
     protected volatile boolean isPlaying;
 
     /**
-     * @see #getCurrentTime()
-     */
-    protected long time;
-
-    /**
      * Model manager instance.
      */
     protected final ModelManager modelManager;
@@ -134,12 +131,13 @@ public class Simulator{
     }
     
     public Simulator(long step, long seed, TimeUserPolicy policy) {
+        masterTime = new TimeIntervalImpl(0, step);
+        
         modelPolicy = new ModelPolicy();
         timeUserPolicy = policy == null? new CustomPool(5) : policy;
         externalPolicy = new TickListenerSerialPolicy(true);
         
         timeStep = step;
-        time = 0L;
         modelManager = new ModelManager();
 
         dispatcher = new EventDispatcher(SimulatorEventType.values());
@@ -163,9 +161,10 @@ public class Simulator{
         InteractionRules rules = timeUserPolicy.getInteractionRules();
         
         for(Model<?,?> model:modelManager.getModels()){
-            model.setSeed(rnd.nextLong());
-            model.setInteractionRules(rules);
+            model.init(rnd.nextLong(), rules, masterTime);
         }
+        
+        timeUserPolicy.warmUp();
     }
     
     // ----- REGISTERING ----- // 
@@ -207,14 +206,17 @@ public class Simulator{
         assert(!(user instanceof Model) && !(user instanceof TickListener)):
                 "A user can not be a model or ticklistener";
        
-        TimeLapseHandle handle = new TimeLapseHandle(time, timeStep);
+        TimeLapseHandle handle = new TimeLapseHandle(masterTime);
         addUser(UserInit.create(user, data), handle);
         
-        timeUserPolicy.register(user, handle);
+        if(user instanceof Agent){
+            timeUserPolicy.register((Agent) user, handle);
+        }
     }
     
     private <D extends Data> void addUser(UserInit<D> init, TimeLapseHandle lapse){
         List<UserInit<?>> guards = modelManager.register(init.user, init.data, lapse);
+        
         if(init.user instanceof InitUser){
             timeUserPolicy.addInituser((InitUser) init.user);
         }
@@ -228,7 +230,8 @@ public class Simulator{
         assert configured: "cannot unregister users before calling configure";
     
         removeUser(user);
-        timeUserPolicy.unregister(user);
+        if(user instanceof Agent)
+            timeUserPolicy.unregister((Agent) user);
     }
     
     private <D extends Data> void removeUser(User<?> user){
@@ -263,7 +266,7 @@ public class Simulator{
      * @return The current simulation time.
      */
     public long getCurrentTime() {
-        return time + timeStep;
+        return masterTime.getEndTime();
     }
     
     /**
@@ -306,19 +309,18 @@ public class Simulator{
      */
     private void tick() {
         Monitor.get().startModels();
-        TimeInterval interval = new TimeIntervalImpl(time, time+timeStep);
-        performTicks(modelPolicy, interval);
+        performTicks(modelPolicy, masterTime);
         Monitor.get().startModels();
         
+        masterTime.nextStep();
+        
         Monitor.get().startAgents();
-        performTicks(timeUserPolicy, interval);
+        performTicks(timeUserPolicy, masterTime);
         Monitor.get().endAgents();
         
         Monitor.get().startModels();
-        performTicks(externalPolicy, interval);
+        performTicks(externalPolicy, masterTime);
         Monitor.get().endModels();
-        
-        time += timeStep;
     }
 
     /**
@@ -335,7 +337,7 @@ public class Simulator{
      * Resets the time to 0.
      */
     public void resetTime() {
-        time = 0L;
+        throw new UnsupportedOperationException("TODO");
     }
 
     /**

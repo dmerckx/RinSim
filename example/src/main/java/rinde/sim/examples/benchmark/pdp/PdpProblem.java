@@ -1,4 +1,4 @@
-package rinde.sim.examples.benchmark;
+package rinde.sim.examples.benchmark.pdp;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
