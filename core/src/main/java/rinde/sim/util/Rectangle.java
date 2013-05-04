@@ -12,4 +12,9 @@ public class Rectangle{
         this.yMin = yMin;
         this.yMax = yMax;
     }
+    
+    @Override
+    public String toString() {
+        return "from: " + xMin + "," + yMin + " to " + xMax + "," + yMax;
+    }
 }

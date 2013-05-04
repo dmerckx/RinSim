@@ -27,14 +27,14 @@ import rinde.sim.core.model.road.PlaneRoadModel;
 import rinde.sim.core.model.road.RoadModel;
 import rinde.sim.core.simulation.Simulator;
 import rinde.sim.core.simulation.TimeLapse;
+import rinde.sim.core.simulation.policies.agents.areas2.Areas2;
 import rinde.sim.util.TimeWindow;
 
 import com.google.common.collect.Lists;
 
 public class Pickup2 {
-    
-    public static final int DRIVERS = 100;
-    public static final int PACKAGES = 100;
+    public static final int DRIVERS = 500;
+    public static final int PACKAGES = 50;
     
     Simulator simulator;
     List<TestTruck2> trucks;
@@ -47,7 +47,10 @@ public class Pickup2 {
         final InteractionModel interModel = new InteractionModel();
         final PdpModel pdpModel = new PdpModel(new LiberalPolicy());
       
-        simulator = new Simulator(10000);
+        simulator = new Simulator(1, new Areas2(10, 3, 4));
+        //simulator = new Simulator(1, new ModPoolBatch2(6,6));
+        
+        
         
         simulator.registerModel(roadModel);
         simulator.registerModel(interModel);

@@ -6,6 +6,7 @@ import java.io.IOException;
 import org.apache.commons.math3.random.MersenneTwister;
 import org.apache.commons.math3.random.RandomGenerator;
 
+import rinde.sim.core.Monitor;
 import rinde.sim.core.graph.Graph;
 import rinde.sim.core.graph.MultiAttributeData;
 import rinde.sim.core.graph.Point;
@@ -13,14 +14,15 @@ import rinde.sim.core.model.road.GraphRoadModel;
 import rinde.sim.core.model.road.RoadModel;
 import rinde.sim.core.model.road.users.MovingRoadData;
 import rinde.sim.core.simulation.Simulator;
-import rinde.sim.core.simulation.policies.TimeUserPolicy;
+import rinde.sim.core.simulation.policies.AgentsPolicy;
 import rinde.sim.serializers.DotGraphSerializer;
 import rinde.sim.serializers.SelfCycleFilter;
 
 public class BaseRoadProblem{
 	
 	private static final int STEP = 10000;
-	private static final String MAP_DIR = "../core/files/maps/leuven-simple.dot";
+	private static final String MAP_DIR = "/tmp/base-map.dot";
+	//private static final String MAP_DIR = "../core/files/maps/leuven-simple.dot";
 	
 	private Simulator sim;
 	
@@ -28,7 +30,7 @@ public class BaseRoadProblem{
 	private final int agents;
 	private final RandomGenerator rng;
 	
-	public BaseRoadProblem(long seed, TimeUserPolicy policy, int ticks, int agents) {
+	public BaseRoadProblem(long seed, AgentsPolicy policy, int ticks, int agents) {
 		this.sim = new Simulator(STEP, seed, policy);
 		
 		this.ticks = ticks;

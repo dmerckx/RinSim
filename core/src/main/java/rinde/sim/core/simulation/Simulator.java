@@ -15,12 +15,15 @@ import rinde.sim.core.model.Model;
 import rinde.sim.core.model.ModelManager;
 import rinde.sim.core.model.ModelProvider;
 import rinde.sim.core.model.User;
+import rinde.sim.core.model.road.RoadModel;
+import rinde.sim.core.simulation.policies.AgentsPolicy;
 import rinde.sim.core.simulation.policies.InteractionRules;
 import rinde.sim.core.simulation.policies.ModelPolicy;
 import rinde.sim.core.simulation.policies.TickListenerPolicy;
 import rinde.sim.core.simulation.policies.TickListenerSerialPolicy;
-import rinde.sim.core.simulation.policies.TimeUserPolicy;
-import rinde.sim.core.simulation.policies.parallel.CustomPool;
+import rinde.sim.core.simulation.policies.agents.ModPoolBatch;
+import rinde.sim.core.simulation.policies.agents.areas.Areas;
+import rinde.sim.core.simulation.policies.agents.areas2.Areas2;
 import rinde.sim.core.simulation.time.TimeIntervalImpl;
 import rinde.sim.core.simulation.time.TimeLapseHandle;
 import rinde.sim.event.Event;
@@ -56,7 +59,7 @@ public class Simulator{
     private TimeIntervalImpl masterTime;
     
     protected final ModelPolicy modelPolicy;
-    protected final TimeUserPolicy timeUserPolicy;
+    protected final AgentsPolicy timeUserPolicy;
     protected final TickListenerPolicy externalPolicy;
     
     private final RandomGenerator rnd;
@@ -126,15 +129,15 @@ public class Simulator{
         this(step, seed, null);
     }
     
-    public Simulator(long step, TimeUserPolicy policy){
+    public Simulator(long step, AgentsPolicy policy){
         this(step, 19, policy);
     }
     
-    public Simulator(long step, long seed, TimeUserPolicy policy) {
+    public Simulator(long step, long seed, AgentsPolicy policy) {
         masterTime = new TimeIntervalImpl(0, step);
         
         modelPolicy = new ModelPolicy();
-        timeUserPolicy = policy == null? new CustomPool(5) : policy;
+        timeUserPolicy = policy == null? new ModPoolBatch(5) : policy;
         externalPolicy = new TickListenerSerialPolicy(true);
         
         timeStep = step;
@@ -164,6 +167,16 @@ public class Simulator{
             model.init(rnd.nextLong(), rules, masterTime);
         }
         
+        if(timeUserPolicy instanceof Areas){
+            ((Areas) timeUserPolicy).setRoadModel(modelManager.getModel(RoadModel.class));
+        }
+        if(timeUserPolicy instanceof Areas2){
+            ((Areas2) timeUserPolicy).setRoadModel(modelManager.getModel(RoadModel.class));
+        }
+    }
+    
+    public void configureWithWarmup(){
+        configure();
         timeUserPolicy.warmUp();
     }
     

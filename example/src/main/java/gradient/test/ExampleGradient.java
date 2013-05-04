@@ -1,4 +1,8 @@
-package rinde.sim.examples.pdp;
+package gradient.test;
+
+import gradient.FieldPickPoint;
+import gradient.FieldTruck;
+import gradient.GradientModel;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -8,7 +12,6 @@ import org.apache.commons.math3.random.RandomGenerator;
 
 import rinde.sim.core.graph.Point;
 import rinde.sim.core.model.interaction.InteractionModel;
-import rinde.sim.core.model.pdp.CachedPDPModel;
 import rinde.sim.core.model.pdp.Parcel;
 import rinde.sim.core.model.pdp.PdpModel;
 import rinde.sim.core.model.pdp.PdpObserver;
@@ -16,13 +19,12 @@ import rinde.sim.core.model.pdp.twpolicy.LiberalPolicy;
 import rinde.sim.core.model.pdp.users.DeliveryPoint;
 import rinde.sim.core.model.pdp.users.DeliveryPointData;
 import rinde.sim.core.model.pdp.users.PickupPoint;
-import rinde.sim.core.model.pdp.users.PickupPointData;
-import rinde.sim.core.model.pdp.users.TruckData;
 import rinde.sim.core.model.road.PlaneRoadModel;
 import rinde.sim.core.model.road.RoadModel;
 import rinde.sim.core.simulation.Simulator;
 import rinde.sim.core.simulation.policies.AgentsPolicy;
 import rinde.sim.core.simulation.policies.agents.ModPoolSingle;
+import rinde.sim.core.simulation.policies.agents.SingleThreaded;
 import rinde.sim.ui.View;
 import rinde.sim.ui.renderers.PDPModelRenderer;
 import rinde.sim.ui.renderers.PlaneRoadModelRenderer;
@@ -33,17 +35,20 @@ import rinde.sim.util.TimeWindow;
  * @author Rinde van Lon <rinde.vanlon@cs.kuleuven.be>
  * 
  */
-public class ExamplePDP implements PdpObserver{
+public class ExampleGradient implements PdpObserver{
 	private static final int STEP = 1;
 	
 	//private static final int STEP = 10000;
-	private static final int TRUCKS = 10;
-	private static final int PACKAGES = 5;
+	private static final int TRUCKS = 5;
+	private static final int PACKAGES = 35;
+	
+	private static final double TRUCK_STRENGHT = -1.0d;
+	private static final double PICKUP_STRENGHT = 5.0d; 
 	
 	private Simulator sim;
 	private int packages;
 	
-	public ExamplePDP(Simulator sim) {
+	public ExampleGradient(Simulator sim) {
 		this.sim = sim;
 		this.packages = PACKAGES;
 	}
@@ -72,26 +77,36 @@ public class ExamplePDP implements PdpObserver{
 		// create a new simulator, load map of Leuven
 		final RandomGenerator rng = new MersenneTwister(123);
 		
-		AgentsPolicy policy = new ModPoolSingle(4);
+		//-----SIMULATOR-----//
+		AgentsPolicy policy = new SingleThreaded();
 		final Simulator simulator = new Simulator(STEP, policy);
-		/*final Graph<MultiAttributeData> graph = DotGraphSerializer
-				.getMultiAttributeGraphSerializer(new SelfCycleFilter()).read(MAP_DIR + "leuven-simple.dot");
-		final RoadModel roadModel = new GraphRoadModel(graph);*/
+
+		//-----ROAD MODEL-----//
 		final RoadModel roadModel = new PlaneRoadModel(new Point(0, 0), new Point(100,100), false, 100);
+
+		//-----INTERACTION MODEL-----//
 		final InteractionModel interModel = new InteractionModel();
-		final ExamplePDP obs = new ExamplePDP(simulator);
-		//final PdpModel pdpModel = new PdpModel(new LiberalPolicy(), obs);
-		final PdpModel pdpModel = new CachedPDPModel(new LiberalPolicy(), obs, roadModel);
+		
+		//-----PDP MODEL-----//
+		final PdpObserver obs = new ExampleGradient(simulator);
+		final PdpModel pdpModel = new PdpModel(new LiberalPolicy(), obs);
+		//final PdpModel pdpModel = new CachedPDPModel(new LiberalPolicy(), obs, roadModel);
+		
+		//-----GRADIENT FIELD MODEL-----//
+		final GradientModel gm = new GradientModel(roadModel);
 		
 		simulator.registerModel(roadModel);
 		simulator.registerModel(interModel);
 		simulator.registerModel(pdpModel);
+		simulator.registerModel(gm);
 		simulator.configure();	
 
 		for (int i = 0; i < TRUCKS; i++) {
+			Point pos = roadModel.getRandomPosition(rng);
+			
 			simulator.registerUser(
-					new PdpTruck(),
-					new TruckData.Std(1, roadModel.getRandomPosition(rng), 1));
+					new FieldTruck(),
+					new FieldTruck.FTData(1, pos, 1, TRUCK_STRENGHT));
 		}
 
 		for (int i = 0; i < PACKAGES; i++) {
@@ -101,14 +116,17 @@ public class ExamplePDP implements PdpObserver{
 					new Parcel(from, to, STEP * 3, TimeWindow.ALWAYS, STEP * 2, TimeWindow.ALWAYS, 1);
 			
 			//Register pickup point
-			simulator.registerUser(new PickupPoint.Std(), new PickupPointData.Std(parcel));
+			simulator.registerUser(
+					new FieldPickPoint(),
+					new FieldPickPoint.FPData(parcel, PICKUP_STRENGHT));
 			
 			//Register delivery point
 			simulator.registerUser(new DeliveryPoint.Std(), new DeliveryPointData.Std(parcel));
 		}
 		
 		View.startGui(simulator, 10, new PlaneRoadModelRenderer(), new PDPModelRenderer());
-		//View.startGui(simulator, 10, new GraphRoadModelRenderer(), new PDPModelRenderer());
+		
+		//simulator.advanceTick();
 		/*long start = System.currentTimeMillis();
 		while(!obs.isDone()){
 			simulator.advanceTick();

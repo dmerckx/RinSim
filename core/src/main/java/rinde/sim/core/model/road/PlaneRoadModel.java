@@ -159,6 +159,6 @@ public class PlaneRoadModel extends AbstractRoadModel<Point> {
 
     @Override
     public Rectangle getViewRect() {
-        return new Rectangle(min.x, min.y, max.x, max.y);
+        return new Rectangle(min.x, max.x, min.y, max.y);
     }
 }

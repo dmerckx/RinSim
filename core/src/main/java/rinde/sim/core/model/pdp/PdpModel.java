@@ -135,11 +135,11 @@ public class PdpModel implements Model<Data, PdpUser<?>>, PdpAPI{
     
     // ----- NOTIFICATIONS ----- //
     
-    public void notifyParcelPickup(PickupPoint<?> p){
+    public synchronized void notifyParcelPickup(PickupPoint<?> p){
         pickupEvents.add(p);
     }
     
-    public void notifyParcelDelivery(DeliveryPoint<?> d){
+    public synchronized void notifyParcelDelivery(DeliveryPoint<?> d){
         deliveryEvents.add(d);
     }
     

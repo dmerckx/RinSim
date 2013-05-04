@@ -45,8 +45,8 @@ public class InteractionModel implements Model<Data, InteractionUser<?>> {
     
     private InteractionRules interactionRules;
     
-    private double avgInteractions = 0;
-    private int interactions = 0;
+    //private double avgInteractions = 0;
+    //private int interactions = 0;
     
     /**
      * Create a new interaction model.
@@ -63,7 +63,7 @@ public class InteractionModel implements Model<Data, InteractionUser<?>> {
      */
     @SuppressWarnings("unchecked")
     public <T extends Receiver, R extends Result> R visit(TimeLapse lapse, Visitor<T, R> visitor){
-        interactions++;
+        //interactions++;
         interactionRules.awaitAllPrevious();
         
         List<T> targets = new ArrayList<T>();
@@ -145,7 +145,7 @@ public class InteractionModel implements Model<Data, InteractionUser<?>> {
     @Override
     public void tick(TimeInterval time) {
         double timesteps = time.getStartTime() / time.getTimeStep();
-        avgInteractions = interactions / timesteps;
+        //avgInteractions = interactions / timesteps;
         
         
         for(Receiver receiver:schedualedForAdd){
@@ -173,7 +173,7 @@ public class InteractionModel implements Model<Data, InteractionUser<?>> {
         this.interactionRules = rules;
     }
     
-    public double getAverageInteractions(){
+    /*public double getAverageInteractions(){
         return avgInteractions;
-    }
+    }*/
 }

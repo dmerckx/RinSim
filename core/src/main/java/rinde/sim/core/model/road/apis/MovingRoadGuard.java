@@ -1,5 +1,6 @@
 package rinde.sim.core.model.road.apis;
 
+import java.util.LinkedList;
 import java.util.Queue;
 
 import org.apache.commons.math3.random.MersenneTwister;
@@ -33,6 +34,13 @@ public class MovingRoadGuard extends RoadGuard implements MovingRoadAPI{
     private long lastChangedTime;
     private double speed;
     private final TimeLapseHandle handle;
+    
+    public Point getTarget(){
+        if(path != null && !path.isEmpty()){
+            return ((LinkedList<Point>) path).getLast();
+        }
+        return getCurrentLocation();
+    }
     
     /**
      * Construct a new guard. 
