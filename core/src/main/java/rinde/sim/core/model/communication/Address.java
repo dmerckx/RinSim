@@ -25,6 +25,16 @@ public final class Address {
 	}
 	
 	@Override
+	public int hashCode() {
+	    return id;
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+	    return obj instanceof Address && ((Address) obj).id == this.id;
+	}
+	
+	@Override
 	public String toString() {
 	    return "address{"+id+"}";
 	}

@@ -2,6 +2,7 @@ package rinde.sim.core.model.pdp.apis;
 
 import java.util.List;
 
+import rinde.sim.core.graph.Point;
 import rinde.sim.core.model.SafeIterator;
 import rinde.sim.core.model.pdp.Parcel;
 import rinde.sim.core.model.pdp.PdpModel;
@@ -30,7 +31,7 @@ public class TruckGuard implements TruckAPI{
     }
     
     @Override
-    public Parcel findClosestAvailableParcel(final TimeLapse time) {
+    public Point findClosestAvailableParcel(final TimeLapse time) {
         assert roadAPI != null: "Init has to be called first";
         
         PickupPoint<?> p = pdpModel.queryClosestPickup(roadAPI.getCurrentLocation(), new Filter<PickupPoint<?>>() {
@@ -51,7 +52,7 @@ public class TruckGuard implements TruckAPI{
         
         if(p == null) return null;
         
-        return p.getPickupPointState().getParcel();
+        return p.getPickupPointState().getParcel().location;
     }
     
     @Override

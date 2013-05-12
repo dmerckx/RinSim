@@ -1,45 +1,47 @@
-package comparison;
+package contractnet;
 
-import gradient.FieldPickPoint;
-import gradient.FieldTruck;
 import gradient.GradientModel;
 import rinde.sim.core.graph.Point;
+import rinde.sim.core.model.communication.CommunicationModel;
 import rinde.sim.core.model.pdp.Parcel;
 import rinde.sim.core.model.pdp.users.DeliveryPoint;
 import rinde.sim.core.model.pdp.users.DeliveryPointData;
 import rinde.sim.core.simulation.policies.AgentsPolicy;
 
-public class GradientScenario extends Scenario{
+import comparison.Scenario;
+
+public class ContractScenario extends Scenario{
 	
-	public static final int TRUCK_STRENGTH = -2;
-	public static final int PARCEL_STRENGTH = 5;
+	public final double radius;
 	
-	public GradientScenario(long seed, AgentsPolicy policy, int speed, int ticks, int cars, int proportion) {
+	public ContractScenario(long seed, AgentsPolicy policy, int speed, int ticks, int cars, int proportion, double radius) {
 		super(seed, policy, speed, ticks, cars, proportion);
+		this.radius = radius;
 	}
 
 	@Override
 	protected void registerModels() {
-		GradientModel gm = new GradientModel(roadModel);
+		CommunicationModel cm = new CommunicationModel();
 		
-		sim.registerModel(gm);
+		sim.registerModel(cm);
 	}
 
 	@Override
 	protected void registerTruck(Point pos, int speed, int cap) {
 		sim.registerUser(
-				new FieldTruck(),
-				new FieldTruck.FTData(speed, pos, 1, TRUCK_STRENGTH));
+				new ContractTruck(),
+				new ContractTruck.CTTruckData(speed, pos, 1, radius));
 	}
 
 	@Override
 	protected void registerParcel(Parcel p) {
 		sim.registerUser(
-				new FieldPickPoint(),
-				new FieldPickPoint.FPData(p, PARCEL_STRENGTH));
+				new ContractPickup(),
+				new ContractPickup.CTPickupData(p, radius));
 		sim.registerUser(
 				new DeliveryPoint.Std(),
 				new DeliveryPointData.Std(p));
 	}
+
 
 }

@@ -1,8 +1,12 @@
 package comparison;
 
+import gradient.GradientScenario;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+
+import naive.NaiveScenario;
 
 import org.apache.commons.math3.random.MersenneTwister;
 import org.apache.commons.math3.random.RandomGenerator;

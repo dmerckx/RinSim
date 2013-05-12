@@ -1,21 +1,27 @@
 package comparison;
 
 import gradient.FieldTruck;
+import gradient.GradientScenario;
+import naive.NaiveScenario;
 import rinde.sim.core.simulation.policies.AgentsPolicy;
-import rinde.sim.core.simulation.policies.agents.areas.Areas;
+import rinde.sim.core.simulation.policies.agents.SingleThreaded;
+import contractnet.ContractScenario;
 
 public class Comparison {
 	
+	public static final double BROADCAST_RADIUS = 100;
+	
 	public static void main(String[] args) {
 		int seed = 18;
-		AgentsPolicy policy = new Areas(5, 4, 4);
-		int speed = 500;
+		AgentsPolicy policy = new SingleThreaded();
+		int speed = 1;
 		int ticks = 500;
-		int cars = 200;
-		int proportion = 10;
+		int cars = 1;
+		int proportion = 5;
 		
-		Scenario s = makeScenario(0, seed, policy, speed, ticks, cars, proportion);
+		Scenario s = makeScenario(2, seed, policy, speed, ticks, cars, proportion);
 		s.init();
+		s.runGUI();
 		Result r = s.run();
 		
 		System.out.println("RESULT: " + FieldTruck.DELIVERIES + " " + FieldTruck.SEARCHING);
@@ -30,6 +36,8 @@ public class Comparison {
 			return new NaiveScenario(seed, policy, speed, ticks, cars, proportion);
 		case 1:
 			return new GradientScenario(seed, policy, speed, ticks, cars, proportion);
+		case 2:
+			return new ContractScenario(seed, policy, speed, ticks, cars, proportion, BROADCAST_RADIUS);
 		default:
 			throw new IllegalArgumentException();
 		}

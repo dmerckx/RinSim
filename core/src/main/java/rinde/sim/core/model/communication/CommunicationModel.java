@@ -2,6 +2,7 @@ package rinde.sim.core.model.communication;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map.Entry;
 
 import org.apache.commons.math3.random.MersenneTwister;
 import org.apache.commons.math3.random.RandomGenerator;
@@ -72,7 +73,6 @@ public class CommunicationModel implements Model<Data, CommUser<?>>{
 	    else
 	        receiver = fullComms.get(destination);
 	    
-	   
 	    synchronized(receiver){
 	        synchronized(this){
 	            if(!receiver.isActive())
@@ -90,12 +90,22 @@ public class CommunicationModel implements Model<Data, CommUser<?>>{
 		CommGuard sender = fullComms.get(msg.sender);
 		Point senderLocation = sender.getLastLocation();
 		
-		for(Address a: fullComms.keySet()){
-			if( Point.distance(fullComms.get(a).getLastLocation(),senderLocation) < sender.getRadius()){
+		
+		for(Entry<Address, CommGuard> e:fullComms.entrySet()){
+		    Address a = e.getKey();
+		    CommGuard g = e.getValue();
+		    
+			if( Point.distance(g.getLastLocation(),senderLocation) < sender.getRadius()){
 				try {
-				    fullComms.get(a).receive(msg.clone());
-				} catch (CloneNotSupportedException e) {
-					e.printStackTrace();
+			        synchronized(g){
+			            synchronized(this){
+			                if(!g.isActive())
+			                    activeGuards.add(g);
+			            }
+			            g.receive(msg.clone());
+			        }
+				} catch (CloneNotSupportedException exc) {
+					exc.printStackTrace();
 				}
 			}
 		}
