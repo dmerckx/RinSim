@@ -1,7 +1,5 @@
 package naive;
 
-import java.nio.channels.IllegalSelectorException;
-
 import rinde.sim.core.graph.Point;
 import rinde.sim.core.model.Agent;
 import rinde.sim.core.model.pdp.Parcel;
@@ -33,7 +31,7 @@ public class NaiveTruck extends Truck<TruckData> implements Agent{
 		
 		switch(state){
 		case SEARCHING:
-			Point closest = truckAPI.findClosestAvailableParcel(time);
+			Point closest = truckAPI.findClosestAvailableParcel();
 			if(closest != null){
 				roadAPI.setTarget(closest);
 				changeState(State.DRIVING_TO_PICKUP);

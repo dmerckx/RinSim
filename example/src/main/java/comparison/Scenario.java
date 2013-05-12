@@ -42,7 +42,7 @@ public abstract class Scenario  implements PdpObserver{
 	private int pickups = 0;
 	private int deliveries = 0;
 	
-	Rectangle rect;
+	private Rectangle rect;
 	
 	public Scenario(long seed, AgentsPolicy policy, int speed, int ticks, int cars, int proportion){
 		this.sim = new Simulator(STEP, seed, policy);
@@ -82,10 +82,8 @@ public abstract class Scenario  implements PdpObserver{
 	}
 
 	public void init() {
-		double z = Math.sqrt(nrTrucks) * 50;
-		roadModel = new PlaneRoadModel(new Point(0, 0),
-				new Point(Math.max(100, z),Math.max(100, z)),
-				false, 100);
+		double z = Math.max(100, Math.sqrt(nrTrucks) * 50);
+		roadModel = new PlaneRoadModel(new Point(0, 0), new Point(z, z), false, 100);
 		rect = roadModel.getViewRect();
 		InteractionModel interModel = new InteractionModel();
 		PdpModel pdpModel = new PdpModel(new LiberalPolicy(), this);

@@ -1,6 +1,5 @@
 package comparison;
 
-import gradient.FieldTruck;
 import gradient.GradientScenario;
 import naive.NaiveScenario;
 import rinde.sim.core.simulation.policies.AgentsPolicy;
@@ -13,18 +12,18 @@ public class Comparison {
 	
 	public static void main(String[] args) {
 		int seed = 18;
-		AgentsPolicy policy = new SingleThreaded();
+		AgentsPolicy policy = null;
 		int speed = 1;
 		int ticks = 500;
-		int cars = 1;
+		int cars = 3;
 		int proportion = 5;
 		
-		Scenario s = makeScenario(2, seed, policy, speed, ticks, cars, proportion);
+		Scenario s = makeScenario(1, seed, policy, speed, ticks, cars, proportion);
 		s.init();
 		s.runGUI();
 		Result r = s.run();
 		
-		System.out.println("RESULT: " + FieldTruck.DELIVERIES + " " + FieldTruck.SEARCHING);
+		System.out.println("RESULT: " + r.deliveries + " " + r.pickups + " -> " + r.interactionRate);
 	}
 	
 	public static final int NR_POLICIES = 1;

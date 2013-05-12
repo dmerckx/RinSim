@@ -6,6 +6,7 @@ import rinde.sim.core.graph.Point;
 import rinde.sim.core.model.SafeIterator;
 import rinde.sim.core.model.pdp.Parcel;
 import rinde.sim.core.model.pdp.PdpModel;
+import rinde.sim.core.model.pdp.apis.PickupAPI.PickupState;
 import rinde.sim.core.model.pdp.users.PickupPoint;
 import rinde.sim.core.model.pdp.users.Truck;
 import rinde.sim.core.model.pdp.users.TruckData;
@@ -27,50 +28,21 @@ public class TruckGuard implements TruckAPI{
 
     @Override
     public void init(RoadAPI roadAPI, ContainerAPI containerAPI) {
+        assert roadAPI == null: "RoadAPI can only be set ones";
         this.roadAPI = roadAPI;
     }
     
     @Override
-    public Point findClosestAvailableParcel(final TimeLapse time) {
+    public Point findClosestAvailableParcel() {
         assert roadAPI != null: "Init has to be called first";
         
         PickupPoint<?> p = pdpModel.queryClosestPickup(roadAPI.getCurrentLocation(), new Filter<PickupPoint<?>>() {
             @Override
             public boolean matches(PickupPoint<?> p) {
-                switch(p.getPickupPointState().getPickupState()){
-                    case BEING_PICKED_UP: return true;
-                    case PICKED_UP: return true;
-                }
-
-                Parcel parcel = p.getPickupPointState().getParcel();
-                if(!pdpModel.getPolicy().canPickup(parcel.pickupTimeWindow, time.getTimeLeft(), parcel.pickupDuration))
-                    return true;
-                
-                return false;
+                return p.getPickupPointState().getPickupState() == PickupState.AVAILABLE;
             }
         });
         
-        if(p == null) return null;
-        
-        return p.getPickupPointState().getParcel().location;
-    }
-    
-    @Override
-    public List<Parcel> locateAvailableParcels() {
-        List<Parcel> result = Lists.newArrayList();
-    
-        SafeIterator<PickupPoint<?>> it = pdpModel.queryPickups();
-        while(it.hasNext()){
-            PickupPoint<?> p = it.next();
-            
-            switch(p.getPickupPointState().getPickupState()){
-                case BEING_PICKED_UP: continue;
-                case PICKED_UP: continue;
-            }
-            
-            result.add(p.getPickupPointState().getParcel());
-        }
-        
-        return result;
+        return p == null ? null : p.getPickupPointState().getParcel().location;
     }
 }

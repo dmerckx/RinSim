@@ -12,7 +12,15 @@ import rinde.sim.core.model.pdp.users.TruckData;
 import rinde.sim.core.simulation.TimeLapse;
 
 public class FieldTruck extends Truck<FTData> implements FieldEmitter<FTData>, Agent{
+	
 	private GradientModel gradientAPI;
+	private State state;
+	
+	private enum State{
+		SEARCHING,
+		DRIVING_TO_PICKUP,
+		DRIVING_TO_DELIVERY;
+	}
 	
 	@Override
 	public void setGradientModel(GradientModel model) {
@@ -23,60 +31,44 @@ public class FieldTruck extends Truck<FTData> implements FieldEmitter<FTData>, A
 	public boolean isActive() {
 		return true;
 	}
-	
-	public int searching = 0;
-	public int delivering = 0;
-	public int pickups = 0; 
-	public int deliveries = 0;
-	
-	public static double SEARCHING = 0;
-	public static double DELIVERIES = 0;
 
 	@Override
-	public void tick(TimeLapse lapse) {
-		SEARCHING = (searching * 1.0d) / pickups;
-		DELIVERIES = (delivering * 1.0d) / deliveries;
-		
+	public void tick(TimeLapse time) {
 		List<Parcel> load = containerAPI.getState().getLoad();
-		
-		if(load.size() != 0){
-			delivering++;
-			//deliver the contained package
-			Point target = load.get(0).destination;
-			roadAPI.setTarget(target);
-			roadAPI.advance(lapse);
-			
-			if(roadAPI.getCurrentLocation().equals(target)){
-				Parcel p = containerAPI.tryDelivery(lapse);
-				if(p != null) deliveries++;
+
+		switch(state){
+		case SEARCHING:
+			Point closest = truckAPI.findClosestAvailableParcel();
+
+			if(closest != null && Point.distance(closest, roadAPI.getCurrentLocation()) < 3 * roadAPI.getSpeed()){
+				//drive to the most nearby package
+				roadAPI.setTarget(closest);
+				roadAPI.advance(time);
+				if(time.hasTimeLeft()){
+					Parcel p = containerAPI.tryPickup(time);
+					roadAPI.setTarget(p.destination);
+					changeState(State.DRIVING_TO_DELIVERY);
+				}
 			}
-			
-			return;
-		}
-		
-		searching++;
-		
-		Parcel p = truckAPI.findClosestAvailableParcel(lapse);
-		
-		if(p != null && Point.distance(p.location, roadAPI.getCurrentLocation()) < 5){
-			//drive to the most nearby package
-			roadAPI.setTarget(p.location);
-			roadAPI.advance(lapse);
-			if(lapse.hasTimeLeft()){
-				Parcel p2 = containerAPI.tryPickup(lapse);
-				if(p2 != null) 
-					pickups++;
+			else{
+				//let the field guide the way
+				Point target = gradientAPI.getTargetFor(this, roadAPI.getSpeed());
+				if(target == null) throw new IllegalStateException();
+				
+				roadAPI.setTarget(target);
+				roadAPI.advance(time);
 			}
+			break;
+		case DRIVING_TO_DELIVERY:
+			Parcel deliveredParcel = containerAPI.tryDelivery(time);
+			if(deliveredParcel == null) throw new IllegalStateException();
+			changeState(State.SEARCHING);
+			break;
 		}
-		else{
-			//let the field guide the way
-			Point target = gradientAPI.getTargetFor(this, lapse.getTimeLeft() * roadAPI.getSpeed());
-			if(target == null)
-				throw new IllegalStateException();
-			
-			roadAPI.setTarget(target);
-			roadAPI.advance(lapse);
-		}
+	}
+	
+	private void changeState(State newState){
+		this.state = newState;
 	}
 	
 	public static class FTData extends TruckData.Std implements FieldData{
