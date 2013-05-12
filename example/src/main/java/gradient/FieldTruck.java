@@ -18,8 +18,11 @@ public class FieldTruck extends Truck<FTData> implements FieldEmitter<FTData>, A
 	
 	private enum State{
 		SEARCHING,
-		DRIVING_TO_PICKUP,
 		DRIVING_TO_DELIVERY;
+	}
+	
+	public FieldTruck() {
+		state = State.SEARCHING;
 	}
 	
 	@Override
@@ -34,8 +37,6 @@ public class FieldTruck extends Truck<FTData> implements FieldEmitter<FTData>, A
 
 	@Override
 	public void tick(TimeLapse time) {
-		List<Parcel> load = containerAPI.getState().getLoad();
-
 		switch(state){
 		case SEARCHING:
 			Point closest = truckAPI.findClosestAvailableParcel();
@@ -44,10 +45,13 @@ public class FieldTruck extends Truck<FTData> implements FieldEmitter<FTData>, A
 				//drive to the most nearby package
 				roadAPI.setTarget(closest);
 				roadAPI.advance(time);
-				if(time.hasTimeLeft()){
+
+				if(!roadAPI.isDriving() && time.hasTimeLeft()){
 					Parcel p = containerAPI.tryPickup(time);
-					roadAPI.setTarget(p.destination);
-					changeState(State.DRIVING_TO_DELIVERY);
+					if(p != null){
+						roadAPI.setTarget(p.destination);
+						changeState(State.DRIVING_TO_DELIVERY);
+					}
 				}
 			}
 			else{
@@ -60,10 +64,14 @@ public class FieldTruck extends Truck<FTData> implements FieldEmitter<FTData>, A
 			}
 			break;
 		case DRIVING_TO_DELIVERY:
-			Parcel deliveredParcel = containerAPI.tryDelivery(time);
-			if(deliveredParcel == null) throw new IllegalStateException();
-			changeState(State.SEARCHING);
-			break;
+			roadAPI.advance(time);
+
+			if(!roadAPI.isDriving() && time.hasTimeLeft()){
+				Parcel deliveredParcel = containerAPI.tryDelivery(time);
+				if(deliveredParcel == null) throw new IllegalStateException();
+				changeState(State.SEARCHING);
+				break;
+			}
 		}
 	}
 	

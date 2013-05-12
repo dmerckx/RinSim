@@ -39,7 +39,7 @@ public class TruckGuard implements TruckAPI{
         PickupPoint<?> p = pdpModel.queryClosestPickup(roadAPI.getCurrentLocation(), new Filter<PickupPoint<?>>() {
             @Override
             public boolean matches(PickupPoint<?> p) {
-                return p.getPickupPointState().getPickupState() == PickupState.AVAILABLE;
+                return p.getPickupPointState().getPickupState() != PickupState.AVAILABLE;
             }
         });
         

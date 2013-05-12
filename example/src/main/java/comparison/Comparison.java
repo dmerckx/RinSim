@@ -12,13 +12,13 @@ public class Comparison {
 	
 	public static void main(String[] args) {
 		int seed = 18;
-		AgentsPolicy policy = null;
+		AgentsPolicy policy = new SingleThreaded();
 		int speed = 1;
 		int ticks = 500;
-		int cars = 3;
+		int cars = 5;
 		int proportion = 5;
 		
-		Scenario s = makeScenario(1, seed, policy, speed, ticks, cars, proportion);
+		Scenario s = makeScenario(2, seed, policy, speed, ticks, cars, proportion);
 		s.init();
 		s.runGUI();
 		Result r = s.run();
