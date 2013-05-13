@@ -32,7 +32,7 @@ public class FieldTruck extends Truck<FTData> implements FieldEmitter<FTData>, A
 
 	@Override
 	public boolean isActive() {
-		return true;
+		return true;	//TODO modify this
 	}
 
 	@Override
@@ -70,8 +70,8 @@ public class FieldTruck extends Truck<FTData> implements FieldEmitter<FTData>, A
 				Parcel deliveredParcel = containerAPI.tryDelivery(time);
 				if(deliveredParcel == null) throw new IllegalStateException();
 				changeState(State.SEARCHING);
-				break;
 			}
+			break;
 		}
 	}
 	

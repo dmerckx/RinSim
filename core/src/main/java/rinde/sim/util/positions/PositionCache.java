@@ -3,14 +3,15 @@ package rinde.sim.util.positions;
 import java.util.List;
 
 import rinde.sim.core.graph.Point;
+import rinde.sim.core.model.road.users.RoadUser;
+import rinde.sim.util.Rectangle;
 
-import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 
 @SuppressWarnings({"javadoc", "hiding"})
-public class PositionCache<T> {
-    
+public class PositionCache<T extends RoadUser<?>> {
     private final double xMin;
     private final double yMin;
     private final double width;
@@ -18,119 +19,58 @@ public class PositionCache<T> {
     
     private final int nrBlocks;
     
-    private Multimap<Region, Value<T>> map;
-
-    public PositionCache(double xMin, double xMax, double yMin, double yMax) {
-        //50 is a decently good setup for setups with >250 agents
-        this(xMin, xMax, yMin, yMax, 50);
-    }
-    
-    public PositionCache(double xMin, double xMax, double yMin, double yMax, int nrBlocks) {
-        this.xMin = xMin;
-        this.yMin = yMin;
-        this.width = xMax - xMin;
-        this.height = yMax - yMin;
+    private Multimap<Region, T> map;
+    private List<Update<T>> updates;
+     
+    public PositionCache(Rectangle bounds, int nrBlocks) {
+        this.xMin = bounds.xMin;
+        this.yMin = bounds.yMin;
+        this.width = bounds.xMax - bounds.xMin;
+        this.height = bounds.yMax - bounds.yMin;
         
         this.nrBlocks = nrBlocks;
         
-        map = ArrayListMultimap.create();
+        map = LinkedHashMultimap.create();
+        updates = Lists.newArrayList();
     }
     
-    public void add(Point pos, T obj){
-        map.put(getRegion(pos), new Value<T>(pos, obj));
-        
-        //System.out.println(map);
+    public void add(T obj){
+        Point pos = obj.getRoadState().getLocation();
+        map.put(getRegion(pos), obj);
     }
     
-    public void remove(Point pos, T obj){
-        map.remove(getRegion(pos), new Value<T>(pos, obj));
+    public void remove(T obj){
+        Point pos = obj.getRoadState().getLocation();
+        map.remove(getRegion(pos), obj);
     }
     
-    public T getClosestTo(Point pos, Filter<T> filter){
-        if(map.size() < 250) return getClosestBrute(pos, filter);
-        
-        Region orig = getRegion(pos);
-        
-        //Try to find at least a valid point that is less then 1 block away
-        Result<T> bestResult = search(orig, pos, filter, 1, 0);
-        if(bestResult != null) return bestResult.val;
-        
-        //Try to find at least a valid point that is less then 3 blocks away
-        bestResult = search(orig, pos, filter, 2, 0);
-        if(bestResult != null) return bestResult.val;
-
-        //Try to find at least a valid point that is less then 3 blocks away
-        bestResult = search(orig, pos, filter, 3, 0);
-        if(bestResult != null) return bestResult.val;
-
-        //Try to find at least a valid point that is less then 3 blocks away
-        bestResult = search(orig, pos, filter, 4, 1);
-        if(bestResult != null) return bestResult.val;
-        
-        //Try to find at least a valid point that is less then 5 blocks away
-        bestResult = search(orig, pos, filter, 5, 1);
-        if(bestResult != null) return bestResult.val;
-        
-        //Try to find at least a valid point that is less then 5 blocks away
-        bestResult = search(orig, pos, filter, 6, 2);
-        if(bestResult != null) return bestResult.val;
-        
-        //Try to find at least a valid point that is less then 8 blocks away
-        bestResult = search(orig, pos, filter, 8, 3);
-        if(bestResult != null) return bestResult.val;
-        
-        //Try to find at least a valid point that is less then 8 blocks away
-        bestResult = search(orig, pos, filter, 9, 3);
-        if(bestResult != null) return bestResult.val;
-        
-        //Give up and just check everything
-        return getClosestBrute(pos, filter);
+    public void update(T obj, Point newPos){
+        Region from = getRegion(obj.getRoadState().getLocation());
+        Region to = getRegion(newPos);
+        if(!from.equals(to)){
+            synchronized (this) {
+                updates.add(new Update<T>(from, to, obj));
+            }
+        }
     }
     
-    protected T getClosestBrute(Point pos, Filter<T> filter){
-        double minDist = Double.MIN_VALUE;
-        T result = null;
-        
-        for(Value<T> v:map.values()){
-            if(filter.matches(v.val))continue;
+    public <T2 extends T> void query(Point pos, double range, Query<T2> query){
+        Region minReg = getRegion(new Point(pos.x - range, pos.y - range));
+        Region maxReg = getRegion(new Point(pos.x + range, pos.y + range));
+       
+        for(Region reg:getNeighbours(minReg, maxReg)){
+            executeQueryIn(pos, range, reg, query);
+        }
+    }
+    
+    protected <T2 extends T> void executeQueryIn(Point pos, double range, Region reg, Query<T2> q){
+        for(T obj:map.get(reg)){
+            if(!q.getType().isInstance(obj)) return;
             
-            if(result == null || Point.distance(v.pos, pos) < minDist){
-                minDist = Point.distance(v.pos, pos);
-                result = v.val;
-            }
+            if(Point.distance(obj.getRoadState().getLocation(), pos) < range){
+                q.process((T2) obj);
+            } 
         }
-        
-        return result;
-    }
-    
-    public Result<T> search(Region orig, Point pos, Filter<T> filter, int range, int excludedRange){
-        Result<T> bestResult = null;
-        
-        for(Region reg:getNeighbours(orig, range, excludedRange)){
-            Result<T> res = getClosestIn(reg, pos, filter, ((range * width) / nrBlocks));
-            if(res == null) continue;
-            if(bestResult == null || res.dist < bestResult.dist){
-                bestResult = res;
-            }
-        }
-        
-        return bestResult;
-    }
-    
-    protected Result<T> getClosestIn(Region reg, Point pos, Filter<T> filter, double maxRange){
-        double minDist = maxRange;
-        T resultValue = null;
-        
-        for(Value<T> val:map.get(reg)){
-            if(filter.matches(val.val)) continue;
-            
-            if(Point.distance(val.pos, pos) < minDist){
-                minDist = Point.distance(val.pos, pos);
-                resultValue = val.val;
-            }
-        }
-        
-        return resultValue == null ? null : new Result<T>(minDist, resultValue);
     }
     
     /**
@@ -140,14 +80,11 @@ public class PositionCache<T> {
      * @param range The range within to search (in blocks).
      * @return The neighboring regions.
      */
-    protected List<Region> getNeighbours(Region reg, int range, int excludeRange){
+    protected List<Region> getNeighbours(Region minReg, Region maxReg){
         List<Region> results = Lists.newArrayList();
         
-        for(int x = reg.x - range; x <= reg.x + range; x++){
-            for(int y = reg.y - range; y <= reg.y + range; y++){
-                if(x >= reg.x - excludeRange && x <= reg.x + excludeRange
-                   && y >= reg.y - excludeRange && y <= reg.y + excludeRange
-                        && excludeRange != 0) continue;
+        for(int x = minReg.x; x <= maxReg.x; x++){
+            for(int y = minReg.y; y <= maxReg.y; y++){
                 results.add(new Region(x, y));
             }
         }
@@ -161,7 +98,7 @@ public class PositionCache<T> {
      * @return The region in which the position is located.
      */
     public Region getRegion(Point pos){
-        //Casting to long will floor the result
+        //Casting to int will floor the result
         int x = (int) (scaleX(pos.x) * nrBlocks);  
         int y = (int) (scaleY(pos.y) * nrBlocks);  
         
@@ -178,6 +115,8 @@ public class PositionCache<T> {
      * Returns a scaled x value between 0 and 1.
      */
     protected double scaleX(double x){
+        if(x < xMin) return 0;
+        if(x > xMin + width) return 1;
         return (x - xMin) / width;
     }
 
@@ -185,6 +124,8 @@ public class PositionCache<T> {
      * Returns a scaled y value between 0 and 1.
      */
     protected double scaleY(double y){
+        if(y < yMin) return 0;
+        if(y > yMin + height) return 1;
         return (y - yMin) / height;
     }
     
@@ -194,36 +135,14 @@ public class PositionCache<T> {
     }
 }
 
-class Result<T>{
-    public final double dist;
-    public final T val;
-
-    @SuppressWarnings("hiding") 
-    Result(double dist, T val){
-        this.dist = dist;
-        this.val = val;
-    }
-}
-
-class Value<T> {
-    public final Point pos;
-    public final T val;
-
-    @SuppressWarnings("hiding") 
-    Value(Point pos, T val){
-        this.pos = pos;
-        this.val = val;
-    }
+class Update<T>{
+    public final Region from;
+    public final Region to;
+    public final T obj;
     
-    @Override
-    public boolean equals(Object obj) {
-        if(!(obj instanceof Value)) return false;
-        
-        return val.equals(((Value<?>) obj).val);
-    }
-    
-    @Override
-    public String toString() {
-        return "{Val:" + pos + "}";
+    public Update(Region from, Region to, T obj) {
+        this.from = from;
+        this.to = to;
+        this.obj = obj;
     }
 }

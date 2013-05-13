@@ -1,17 +1,28 @@
 package rinde.sim.core.model.road;
 
-import java.util.List;
 import java.util.Set;
-
-import com.google.common.base.Predicate;
 
 import rinde.sim.core.graph.Point;
 import rinde.sim.core.model.SafeIterator;
 import rinde.sim.core.model.road.users.FixedRoadUser;
 import rinde.sim.core.model.road.users.MovingRoadUser;
 import rinde.sim.core.model.road.users.RoadUser;
+import rinde.sim.util.positions.Query;
 
+import com.google.common.base.Predicate;
+
+/**
+ * @author merckx
+ */
 public interface RoadQueries {
+    /**
+     * 
+     * @param pos
+     * @param range
+     * @param q
+     */
+    <T extends RoadUser<?>> void queryAround(Point pos, double range, Query<T> q);
+    
     /**
      * Returns a safe iterator over all the road users active in the simulation.
      * 

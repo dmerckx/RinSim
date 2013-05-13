@@ -39,6 +39,7 @@ import rinde.sim.event.EventAPI;
 import rinde.sim.event.EventDispatcher;
 import rinde.sim.util.SpeedConverter;
 import rinde.sim.util.TimeUnit;
+import rinde.sim.util.positions.Query;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Lists;
@@ -59,6 +60,10 @@ public abstract class AbstractRoadModel<T> implements RoadModel{
     private RandomGenerator rnd;
     private Map<RoadUser<?>, RoadGuard> mapping = new HashMap<RoadUser<?>, RoadGuard>();
     
+    protected volatile Map<RoadUser<?>, T> objLocs;
+    protected Map<MovingRoadUser<?>, DestinationPath> objDestinations;
+
+    protected final boolean cached;
     protected final SpeedConverter speedConverter;
 
     protected boolean useSpeedConversion;
@@ -73,6 +78,17 @@ public abstract class AbstractRoadModel<T> implements RoadModel{
     
     public double getSpeed(MovingRoadUser<?> user){
         return ((MovingRoadGuard) mapping.get(user)).getSpeed();
+    }
+    
+    @Override
+    public <T2 extends RoadUser<?>> void queryAround(Point pos, double range, Query<T2> q){
+        for(T obj:map.get(reg)){
+            if(!q.getType().isInstance(obj)) return;
+            
+            if(Point.distance(obj.getRoadState().getLocation(), pos) < range){
+                q.process((T2) obj);
+            } 
+        }
     }
 
     @Override
@@ -126,31 +142,27 @@ public abstract class AbstractRoadModel<T> implements RoadModel{
         };
     }
 
-    /**
-     * A mapping of {@link RoadUser<?>} to location.
-     */
-    protected volatile Map<RoadUser<?>, T> objLocs;
-
-    /**
-     * A mapping of {@link MovingRoadUser<?>}s to {@link DestinationPath}s.
-     */
-    protected Map<MovingRoadUser<?>, DestinationPath> objDestinations;
-
     @Override
     public Class<RoadUser<?>> getSupportedType() {
         return (Class) RoadUser.class;
     }
     
+    public AbstractRoadModel(boolean pUseSpeedConversion){
+        this(pUseSpeedConversion, 0);
+    }
+    
     /**
      * Create a new instance.
      */
-    public AbstractRoadModel(boolean pUseSpeedConversion) {
+    public AbstractRoadModel(boolean pUseSpeedConversion, int blocks) {
         objLocs = createObjectToLocationMap();
         objDestinations = newLinkedHashMap();
         speedConverter = new SpeedConverter();
         useSpeedConversion = pUseSpeedConversion;
         eventDispatcher = createEventDispatcher();
         eventAPI = eventDispatcher.getEventAPI();
+        
+        cached = true;
     }
 
     // factory method for creating event dispatcher, can be overridden by
