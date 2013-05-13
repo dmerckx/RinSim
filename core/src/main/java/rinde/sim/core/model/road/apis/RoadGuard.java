@@ -1,9 +1,5 @@
 package rinde.sim.core.model.road.apis;
 
-import java.util.Set;
-
-import com.google.common.base.Predicate;
-
 import rinde.sim.core.graph.Point;
 import rinde.sim.core.model.SafeIterator;
 import rinde.sim.core.model.road.RoadModel;
@@ -11,6 +7,7 @@ import rinde.sim.core.model.road.users.FixedRoadUser;
 import rinde.sim.core.model.road.users.MovingRoadUser;
 import rinde.sim.core.model.road.users.RoadData;
 import rinde.sim.core.model.road.users.RoadUser;
+import rinde.sim.util.positions.Query;
 
 /**
  * An implementation of the {@link RoadAPI}.
@@ -21,7 +18,6 @@ import rinde.sim.core.model.road.users.RoadUser;
  * @author dmerckx
  */
 public class RoadGuard extends RoadState implements RoadAPI{
-
     @SuppressWarnings("javadoc")
     protected RoadModel model;
     @SuppressWarnings("javadoc")
@@ -43,17 +39,17 @@ public class RoadGuard extends RoadState implements RoadAPI{
     }
     
     @Override
-    public Point getCurrentLocation() {
+    public synchronized Point getCurrentLocation() {
         return lastLocation;
     }
 
     @Override
-    public Point getLocation() {
+    public synchronized Point getLocation() {
         return lastLocation;
     }
     
     @Override
-    public RoadState getState(){
+    public synchronized RoadState getState(){
         return this;
     }
     
@@ -61,34 +57,22 @@ public class RoadGuard extends RoadState implements RoadAPI{
     // ----- ROAD QUERIES ----- //
 
     @Override
-    public SafeIterator<RoadUser<?>> queryRoadUsers() {
+    public synchronized <T extends RoadUser<?>> void queryAround(Point pos, double range, Query<T> q) {
+        model.queryAround(pos, range, q);
+    }
+
+    @Override
+    public synchronized SafeIterator<RoadUser<?>> queryRoadUsers() {
         return model.queryRoadUsers();
     }
 
     @Override
-    public SafeIterator<FixedRoadUser<?>> queryFixedRoadUsers() {
+    public synchronized SafeIterator<FixedRoadUser<?>> queryFixedRoadUsers() {
         return model.queryFixedRoadUsers();
     }
 
     @Override
-    public SafeIterator<MovingRoadUser<?>> queryMovingRoadUsers() {
+    public synchronized SafeIterator<MovingRoadUser<?>> queryMovingRoadUsers() {
         return model.queryMovingRoadUsers();
     }
-
-    @Override
-    public Set<RoadUser<?>> getRoadUsers(Predicate<RoadUser<?>> predicate) {
-        return model.getRoadUsers(predicate);
-    }
-
-    @Override
-    public <Y extends RoadUser<?>> Set<Y> getObjectsAt(Point location,
-            Class<Y> type) {
-        return getObjectsAt(location, type);
-    }
-
-    @Override
-    public <Y extends RoadUser<?>> Set<Y> getObjectsOfType(Class<Y> type) {
-        return getObjectsOfType(type);
-    }
-
 }

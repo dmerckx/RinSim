@@ -18,11 +18,13 @@ import rinde.sim.core.model.communication.users.CommUser;
 import rinde.sim.core.model.communication.users.FullCommUser;
 import rinde.sim.core.model.communication.users.SimpleCommData;
 import rinde.sim.core.model.communication.users.SimpleCommUser;
+import rinde.sim.core.model.road.RoadModel;
 import rinde.sim.core.simulation.Simulator;
 import rinde.sim.core.simulation.TimeInterval;
 import rinde.sim.core.simulation.UserInit;
 import rinde.sim.core.simulation.policies.InteractionRules;
 import rinde.sim.core.simulation.time.TimeLapseHandle;
+import rinde.sim.util.positions.Query;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -47,10 +49,17 @@ public class CommunicationModel implements Model<Data, CommUser<?>>{
 	private int nextId = 0;
 	private RandomGenerator rnd;
 	
+	private final RoadModel roadModel;
+
+    public CommunicationModel(){
+        this(null);
+    }
+	
 	/**
 	 * Create a new communication model.
 	 */
-	public CommunicationModel(){
+	public CommunicationModel(RoadModel rm){
+	    this.roadModel = rm;
 	}
 	
 	/**
@@ -90,24 +99,45 @@ public class CommunicationModel implements Model<Data, CommUser<?>>{
 		CommGuard sender = fullComms.get(msg.sender);
 		Point senderLocation = sender.getLastLocation();
 		
-		
-		for(Entry<Address, CommGuard> e:fullComms.entrySet()){
-		    Address a = e.getKey();
-		    CommGuard g = e.getValue();
+		if(roadModel != null){
+		    FindAddresses query = new FindAddresses();
 		    
-			if( Point.distance(g.getLastLocation(),senderLocation) < sender.getRadius()){
-				try {
-			        synchronized(g){
-			            synchronized(this){
-			                if(!g.isActive())
-			                    activeGuards.add(g);
-			            }
-			            g.receive(msg.clone());
-			        }
-				} catch (CloneNotSupportedException exc) {
-					exc.printStackTrace();
-				}
-			}
+		    roadModel.queryAround(senderLocation, sender.getRadius(), query);
+		    
+		    for(Address a:query.addresses){
+		        CommGuard g = fullComms.get(a);
+                try {
+                    synchronized(g){
+                        synchronized(this){
+                            if(!g.isActive())
+                                activeGuards.add(g);
+                        }
+                        g.receive(msg.clone());
+                    }
+                } catch (CloneNotSupportedException exc) {
+                    exc.printStackTrace();
+                }
+		    }
+		}
+		else{
+        	for(Entry<Address, CommGuard> e:fullComms.entrySet()){
+                Address a = e.getKey();
+                CommGuard g = e.getValue();
+                
+                if( Point.distance(g.getLastLocation(),senderLocation) < sender.getRadius()){
+                    try {
+                        synchronized(g){
+                            synchronized(this){
+                                if(!g.isActive())
+                                    activeGuards.add(g);
+                            }
+                            g.receive(msg.clone());
+                        }
+                    } catch (CloneNotSupportedException exc) {
+                        exc.printStackTrace();
+                    }
+                }
+        	}
 		}
 	}
 	
@@ -204,5 +234,23 @@ public class CommunicationModel implements Model<Data, CommUser<?>>{
     @Override
     public void init(long seed, InteractionRules rules, TimeInterval masterTime) {
         this.rnd = new MersenneTwister(seed);
+    }
+}
+
+class FindAddresses implements Query<FullCommUser<?>>{
+    public final List<Address> addresses;
+     
+    public FindAddresses() {
+        this.addresses = Lists.newArrayList();
+    }
+    
+    @Override
+    public void process(FullCommUser<?> t) {
+        addresses.add(t.getCommunicationState().getAddress());
+    }
+
+    @Override
+    public Class<FullCommUser<?>> getType() {
+        return (Class) FullCommUser.class;
     }
 }

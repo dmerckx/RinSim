@@ -1,6 +1,5 @@
 package contractnet;
 
-import gradient.GradientModel;
 import rinde.sim.core.graph.Point;
 import rinde.sim.core.model.communication.CommunicationModel;
 import rinde.sim.core.model.pdp.Parcel;
@@ -14,14 +13,16 @@ public class ContractScenario extends Scenario{
 	
 	public final double radius;
 	
-	public ContractScenario(long seed, AgentsPolicy policy, int speed, int ticks, int cars, int proportion, double radius) {
-		super(seed, policy, speed, ticks, cars, proportion);
+	public ContractScenario(long seed, AgentsPolicy policy, int speed, int ticks, int cars,
+			int proportion, double closestPackageRange, double radius) {
+		super(seed, policy, speed, ticks, cars, proportion, closestPackageRange);
 		this.radius = radius;
 	}
 
 	@Override
 	protected void registerModels() {
-		CommunicationModel cm = new CommunicationModel();
+		//CommunicationModel cm = new CommunicationModel();
+		CommunicationModel cm = new CommunicationModel(roadModel);
 		
 		sim.registerModel(cm);
 	}

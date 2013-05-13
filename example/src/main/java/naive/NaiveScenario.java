@@ -13,8 +13,9 @@ import comparison.Scenario;
 
 public class NaiveScenario extends Scenario{
 
-	public NaiveScenario(long seed, AgentsPolicy policy, int speed, int ticks, int cars, int proportion) {
-		super(seed, policy, speed, ticks, cars, proportion);
+	public NaiveScenario(long seed, AgentsPolicy policy, int speed, int ticks, int cars,
+			int proportion, double closestPackageRange) {
+		super(seed, policy, speed, ticks, cars, proportion, closestPackageRange);
 	}
 
 	@Override

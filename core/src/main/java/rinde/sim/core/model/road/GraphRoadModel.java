@@ -59,7 +59,7 @@ public class GraphRoadModel extends AbstractRoadModel<Loc> {
      * @param pGraph The graph which will be used as road strucutre.
      */
     public GraphRoadModel(Graph<? extends ConnectionData> pGraph) {
-        super();
+        super(true);
         checkArgument(pGraph != null, "Graph can not be null");
         graph = pGraph;
     }

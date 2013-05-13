@@ -55,15 +55,11 @@ public class PlaneRoadModel extends AbstractRoadModel<Point> {
      */
     public final double maxSpeed;
 
-    /**
-     * Create a new plane road model using the specified boundaries and max
-     * speed.
-     * @param pMin The minimum x and y of the plane.
-     * @param pMax The maximum x and y of the plane.
-     * @param pMaxSpeed The maximum speed that objects can travel on the plane.
-     */
-    public PlaneRoadModel(Point pMin, Point pMax, boolean useSpeedConversion,
-            double pMaxSpeed) {
+    public PlaneRoadModel(Point pMin, Point pMax, boolean useSpeedConversion, double pMaxSpeed){
+        this(pMin, pMax, useSpeedConversion, pMaxSpeed, 0);
+    }
+            
+    public PlaneRoadModel(Point pMin, Point pMax, boolean useSpeedConversion, double pMaxSpeed, int blocks) {
         super(useSpeedConversion);
         checkArgument(pMin.x < pMax.x && pMin.y < pMax.y, "min should have coordinates smaller than max");
         checkArgument(pMaxSpeed > 0, "max speed must be positive");
@@ -72,6 +68,9 @@ public class PlaneRoadModel extends AbstractRoadModel<Point> {
         width = max.x - min.x;
         height = max.y - min.y;
         maxSpeed = pMaxSpeed;
+        
+        if(blocks > 0)
+            setCache(blocks);
     }
 
     @Override
@@ -79,13 +78,6 @@ public class PlaneRoadModel extends AbstractRoadModel<Point> {
         return new Point(min.x + (rnd.nextDouble() * width), min.y
                 + (rnd.nextDouble() * height));
     }
-
-//    @Override
-//    public void addObjectAt(RoadUser obj, Point pos) {
-//        checkArgument(isPointInBoundary(pos), "objects can only be added within the boundaries of the plane, "
-//                + pos + " is not in the boundary.");
-//        super.addObjectAt(obj, pos);
-//    }
 
     @Override
     protected MoveProgress doFollowPath(MovingRoadUser<?> object,
@@ -122,7 +114,7 @@ public class PlaneRoadModel extends AbstractRoadModel<Point> {
                 traveled += travelDistance;
             }
         }
-        objLocs.put(object, loc);
+        updateObject(object, loc);
         return new MoveProgress(traveled, time.getTimeConsumed(),
                 travelledNodes);
     }

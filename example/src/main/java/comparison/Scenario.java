@@ -15,7 +15,6 @@ import rinde.sim.core.model.road.PlaneRoadModel;
 import rinde.sim.core.model.road.RoadModel;
 import rinde.sim.core.simulation.Simulator;
 import rinde.sim.core.simulation.policies.AgentsPolicy;
-import rinde.sim.core.simulation.policies.agents.areas.Areas;
 import rinde.sim.ui.View;
 import rinde.sim.ui.renderers.PDPModelRenderer;
 import rinde.sim.ui.renderers.PlaneRoadModelRenderer;
@@ -33,6 +32,7 @@ public abstract class Scenario  implements PdpObserver{
 	private final int speed;
 	private final int nrTrucks;
 	private final int proportion;
+	private final double range;
 	private RandomGenerator rng;
 	
 	protected RoadModel roadModel;
@@ -44,12 +44,13 @@ public abstract class Scenario  implements PdpObserver{
 	
 	private Rectangle rect;
 	
-	public Scenario(long seed, AgentsPolicy policy, int speed, int ticks, int cars, int proportion){
+	public Scenario(long seed, AgentsPolicy policy, int speed, int ticks, int cars, int proportion, double closestPackageRange){
 		this.sim = new Simulator(STEP, seed, policy);
 		this.ticks = ticks;
 		this.speed = speed;
 		this.nrTrucks = cars;
 		this.proportion = proportion;
+		this.range = closestPackageRange;
 		
 		this.rng = new MersenneTwister(seed);
 	}
@@ -81,12 +82,16 @@ public abstract class Scenario  implements PdpObserver{
 		addParcel();
 	}
 
-	public void init() {
+	public void init(){
+		init(0);
+	}
+	
+	public void init(int blocks) {
 		double z = Math.max(100, Math.sqrt(nrTrucks) * 50);
-		roadModel = new PlaneRoadModel(new Point(0, 0), new Point(z, z), false, 100);
+		roadModel = new PlaneRoadModel(new Point(0, 0), new Point(z, z), false, 100, blocks);
 		rect = roadModel.getViewRect();
 		InteractionModel interModel = new InteractionModel();
-		PdpModel pdpModel = new PdpModel(new LiberalPolicy(), this);
+		PdpModel pdpModel = new PdpModel(new LiberalPolicy(), range, this);
 		
 		sim.registerModel(roadModel);
 		sim.registerModel(interModel);

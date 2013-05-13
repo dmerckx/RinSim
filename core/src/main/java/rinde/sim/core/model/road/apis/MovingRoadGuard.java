@@ -7,7 +7,6 @@ import org.apache.commons.math3.random.MersenneTwister;
 import org.apache.commons.math3.random.RandomGenerator;
 
 import rinde.sim.core.graph.Point;
-import rinde.sim.core.model.road.InvalidLocationException;
 import rinde.sim.core.model.road.RoadModel;
 import rinde.sim.core.model.road.users.MovingRoadData;
 import rinde.sim.core.model.road.users.MovingRoadUser;
@@ -62,22 +61,22 @@ public class MovingRoadGuard extends RoadGuard implements MovingRoadAPI{
     
     @SuppressWarnings("hiding")
     @Override
-    public void setSpeed(double speed){
+    public synchronized void setSpeed(double speed){
         this.speed = speed;
     }
 
     @Override
-    public double getSpeed(){
+    public synchronized double getSpeed(){
         return speed;
     }
     
     @Override
-    public Queue<Point> getPath() {
+    public synchronized Queue<Point> getPath() {
         return path;
     }
     
     @Override
-    public Point getLocation() {
+    public synchronized Point getLocation() {
         if(handle.getStartTime() > lastChangedTime){
             lastLocation = getCurrentLocation();
             lastChangedTime = handle.getStartTime();
@@ -87,29 +86,29 @@ public class MovingRoadGuard extends RoadGuard implements MovingRoadAPI{
     }
 
     @Override
-    public Point getCurrentLocation() {
+    public synchronized Point getCurrentLocation() {
         return model.getPosition(user);
     }
 
     @Override
-    public Point getRandomLocation() {
+    public synchronized Point getRandomLocation() {
         return model.getRandomPosition(rnd);
     }
 
     @Override
-    public void setTarget(Point p) throws InvalidLocationException {
+    public synchronized void setTarget(Point p) {
         path.clear();
         path.addAll(model.getShortestPathTo(user, p));
     }
 
     @SuppressWarnings("hiding")
     @Override
-    public void setTarget(Queue<Point> path) throws InvalidLocationException {
+    public synchronized void setTarget(Queue<Point> path) {
         this.path = path;
     }
 
     @Override
-    public void advance(TimeLapse lapse) {
+    public synchronized void advance(TimeLapse lapse) {
         if(handle.getStartTime() > lastChangedTime){
             lastLocation = getCurrentLocation();
             lastChangedTime = handle.getStartTime();
@@ -120,7 +119,7 @@ public class MovingRoadGuard extends RoadGuard implements MovingRoadAPI{
     }
 
     @Override
-    public boolean isDriving() {
+    public synchronized boolean isDriving() {
         return !path.isEmpty();
     }
 }

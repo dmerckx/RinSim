@@ -1,6 +1,8 @@
 package rinde.sim.util.positions;
 
 import java.util.List;
+import java.util.Queue;
+import java.util.Stack;
 
 import rinde.sim.core.graph.Point;
 import rinde.sim.core.model.road.users.RoadUser;
@@ -20,7 +22,7 @@ public class PositionCache<T extends RoadUser<?>> {
     private final int nrBlocks;
     
     private Multimap<Region, T> map;
-    private List<Update<T>> updates;
+    private Stack<Update<T>> updates;
      
     public PositionCache(Rectangle bounds, int nrBlocks) {
         this.xMin = bounds.xMin;
@@ -31,7 +33,15 @@ public class PositionCache<T extends RoadUser<?>> {
         this.nrBlocks = nrBlocks;
         
         map = LinkedHashMultimap.create();
-        updates = Lists.newArrayList();
+        updates = new Stack<Update<T>>();
+    }
+
+    public void tick() {
+        while(!updates.isEmpty()){
+            Update<T> update = updates.pop();
+            map.remove(update.from, update.obj);
+            map.put(update.to, update.obj);
+        }
     }
     
     public void add(T obj){
@@ -44,8 +54,8 @@ public class PositionCache<T extends RoadUser<?>> {
         map.remove(getRegion(pos), obj);
     }
     
-    public void update(T obj, Point newPos){
-        Region from = getRegion(obj.getRoadState().getLocation());
+    public void update(T obj, Point oldPos, Point newPos){
+        Region from = getRegion(oldPos);
         Region to = getRegion(newPos);
         if(!from.equals(to)){
             synchronized (this) {
@@ -64,8 +74,8 @@ public class PositionCache<T extends RoadUser<?>> {
     }
     
     protected <T2 extends T> void executeQueryIn(Point pos, double range, Region reg, Query<T2> q){
-        for(T obj:map.get(reg)){
-            if(!q.getType().isInstance(obj)) return;
+        for(T obj:map.get(reg)){ 
+            if(!q.getType().isInstance(obj)) continue;
             
             if(Point.distance(obj.getRoadState().getLocation(), pos) < range){
                 q.process((T2) obj);

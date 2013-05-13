@@ -82,11 +82,6 @@ public class SimpleCommGuard extends CommunicationState
      * @param delivery The delivery of a new message.
      */
     public final synchronized void receive(Delivery delivery){
-        Long time = handle.getStartTime();
-        RandomGenerator gen = new MersenneTwister(new int[]{seed, time.intValue(), delivery.sender.id});
-        if(gen.nextFloat() <= reliability){
-            tempMailbox.add(delivery);
-        }
         tempMailbox.add(delivery);
         active = true;
     }

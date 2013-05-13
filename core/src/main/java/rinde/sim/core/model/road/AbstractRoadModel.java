@@ -4,11 +4,9 @@
 package rinde.sim.core.model.road;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.collect.Maps.newLinkedHashMap;
 
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -35,15 +33,12 @@ import rinde.sim.core.simulation.TimeLapse;
 import rinde.sim.core.simulation.UserInit;
 import rinde.sim.core.simulation.policies.InteractionRules;
 import rinde.sim.core.simulation.time.TimeLapseHandle;
-import rinde.sim.event.EventAPI;
-import rinde.sim.event.EventDispatcher;
 import rinde.sim.util.SpeedConverter;
 import rinde.sim.util.TimeUnit;
+import rinde.sim.util.positions.PositionCache;
 import rinde.sim.util.positions.Query;
 
-import com.google.common.base.Predicate;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 
 /**
  * A common space neutral implementation of {@link RoadModel}. It implements a
@@ -59,35 +54,50 @@ public abstract class AbstractRoadModel<T> implements RoadModel{
 
     private RandomGenerator rnd;
     private Map<RoadUser<?>, RoadGuard> mapping = new HashMap<RoadUser<?>, RoadGuard>();
-    
     protected volatile Map<RoadUser<?>, T> objLocs;
-    protected Map<MovingRoadUser<?>, DestinationPath> objDestinations;
 
-    protected final boolean cached;
+    private boolean cached;
+    private PositionCache<RoadUser<?>> cache;
+    
     protected final SpeedConverter speedConverter;
+    protected final boolean useSpeedConversion;
 
-    protected boolean useSpeedConversion;
-
-    // TODO event dispatching has to be tested
-    protected final EventDispatcher eventDispatcher;
-    protected final EventAPI eventAPI;
-
-    public enum RoadEvent {
-        MOVE
+    /**
+     * Create a new instance.
+     */
+    public AbstractRoadModel(boolean pUseSpeedConversion) {
+        objLocs = createObjectToLocationMap();
+        speedConverter = new SpeedConverter();
+        useSpeedConversion = pUseSpeedConversion;
+        
+        cached = false;
+        cache = null;
+    }
+    
+    public void setCache(int blocks){
+        if(blocks <= 0) throw new IllegalArgumentException();
+        
+        cached = true;
+        cache = new PositionCache<RoadUser<?>>(getViewRect(), blocks);
     }
     
     public double getSpeed(MovingRoadUser<?> user){
         return ((MovingRoadGuard) mapping.get(user)).getSpeed();
     }
-    
+
     @Override
-    public <T2 extends RoadUser<?>> void queryAround(Point pos, double range, Query<T2> q){
-        for(T obj:map.get(reg)){
-            if(!q.getType().isInstance(obj)) return;
-            
-            if(Point.distance(obj.getRoadState().getLocation(), pos) < range){
-                q.process((T2) obj);
-            } 
+    public <T2 extends RoadUser<?>> void queryAround(Point pos, double range, Query<T2> query){
+        if(cached){
+            cache.query(pos, range, query);
+        }
+        else {
+            //Simply iteratie over all road users
+            for(RoadUser<?> obj:mapping.keySet()){
+                if(!query.getType().isInstance(obj)) continue;
+                if(Point.distance(obj.getRoadState().getLocation(), pos) < range){
+                    query.process((T2) obj);
+                } 
+            }
         }
     }
 
@@ -146,37 +156,6 @@ public abstract class AbstractRoadModel<T> implements RoadModel{
     public Class<RoadUser<?>> getSupportedType() {
         return (Class) RoadUser.class;
     }
-    
-    public AbstractRoadModel(boolean pUseSpeedConversion){
-        this(pUseSpeedConversion, 0);
-    }
-    
-    /**
-     * Create a new instance.
-     */
-    public AbstractRoadModel(boolean pUseSpeedConversion, int blocks) {
-        objLocs = createObjectToLocationMap();
-        objDestinations = newLinkedHashMap();
-        speedConverter = new SpeedConverter();
-        useSpeedConversion = pUseSpeedConversion;
-        eventDispatcher = createEventDispatcher();
-        eventAPI = eventDispatcher.getEventAPI();
-        
-        cached = true;
-    }
-
-    // factory method for creating event dispatcher, can be overridden by
-    // subclasses to add more event types.
-    protected EventDispatcher createEventDispatcher() {
-        return new EventDispatcher(RoadEvent.MOVE);
-    }
-
-    /**
-     * Create a new instance.
-     */
-    public AbstractRoadModel() {
-        this(true);
-    }
 
     /**
      * Defines the specific {@link Map} instance used for storing object
@@ -225,9 +204,7 @@ public abstract class AbstractRoadModel<T> implements RoadModel{
         checkArgument(objLocs.containsKey(object), "object must have a location");
         checkArgument(path.peek() != null, "path can not be empty");
         checkArgument(time.hasTimeLeft(), "can not follow path when to time is left");
-        objDestinations.remove(object);
         final MoveProgress mp = doFollowPath(object, path, time);
-        eventDispatcher.dispatchEvent(new MoveEvent(this, object, mp));
         return mp;
     }
 
@@ -246,22 +223,20 @@ public abstract class AbstractRoadModel<T> implements RoadModel{
     protected void addObjectAt(RoadUser<?> newObj, Point pos) {
         checkArgument(!objLocs.containsKey(newObj), "Object is already added");
         objLocs.put(newObj, point2LocObj(pos));
+        if(cached) cache.add(newObj);
     }
-
-    protected void addObjectAtSamePosition(RoadUser<?> newObj, RoadUser<?> existingObj) {
-        checkArgument(!objLocs.containsKey(newObj), "Object " + newObj
-                + " is already added.");
-        checkArgument(objLocs.containsKey(existingObj), "Object " + existingObj
-                + " does not exist.");
-        objLocs.put(newObj, objLocs.get(existingObj));
+    
+    protected void updateObject(RoadUser<?> obj, Point to){
+        checkArgument(objLocs.containsKey(obj), "Object was not yet present");
+        if(cached) cache.update(obj, getPosition(obj), to);
+        objLocs.put(obj, point2LocObj(to));
     }
 
     protected void removeObject(RoadUser<?> roadUser) {
         checkArgument(roadUser != null, "RoadUser<?> can not be null");
-        checkArgument(objLocs.containsKey(roadUser), "RoadUser<?>: " + roadUser
-                + " does not exist.");
+        checkArgument(objLocs.containsKey(roadUser), "RoadUser<?>: %s  does not exist.", roadUser);
         objLocs.remove(roadUser);
-        objDestinations.remove(roadUser);
+        if(cached) cache.remove(roadUser);
     }
 
     protected boolean containsObject(RoadUser<?> obj) {
@@ -286,43 +261,14 @@ public abstract class AbstractRoadModel<T> implements RoadModel{
     }
 
     @Override
-    public Set<RoadUser<?>> getRoadUsers(Predicate<RoadUser<?>> predicate) {
-        return Sets.filter(getAllRoadUsers(), predicate);
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public <Y extends RoadUser<?>> Set<Y> getObjectsAt(Point location, Class<Y> type) {
-        checkArgument(type != null, "type can not be null");
-        final Set<Y> result = new HashSet<Y>();
-        for (final RoadUser<?> ru :
-                getRoadUsers(new SameLocationPredicate(location,type, this))) {
-            result.add((Y) ru);
-        }
-        return result;
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public <Y extends RoadUser<?>> Set<Y> getObjectsOfType(final Class<Y> type) {
-        if (type == null) {
-            throw new IllegalArgumentException("type can not be null");
-        }
-        return (Set<Y>) getRoadUsers(new Predicate<RoadUser<?>>() {
-            @Override
-            public boolean apply(RoadUser<?> input) {
-                return type.isInstance(input);
-            }
-        });
-    }
-
-    @Override
     public List<Point> getShortestPathTo(RoadUser<?> fromObj, Point to) {
         checkArgument(fromObj != null, "fromObj can not be null");
         checkArgument(objLocs.containsKey(fromObj), " from object should be in RoadModel. "
                 + fromObj);
         return getShortestPathTo(getPosition(fromObj), to);
     }
+    
+    // ----- MODEL IMPLEMENTATION ----- //
 
     @Override
     public List<UserInit<?>> register(RoadUser<?> user, RoadData data, TimeLapseHandle handle) {
@@ -362,61 +308,47 @@ public abstract class AbstractRoadModel<T> implements RoadModel{
     }
 
     @Override
-    public final EventAPI getEventAPI() {
-        return eventAPI;
-    }
-
-    private static class SameLocationPredicate implements Predicate<RoadUser<?>> {
-        private final Point location;
-        private final RoadModel model;
-        private final Class<?> type;
-
-        public SameLocationPredicate(final Point pLocation,
-                final Class<?> pType, final RoadModel pModel) {
-            location = pLocation;
-            type = pType;
-            model = pModel;
-        }
-
-        @Override
-        public boolean apply(RoadUser<?> input) {
-            return type.isInstance(input)
-                    && model.getPosition(input).equals(location);
-        }
-    }
-
-    /**
-     * Simple class for storing destinations and paths leading to them.
-     * @author Rinde van Lon <rinde.vanlon@cs.kuleuven.be>
-     */
-    protected class DestinationPath {
-        /**
-         * The destination of the path.
-         */
-        public final Point destination;
-        /**
-         * The path leading to the destination.
-         */
-        public final Queue<Point> path;
-
-        /**
-         * Initializes a new instance.
-         * @param dest {@link #destination}
-         * @param p {@link #path}
-         */
-        public DestinationPath(Point dest, Queue<Point> p) {
-            destination = dest;
-            path = p;
-        }
-    }
-
-    @Override
     public void tick(TimeInterval time) {
-        
+        if(cached) cache.tick();
     }
     
     @Override
     public void init(long seed, InteractionRules rules, TimeInterval masterTime) {
         this.rnd = new MersenneTwister(seed);
+    }
+}
+
+class MoveProgress {
+    /**
+     * Distance traveled in the
+     * {@link RoadModel#followPath(MovingRoadUser, java.util.Queue, rinde.sim.core.TimeLapse)}
+     * .
+     */
+    public final double distance;
+    /**
+     * Time spend on traveling the distance.
+     */
+    public final long time;
+
+    /**
+     * The nodes which were traveled.
+     */
+    public final List<Point> travelledNodes;
+
+    MoveProgress(double dist, long pTime, List<Point> pTravelledNodes) {
+        checkArgument(dist >= 0, "distance must be greater than or equal to 0");
+        checkArgument(pTime >= 0, "time must be greather than or equal to 0");
+        checkArgument(pTravelledNodes != null, "travelledNodes can not be null");
+        distance = dist;
+        time = pTime;
+        travelledNodes = pTravelledNodes;
+    }
+
+    @Override
+    public String toString() {
+        return new StringBuilder().append("{PathProgress distance:")
+                .append(distance).append(" time:").append(time)
+                .append(" travelledNodes:").append(travelledNodes).append("}")
+                .toString();
     }
 }

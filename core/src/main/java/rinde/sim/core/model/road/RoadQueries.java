@@ -52,31 +52,4 @@ public interface RoadQueries {
      * @return An iterator to access all road users.
      */
     SafeIterator<MovingRoadUser<?>> queryMovingRoadUsers();
-
-    /**
-     * This method returns a set of {@link RoadUser} objects which exist in this
-     * model and satisfy the given {@link Predicate}. The returned set is not a
-     * live view on this model, but a new created copy.
-     * @param predicate The predicate that decides which objects to return.
-     * @return A set of {@link RoadUser} objects.
-     */
-    Set<RoadUser<?>> getRoadUsers(Predicate<RoadUser<?>> predicate);
-
-    /**
-     * Returns all objects of the given type located in the same position as the
-     * given {@link RoadUser}.
-     * @param roadUser The object which location is checked for other objects.
-     * @param type The type of the objects to be returned.
-     * @return A set of objects of type <code>type</code>.
-     */
-    <Y extends RoadUser<?>> Set<Y> getObjectsAt(Point location, Class<Y> type);
-
-    /**
-     * This method returns a set of {@link RoadUser} objects which exist in this
-     * model and are instances of the specified {@link Class}. The returned set
-     * is not a live view on the set, but a new created copy.
-     * @param type The type of returned objects.
-     * @return A set of {@link RoadUser} objects.
-     */
-    <Y extends RoadUser<?>> Set<Y> getObjectsOfType(final Class<Y> type);
 }

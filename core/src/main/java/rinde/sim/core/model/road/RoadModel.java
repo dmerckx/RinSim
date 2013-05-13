@@ -127,6 +127,4 @@ public interface RoadModel extends Model<RoadData, RoadUser<?>>, RoadQueries {
     List<Point> getShortestPathTo(Point from, Point to);
     
     Rectangle getViewRect();
-    
-    EventAPI getEventAPI();
 }

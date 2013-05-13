@@ -86,32 +86,32 @@ public class PickupGuard extends PickupPointState implements PickupAPI, InitUser
     // ----- PICKUP API ----- //
     
     @Override
-    public boolean isPickedUp() {
+    public synchronized boolean isPickedUp() {
         return getPickupState() == PickupState.BEING_PICKED_UP 
                 || getPickupState() == PickupState.PICKED_UP;
     }
     
     @Override
-    public boolean canBePickedUp(TimeInterval time) {
+    public synchronized boolean canBePickedUp(TimeInterval time) {
         return !isPickedUp() && pdpModel.getPolicy().canPickup(
                 parcel.pickupTimeWindow, time.getStartTime(), parcel.pickupDuration);
     }
 
     @Override
-    public PickupPointState getState() {
+    public synchronized PickupPointState getState() {
         return this;
     }
     
     // ----- OVERLAP PICKUP API & PICKUP POINT STATE ----- //
 
     @Override
-    public PickupState getPickupState() {
+    public synchronized PickupState getPickupState() {
         updateState();
         return state;
     }
     
     @Override
-    public Parcel getParcel() {
+    public synchronized Parcel getParcel() {
         return parcel;
     }
 

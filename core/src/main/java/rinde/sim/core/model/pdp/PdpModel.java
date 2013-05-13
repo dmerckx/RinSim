@@ -52,13 +52,16 @@ public class PdpModel implements Model<Data, PdpUser<?>>, PdpAPI{
     private Map<PickupPoint<?>, User<?>> pickups = Maps.newLinkedHashMap();
     private Map<DeliveryPoint<?>, User<?>> deliveries = Maps.newLinkedHashMap();
     
-    public PdpModel(TimeWindowPolicy twp) {
-        this(twp, null);
+    public final double range;
+    
+    public PdpModel(TimeWindowPolicy twp, double range) {
+        this(twp, range, null);
     }
     
-    public PdpModel(TimeWindowPolicy twp, PdpObserver observer) {
+    public PdpModel(TimeWindowPolicy twp, double range, PdpObserver observer) {
         this.twp = twp;
         this.observer = observer;
+        this.range = range;
     }
     
     public TimeWindowPolicy getPolicy(){

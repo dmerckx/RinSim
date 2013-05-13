@@ -10,16 +10,20 @@ import rinde.sim.core.simulation.policies.AgentsPolicy;
 
 public class GradientScenario extends Scenario{
 	
-	public static final int TRUCK_STRENGTH = -2;
+	public static final int TRUCK_STRENGTH = -10;
 	public static final int PARCEL_STRENGTH = 5;
 	
-	public GradientScenario(long seed, AgentsPolicy policy, int speed, int ticks, int cars, int proportion) {
-		super(seed, policy, speed, ticks, cars, proportion);
+	private final double range;
+	
+	public GradientScenario(long seed, AgentsPolicy policy, int speed, int ticks, int cars,
+			int proportion, double closestPackageRange, double range) {
+		super(seed, policy, speed, ticks, cars, proportion, closestPackageRange);
+		this.range = range;
 	}
 
 	@Override
 	protected void registerModels() {
-		GradientModel gm = new GradientModel(roadModel);
+		GradientModel gm = new GradientModel(roadModel, range);
 		
 		sim.registerModel(gm);
 	}

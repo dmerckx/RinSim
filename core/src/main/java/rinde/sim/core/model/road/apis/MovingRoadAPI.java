@@ -3,7 +3,6 @@ package rinde.sim.core.model.road.apis;
 import java.util.Queue;
 
 import rinde.sim.core.graph.Point;
-import rinde.sim.core.model.road.InvalidLocationException;
 import rinde.sim.core.simulation.TimeLapse;
 
 /**
@@ -46,7 +45,7 @@ public interface MovingRoadAPI extends RoadAPI{
      * @param p The path to travel towards.
      * @throws InvalidLocationException The provided point is invalid.
      */
-    void setTarget(Point p) throws InvalidLocationException;
+    void setTarget(Point p);
     
     /**
      * Drive the given path, which must be a collection of valid nodes
@@ -54,7 +53,7 @@ public interface MovingRoadAPI extends RoadAPI{
      * @param path The path that should be traveled.
      * @throws InvalidLocationException The provided path is invalid.
      */
-    void setTarget(Queue<Point> path) throws InvalidLocationException;
+    void setTarget(Queue<Point> path);
     
     /**
      * Advance in time, if the target is reached within the given TimeLapse,

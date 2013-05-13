@@ -86,31 +86,31 @@ public class DeliveryGuard extends DeliveryPointState implements DeliveryAPI, In
     // ----- DELIVERY API ----- //
     
     @Override
-    public boolean isDelivered() {
+    public synchronized boolean isDelivered() {
         updateState();
         return state == DeliveryState.BEING_DELIVERED
                 || state == DeliveryState.DELIVERED;
     }
 
     @Override
-    public Parcel getParcel() {
+    public synchronized Parcel getParcel() {
         return parcel;
     }
     
     @Override
-    public DeliveryState getDeliveryState() {
+    public synchronized DeliveryState getDeliveryState() {
         updateState();
         return state;
     }
 
     @Override
-    public boolean canBeDelivered(TimeInterval time) {
+    public synchronized boolean canBeDelivered(TimeInterval time) {
         return pdpModel.getPolicy().canDeliver(
                 parcel.deliveryTimeWindow, time.getStartTime(), parcel.deliveryDuration);
     }
     
     @Override
-    public DeliveryPointState getState() {
+    public synchronized DeliveryPointState getState() {
         return this;
     }
 }

@@ -2,7 +2,6 @@ package gradient;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map.Entry;
 
 import rinde.sim.core.graph.Point;
 import rinde.sim.core.model.Model;
@@ -13,16 +12,22 @@ import rinde.sim.core.simulation.UserInit;
 import rinde.sim.core.simulation.policies.InteractionRules;
 import rinde.sim.core.simulation.time.TimeLapseHandle;
 import rinde.sim.util.Rectangle;
+import rinde.sim.util.positions.Query;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 public class GradientModel implements Model<FieldData, FieldEmitter<?>>{
 
+	private final RoadModel rm;
+	private final double range;
+	
 	private HashMap<FieldEmitter<?>, Double> emitters = Maps.newLinkedHashMap();
 	private Rectangle bounds;
 	
-	public GradientModel(RoadModel rm){
+	public GradientModel(RoadModel rm, double range){
+		this.rm = rm;
+		this.range = range;
 		this.bounds = rm.getViewRect();
 	}
 	
@@ -60,18 +65,11 @@ public class GradientModel implements Model<FieldData, FieldEmitter<?>>{
 	}
 	
 	public double getField(Point in, FieldEmitter<?> fe){
-		double field = 0.0f;
+		GetField query = new GetField(in, fe, emitters);
 		
-		for(Entry<FieldEmitter<?>, Double> e:emitters.entrySet()){
-			FieldEmitter<?> fe2 = e.getKey();
-			Point fe2Loc = fe2.getRoadState().getLocation();
-			
-			if(fe2 == fe) continue;
-			if(!fe2.isActive()) continue;
-			
-			field += e.getValue() / Point.distance(in, fe2Loc);
-		}
-		return field;
+		rm.queryAround(in, range, query);
+		
+		return query.getField();
 	}
 	
 	@Override
@@ -104,4 +102,41 @@ public class GradientModel implements Model<FieldData, FieldEmitter<?>>{
 		
 		return Lists.newArrayList();
 	}
+}
+
+class GetField implements Query<FieldEmitter<?>>{
+	
+	private final HashMap<FieldEmitter<?>, Double> emitters;
+	private final FieldEmitter<?> exclude;
+	private final Point pos;
+	
+	private double field;
+	
+	public GetField(Point pos, FieldEmitter<?> exclude, HashMap<FieldEmitter<?>, Double> emitters) {
+		this.emitters = emitters;
+		this.exclude = exclude;
+		this.pos = pos;
+		
+		this.field = 0.0;
+	}
+	
+	public double getField(){
+		return field;
+	}
+	
+	@Override
+	public void process(FieldEmitter<?> fe) {
+		if(fe == exclude) return;
+		if(!fe.isActive()) return;
+		
+		Point feLoc = fe.getRoadState().getLocation();
+		
+		field += emitters.get(fe) / Point.distance(pos, feLoc);
+	}
+
+	@Override
+	public Class<FieldEmitter<?>> getType() {
+		return (Class) FieldEmitter.class;
+	}
+	
 }

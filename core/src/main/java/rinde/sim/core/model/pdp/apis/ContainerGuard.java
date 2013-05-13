@@ -131,25 +131,25 @@ public class ContainerGuard extends ContainerState implements ContainerAPI, Inte
     // ----- CONTAINER API ----- //
 
     @Override
-    public ContState getCurrentContState() {
+    public synchronized ContState getCurrentContState() {
         updateBackup();
         return getCurrentContState(handle.getCurrentTime());
     }
 
     @Override
-    public List<Parcel> getCurrentLoad() {
+    public synchronized List<Parcel> getCurrentLoad() {
         return load;
     }
     
     @Override
-    public double getCapacityLeft() {
+    public synchronized double getCapacityLeft() {
         double result = capacity;
         for(Parcel parcel:load) result -= parcel.magnitude;
         return result;
     }
 
     @Override
-    public Parcel tryPickup(TimeLapse lapse) {
+    public synchronized Parcel tryPickup(TimeLapse lapse) {
         assert handle == lapse;
         if(!handle.hasTimeLeft()) return null;
         updateBackup();
@@ -163,7 +163,7 @@ public class ContainerGuard extends ContainerState implements ContainerAPI, Inte
     }
 
     @Override
-    public boolean tryPickupOf(TimeLapse lapse, Parcel parcel) {
+    public synchronized boolean tryPickupOf(TimeLapse lapse, Parcel parcel) {
         assert handle == lapse;
         if(!handle.hasTimeLeft()) return false;
         updateBackup();
@@ -176,7 +176,7 @@ public class ContainerGuard extends ContainerState implements ContainerAPI, Inte
     }
     
     @Override
-    public Parcel tryDelivery(TimeLapse lapse){
+    public synchronized Parcel tryDelivery(TimeLapse lapse){
         assert handle == lapse;
         if(!handle.hasTimeLeft()) return null;
         updateBackup();
@@ -190,7 +190,7 @@ public class ContainerGuard extends ContainerState implements ContainerAPI, Inte
     }
     
     @Override
-    public boolean tryDeliveryOf(TimeLapse lapse, Parcel parcel){
+    public synchronized boolean tryDeliveryOf(TimeLapse lapse, Parcel parcel){
         assert handle == lapse;
         assert load.contains(parcel);
         if(!handle.hasTimeLeft()) return false;
@@ -205,7 +205,7 @@ public class ContainerGuard extends ContainerState implements ContainerAPI, Inte
     }
 
     @Override
-    public void acceptAll(TimeLapse lapse){
+    public synchronized void acceptAll(TimeLapse lapse){
         assert handle == lapse;
         if(interactiveAPI.isAdvertising()) return;
         if(!handle.hasTimeLeft()) return;
@@ -218,7 +218,7 @@ public class ContainerGuard extends ContainerState implements ContainerAPI, Inte
     }
     
     @Override
-    public void accept(TimeLapse lapse, List<Parcel> parcels){
+    public synchronized void accept(TimeLapse lapse, List<Parcel> parcels){
         assert handle == lapse;
         if(interactiveAPI.isAdvertising()) return;
         if(!handle.hasTimeLeft()) return;
@@ -231,12 +231,12 @@ public class ContainerGuard extends ContainerState implements ContainerAPI, Inte
     }
 
     @Override
-    public void advertiseAll(TimeLapse lapse) {
+    public synchronized void advertiseAll(TimeLapse lapse) {
         advertise(lapse, load);
     }
     
     @Override
-    public void advertise(TimeLapse lapse, List<Parcel> parcels) {
+    public synchronized void advertise(TimeLapse lapse, List<Parcel> parcels) {
         assert handle == lapse;
         assert load.containsAll(parcels);
         if(interactiveAPI.isAdvertising()) return;
@@ -250,26 +250,26 @@ public class ContainerGuard extends ContainerState implements ContainerAPI, Inte
     }
     
     @Override
-    public void stopAdvertisingOrAccepting(){
+    public synchronized void stopAdvertisingOrAccepting(){
         updateBackup();
         interactiveAPI.stopAdvertising();
     }
     
     @Override
-    public ContainerState getState() {
+    public synchronized ContainerState getState() {
         return this;
     }
     
     // ----- CONTAINER STATE ----- //
 
     @Override
-    public ContState getContState() {
+    public synchronized ContState getContState() {
         updateBackup();
         return backupState;
     }
 
     @Override
-    public List<Parcel> getLoad() {
+    public synchronized List<Parcel> getLoad() {
         updateBackup();
         return backupLoad;
     }
