@@ -72,31 +72,8 @@ public class PdpModel implements Model<Data, PdpUser<?>>, PdpAPI{
         return time;
     }
     
-    protected void registerPickupPoint(PickupPoint<?> p){
-        
-    }
-
-    protected void unregisterPickupPoint(PickupPoint<?> p){
-        
-    }
-    
     // ----- QUERIES ----- //
     
-
-    public PickupPoint<?> queryClosestPickup(Point pos, Filter<PickupPoint<?>> filter){
-        double minDist = Double.POSITIVE_INFINITY;
-        PickupPoint<?> closestPp = null;
-        
-        for(PickupPoint<?> p:pickups.keySet()){
-            if(filter.matches(p)) continue;
-            if(Point.distance(p.getRoadState().getLocation(), pos) < minDist){
-                minDist = Point.distance(p.getRoadState().getLocation(), pos);
-                closestPp = p;
-            }
-        }
-        
-        return closestPp;
-    }
     
     @Override
     public SafeIterator<Truck<?>> queryTrucks(){
@@ -176,7 +153,6 @@ public class PdpModel implements Model<Data, PdpUser<?>>, PdpAPI{
             
             result.add(UserInit.create(guard));
             pickups.put((PickupPoint<?>) user, guard);
-            registerPickupPoint((PickupPoint<?>) user);
         }
         else if(user instanceof DeliveryPoint){
             DeliveryGuard guard = new DeliveryGuard((DeliveryPoint<?>) user, (DeliveryPointData) data, this, handle);
@@ -218,7 +194,6 @@ public class PdpModel implements Model<Data, PdpUser<?>>, PdpAPI{
             
             result.add(pickups.get(user));
             pickups.remove(user);
-            unregisterPickupPoint((PickupPoint<?>) user);
         }
         else if(user instanceof DeliveryPoint){
             assert deliveries.containsKey(user);

@@ -1,22 +1,13 @@
 package rinde.sim.core.model.pdp.apis;
 
-import java.util.List;
-
 import rinde.sim.core.graph.Point;
-import rinde.sim.core.model.SafeIterator;
-import rinde.sim.core.model.pdp.Parcel;
 import rinde.sim.core.model.pdp.PdpModel;
 import rinde.sim.core.model.pdp.apis.PickupAPI.PickupState;
 import rinde.sim.core.model.pdp.users.PickupPoint;
 import rinde.sim.core.model.pdp.users.Truck;
 import rinde.sim.core.model.pdp.users.TruckData;
-import rinde.sim.core.model.road.RoadModel;
 import rinde.sim.core.model.road.apis.RoadAPI;
-import rinde.sim.core.simulation.TimeLapse;
-import rinde.sim.util.positions.Filter;
 import rinde.sim.util.positions.Query;
-
-import com.google.common.collect.Lists;
 
 //TODO
 public class TruckGuard implements TruckAPI{
