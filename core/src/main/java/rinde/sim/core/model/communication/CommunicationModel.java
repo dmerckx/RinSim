@@ -2,7 +2,6 @@ package rinde.sim.core.model.communication;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map.Entry;
 
 import org.apache.commons.math3.random.MersenneTwister;
 import org.apache.commons.math3.random.RandomGenerator;
@@ -10,7 +9,7 @@ import org.apache.commons.math3.random.RandomGenerator;
 import rinde.sim.core.graph.Point;
 import rinde.sim.core.model.Data;
 import rinde.sim.core.model.Model;
-import rinde.sim.core.model.User;
+import rinde.sim.core.model.communication.apis.CommAPI;
 import rinde.sim.core.model.communication.apis.CommGuard;
 import rinde.sim.core.model.communication.apis.SimpleCommGuard;
 import rinde.sim.core.model.communication.users.CommData;
@@ -41,10 +40,8 @@ import com.google.common.collect.Maps;
  */
 public class CommunicationModel implements Model<Data, CommUser<?>>{
 
-	private final HashMap<Address, CommGuard> fullComms = Maps.newHashMap();
-	private final HashMap<Address, SimpleCommGuard> simpleComms = Maps.newHashMap();
-	
-	private List<SimpleCommGuard> activeGuards = Lists.newArrayList();
+	//private final HashMap<Address, CommGuard> fullComms = Maps.newHashMap();
+	private final HashMap<Address, SimpleCommGuard> comms = Maps.newHashMap();
 	
 	private int nextId = 0;
 	private RandomGenerator rnd;
@@ -76,19 +73,8 @@ public class CommunicationModel implements Model<Data, CommUser<?>>{
 	 * @param msg The message to be delivered.
 	 */
 	public void send(Address destination, Delivery msg){
-	    SimpleCommGuard receiver;
-	    if(simpleComms.containsKey(destination))
-	        receiver = simpleComms.get(destination);
-	    else
-	        receiver = fullComms.get(destination);
-	    
-	    synchronized(receiver){
-	        synchronized(this){
-	            if(!receiver.isActive())
-	                activeGuards.add(receiver);
-	        }
-    	    receiver.receive(msg);
-	    }
+	    SimpleCommGuard receiver = comms.get(destination);
+	    receiver.receive(msg);
 	}
 	
 	/**
@@ -96,49 +82,24 @@ public class CommunicationModel implements Model<Data, CommUser<?>>{
 	 * @param msg The message to be broadcasted.
 	 */
 	public void broadcast(Delivery msg){
-		CommGuard sender = fullComms.get(msg.sender);
+	    CommGuard sender = (CommGuard) comms.get(msg.sender);
 		Point senderLocation = sender.getLastLocation();
 		
-		if(roadModel != null){
-		    FindAddresses query = new FindAddresses();
-		    
-		    roadModel.queryAround(senderLocation, sender.getRadius(), query);
-		    
-		    for(Address a:query.addresses){
-		        CommGuard g = fullComms.get(a);
-                try {
-                    synchronized(g){
-                        synchronized(this){
-                            if(!g.isActive())
-                                activeGuards.add(g);
-                        }
-                        g.receive(msg.clone());
-                    }
-                } catch (CloneNotSupportedException exc) {
-                    exc.printStackTrace();
-                }
-		    }
-		}
-		else{
-        	for(Entry<Address, CommGuard> e:fullComms.entrySet()){
-                Address a = e.getKey();
-                CommGuard g = e.getValue();
-                
-                if( Point.distance(g.getLastLocation(),senderLocation) < sender.getRadius()){
-                    try {
-                        synchronized(g){
-                            synchronized(this){
-                                if(!g.isActive())
-                                    activeGuards.add(g);
-                            }
-                            g.receive(msg.clone());
-                        }
-                    } catch (CloneNotSupportedException exc) {
-                        exc.printStackTrace();
-                    }
-                }
-        	}
-		}
+	    /*FindAddresses query = new FindAddresses();
+	    
+	    roadModel.queryAround(senderLocation, sender.getRadius(), query);
+	    
+	    for(Address a:query.addresses){
+	        CommGuard g = fullComms.get(a);
+            try {
+                g.receive(msg.clone());
+            } catch (CloneNotSupportedException exc) {
+                exc.printStackTrace();
+            }
+	    }*/
+		
+		DoBroadcast query = new DoBroadcast(msg);
+		roadModel.queryAround(senderLocation, sender.getRadius(), query);
 	}
 	
 	
@@ -158,43 +119,34 @@ public class CommunicationModel implements Model<Data, CommUser<?>>{
         assert user!=null : "User can not be null.";
 	    assert data!=null : "Data can not be null.";
 	    
+	    SimpleCommGuard guard = null;
+	    
 	    if(user instanceof FullCommUser<?>){
-	        CommGuard guard = new CommGuard((FullCommUser<?>) user, (CommData) data, this, rnd.nextLong(), handle);
-	        ((FullCommUser<?>) user).setCommunicationAPI(guard); 
-	        fullComms.put(guard.getAddress(), guard);
+	        guard = new CommGuard((FullCommUser<?>) user, (CommData) data, this, rnd.nextLong(), handle);
+	        ((FullCommUser<?>) user).setCommunicationAPI((CommAPI) guard); 
 	    }
 	    else if(user instanceof SimpleCommUser<?>){
-	        SimpleCommGuard guard =
-	                new SimpleCommGuard((SimpleCommUser<?>) user, (SimpleCommData) data, this, rnd.nextLong(), handle);
+	        guard = new SimpleCommGuard((SimpleCommUser<?>) user, (SimpleCommData) data, this, rnd.nextLong(), handle);
 	        ((SimpleCommUser<?>) user).setCommunicationAPI(guard);
-            simpleComms.put(guard.getAddress(), guard);
-	    }
+        }
 	    else {
             throw new IllegalArgumentException("unknown type received..");
 	    }
+	    
+        comms.put(guard.getAddress(), guard);
         
         return Lists.newArrayList();
 	}
 
 	@Override
-	public List<User<?>> unregister(CommUser<?> user) {
+	public void unregister(CommUser<?> user) {
         assert user!=null : "User can not be null.";
         
-        if(user instanceof FullCommUser<?>){
-            Address a = ((FullCommUser<?>) user).getCommunicationState().getAddress();
-            assert(fullComms.containsKey(a));
-            fullComms.remove(a);
-        }
-        else if(user instanceof SimpleCommUser<?>){
-            Address a = ((SimpleCommUser<?>) user).getCommunicationState().getAddress();
-            assert(simpleComms.containsKey(a));
-            simpleComms.remove(a);
-        }
-        else {
-            throw new IllegalArgumentException("unknown type to unregister..");
-        }
-
-        return Lists.newArrayList();
+        Address a = user.getCommunicationState().getAddress();
+        
+        assert comms.containsKey(a);
+        
+        comms.remove(a);
 	}
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
@@ -205,30 +157,7 @@ public class CommunicationModel implements Model<Data, CommUser<?>>{
 
     @Override
     public void tick(TimeInterval time) {
-        for(SimpleCommGuard guard:activeGuards){
-            guard.process();
-        }
         
-        //TODO
-        /*final CountDownLatch latch = new CountDownLatch(activeGuards.size());
-        
-        for(final SimpleCommGuard guard:activeGuards){
-            pool.submit(new Runnable() {
-                @Override
-                public void run() {
-                    guard.process();
-                    latch.countDown();
-                }
-            });
-        }
-        
-        try {
-            latch.await();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }*/
-        
-        activeGuards.clear();
     }
     
     @Override
@@ -249,6 +178,32 @@ class FindAddresses implements Query<FullCommUser<?>>{
         addresses.add(t.getCommunicationState().getAddress());
     }
 
+    @Override
+    public Class<FullCommUser<?>> getType() {
+        return (Class) FullCommUser.class;
+    }
+}
+
+class DoBroadcast implements Query<FullCommUser<?>>{
+    private final Delivery msg; 
+    
+    public DoBroadcast(Delivery msg) {
+        this.msg = msg;
+    }
+    
+    @Override
+    public void process(FullCommUser<?> t) {
+        //A bit hacky, but most efficient
+        SimpleCommGuard g = (SimpleCommGuard) t.getCommunicationState();
+        
+        try {
+            g.receive(msg.clone());
+        } catch (CloneNotSupportedException exc) {
+            exc.printStackTrace();
+        }
+    }
+
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     @Override
     public Class<FullCommUser<?>> getType() {
         return (Class) FullCommUser.class;

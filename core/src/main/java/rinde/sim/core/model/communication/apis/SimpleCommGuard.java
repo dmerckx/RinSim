@@ -32,7 +32,6 @@ public class SimpleCommGuard extends CommunicationState
 	
 	private final List<Delivery> mailbox;
 	private final SortedSet<Delivery> tempMailbox;
-	private boolean active = false;
 	
 	@SuppressWarnings("javadoc")
     protected Address address;
@@ -41,7 +40,8 @@ public class SimpleCommGuard extends CommunicationState
 	protected final CommunicationModel model;
     @SuppressWarnings("javadoc")
     protected final RandomGenerator rnd;
-    private final int seed;
+    
+    private long lastUpdate;
     private final TimeLapseHandle handle;
     
     @SuppressWarnings("javadoc")
@@ -65,16 +65,6 @@ public class SimpleCommGuard extends CommunicationState
 		this.tempMailbox = new TreeSet<Delivery>();
         this.reliability = data.getReliability();
         this.handle = handle;
-        this.seed = rnd.nextInt();
-	}
-	
-	/**
-	 * Returns whether or not this guard received at least one message
-	 * during the last tick. 
-	 * @return Whether a message was received.
-	 */
-	public final boolean isActive(){
-	    return active;
 	}
 	
     /**
@@ -82,8 +72,9 @@ public class SimpleCommGuard extends CommunicationState
      * @param delivery The delivery of a new message.
      */
     public final synchronized void receive(Delivery delivery){
+        if(lastUpdate != handle.getStartTime()) process();
+        
         tempMailbox.add(delivery);
-        active = true;
     }
 
     /**
@@ -93,7 +84,7 @@ public class SimpleCommGuard extends CommunicationState
     public void process() {
         mailbox.addAll(tempMailbox);
         tempMailbox.clear();
-        active = false;
+        lastUpdate = handle.getStartTime();
     }
     
     
@@ -105,7 +96,9 @@ public class SimpleCommGuard extends CommunicationState
 	        model.send(destination, new Delivery(address, message));
 	}
 	@Override
-	public Iterator<Delivery> getMessages() {
+	public synchronized Iterator<Delivery> getMessages() {
+	    if(lastUpdate != handle.getStartTime()) process();
+	    
 		return mailbox.iterator();
 	}
 

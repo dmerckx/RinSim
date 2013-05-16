@@ -126,14 +126,11 @@ public class InteractionModel implements Model<Data, InteractionUser<?>> {
     }
 
     @Override
-    public List<User<?>> unregister(InteractionUser<?> user) {
+    public void unregister(InteractionUser<?> user) {
         assert user!=null : "User can not be null.";
-        
-        List<User<?>> result = Lists.newArrayList();
+        assert mapping.containsKey(user);
         
         mapping.remove(user);
-        
-        return result;
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })

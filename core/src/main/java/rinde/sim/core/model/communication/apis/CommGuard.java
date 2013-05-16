@@ -43,7 +43,6 @@ public class CommGuard extends SimpleCommGuard implements CommAPI{
      */
     public Point getLastLocation(){
         return user.getRoadState().getLocation();
-        
     }
     
     // ----- COMM API ----- //

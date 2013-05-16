@@ -5,7 +5,7 @@ import rinde.sim.core.model.road.apis.RoadAPI;
 
 public interface TruckAPI{
     
-    void init(RoadAPI roadAPI, ContainerAPI containerAPI);
+    void init(RoadAPI roadAPI);
     
     Point findClosestAvailableParcel();
 }

@@ -1,17 +1,16 @@
 package rinde.sim.core.model.pdp;
 
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
-import rinde.sim.core.graph.Point;
 import rinde.sim.core.model.Data;
 import rinde.sim.core.model.Model;
-import rinde.sim.core.model.SafeIterator;
 import rinde.sim.core.model.User;
+import rinde.sim.core.model.pdp.apis.ContainerAPI;
 import rinde.sim.core.model.pdp.apis.ContainerGuard;
+import rinde.sim.core.model.pdp.apis.DeliveryAPI;
 import rinde.sim.core.model.pdp.apis.DeliveryGuard;
+import rinde.sim.core.model.pdp.apis.PickupAPI;
 import rinde.sim.core.model.pdp.apis.PickupGuard;
 import rinde.sim.core.model.pdp.apis.TruckGuard;
 import rinde.sim.core.model.pdp.twpolicy.TimeWindowPolicy;
@@ -19,7 +18,6 @@ import rinde.sim.core.model.pdp.users.Container;
 import rinde.sim.core.model.pdp.users.ContainerData;
 import rinde.sim.core.model.pdp.users.DeliveryPoint;
 import rinde.sim.core.model.pdp.users.DeliveryPointData;
-import rinde.sim.core.model.pdp.users.Depot;
 import rinde.sim.core.model.pdp.users.PdpUser;
 import rinde.sim.core.model.pdp.users.PickupPoint;
 import rinde.sim.core.model.pdp.users.PickupPointData;
@@ -29,30 +27,19 @@ import rinde.sim.core.simulation.TimeInterval;
 import rinde.sim.core.simulation.UserInit;
 import rinde.sim.core.simulation.policies.InteractionRules;
 import rinde.sim.core.simulation.time.TimeLapseHandle;
-import rinde.sim.util.positions.Filter;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 @SuppressWarnings("rawtypes")
-public class PdpModel implements Model<Data, PdpUser<?>>, PdpAPI{
+public class PdpModel implements Model<Data, PdpUser<?>>{
+    public final TimeWindowPolicy twp;
+    public final double range;
 
-    private TimeInterval time;
-    private final TimeWindowPolicy twp;
-    
-    
-    private PdpObserver observer;
     //TODO: order these events to present them deterministically
+    private final PdpObserver observer;
     private Set<PickupPoint<?>> pickupEvents = Sets.newLinkedHashSet();
     private Set<DeliveryPoint<?>> deliveryEvents = Sets.newLinkedHashSet();
-    
-    private Map<Depot<?>, User<?>> depots = Maps.newLinkedHashMap();
-    private Map<Truck<?>, User<?>> trucks = Maps.newLinkedHashMap();
-    private Map<PickupPoint<?>, User<?>> pickups = Maps.newLinkedHashMap();
-    private Map<DeliveryPoint<?>, User<?>> deliveries = Maps.newLinkedHashMap();
-    
-    public final double range;
     
     public PdpModel(TimeWindowPolicy twp, double range) {
         this(twp, range, null);
@@ -66,51 +53,6 @@ public class PdpModel implements Model<Data, PdpUser<?>>, PdpAPI{
     
     public TimeWindowPolicy getPolicy(){
         return twp;
-    }
-    
-    public TimeInterval getTime(){
-        return time;
-    }
-    
-    // ----- QUERIES ----- //
-    
-    
-    @Override
-    public SafeIterator<Truck<?>> queryTrucks(){
-        return new SafeIterator.Std<Truck<?>>(trucks.keySet());
-    }
-    
-    @Override
-    public SafeIterator<Depot<?>> queryDepots(){
-        return new SafeIterator.Std<Depot<?>>(depots.keySet());
-    }
-    
-    @Override
-    public SafeIterator<PickupPoint<?>> queryPickups(){
-        return new SafeIterator.Std<PickupPoint<?>>(pickups.keySet());
-    }
-    
-    @Override
-    public SafeIterator<DeliveryPoint<?>> queryDeliveries(){
-        return new SafeIterator.Std<DeliveryPoint<?>>(deliveries.keySet());
-    }
-    
-    @Override
-    public SafeIterator<Container<?>> queryContainers(){
-        final Iterator<Truck<?>> it1 = trucks.keySet().iterator();
-        final Iterator<Depot<?>> it2 = depots.keySet().iterator();
-        
-        return new SafeIterator<Container<?>>() {
-            @Override
-            public boolean hasNext() {
-                return it1.hasNext() || it2.hasNext();
-            }
-
-            @Override
-            public Container<?> next() {
-                return it1.hasNext()? it1.next() : it2.next();
-            }
-        };
     }
     
     // ----- NOTIFICATIONS ----- //
@@ -132,80 +74,39 @@ public class PdpModel implements Model<Data, PdpUser<?>>, PdpAPI{
         
         List<UserInit<?>> result = Lists.newArrayList();
         
+        User<Data> guard = null;
+        
         if(user instanceof Container<?>){
-            ContainerGuard guard = new ContainerGuard((Container) user, (ContainerData) data, this, handle);
-            ((Container) user).setContainerAPI(guard);
+            guard = new ContainerGuard((Container) user, (ContainerData) data, this, handle);
+            ((Container) user).setContainerAPI((ContainerAPI) guard);
             
-            result.add(UserInit.create(guard));
             
             if(user instanceof Truck<?>){
                 TruckGuard guard2 = new TruckGuard((Truck<?>) user, (TruckData) data, this);
                 ((Truck) user).setTruckAPI(guard2);
-                trucks.put((Truck<?>) user, guard);
-            }
-            else if(user instanceof Depot<?>){
-                depots.put((Depot<?>) user, guard);
             }
         }
         else if(user instanceof PickupPoint){
-            PickupGuard guard = new PickupGuard((PickupPoint<?>) user, (PickupPointData) data, this, handle);
-            ((PickupPoint) user).setPickupAPI(guard);
-            
-            result.add(UserInit.create(guard));
-            pickups.put((PickupPoint<?>) user, guard);
+            guard = new PickupGuard((PickupPoint<?>) user, (PickupPointData) data, this, handle);
+            ((PickupPoint) user).setPickupAPI((PickupAPI) guard);
         }
         else if(user instanceof DeliveryPoint){
-            DeliveryGuard guard = new DeliveryGuard((DeliveryPoint<?>) user, (DeliveryPointData) data, this, handle);
-            ((DeliveryPoint) user).setDeliveryAPI(guard);
-            
-            result.add(UserInit.create(guard));
-            deliveries.put((DeliveryPoint<?>)user, guard);
+            guard = new DeliveryGuard((DeliveryPoint<?>) user, (DeliveryPointData) data, this, handle);
+            ((DeliveryPoint) user).setDeliveryAPI((DeliveryAPI) guard);
         }
         else {
             throw new IllegalArgumentException("The user " + user + " has not a valid type known by this pdp model");
         }
+        
+        result.add(UserInit.create(guard));
         
         return result;
     }
 
 
     @Override
-    public List<User<?>> unregister(PdpUser<?> user) {
+    public void unregister(PdpUser<?> user) {
         assert user != null;
-        
-        List<User<?>> result = Lists.newArrayList();
-        
-        if(user instanceof Container<?>){
-            if(user instanceof Truck){
-                assert trucks.containsKey(user);
-                
-                result.add(trucks.get(user));
-                trucks.remove(user);
-            }
-            if(user instanceof Depot){
-                assert depots.containsKey(user);
-                
-                result.add(depots.get(user));
-                depots.remove(user);
-            }
-        }
-        else if(user instanceof PickupPoint){
-            assert pickups.containsKey(user);
-            
-            result.add(pickups.get(user));
-            pickups.remove(user);
-        }
-        else if(user instanceof DeliveryPoint){
-            assert deliveries.containsKey(user);
-            
-            result.add(deliveries.get(user));
-            deliveries.remove(user);
-        }
-        else{
-            throw new IllegalArgumentException("unknown type received..");
-        }
-        
-        return result;
     }
 
     @Override
@@ -215,8 +116,6 @@ public class PdpModel implements Model<Data, PdpUser<?>>, PdpAPI{
 
     @Override
     public void tick(TimeInterval time) {
-        this.time = time;
-        
         if(observer != null){
             for(PickupPoint<?> p:pickupEvents){
                observer.packagePickedUp(p); 
@@ -233,5 +132,4 @@ public class PdpModel implements Model<Data, PdpUser<?>>, PdpAPI{
     public void init(long seed, InteractionRules rules, TimeInterval masterTime) {
         
     }
-
 }

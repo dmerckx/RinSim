@@ -1,9 +1,10 @@
 package gradient;
 
 import gradient.FieldTruck.FTData;
-
-import java.util.List;
-
+import gradient.model.apis.GradientAPI;
+import gradient.model.apis.GradientState;
+import gradient.model.users.FieldData;
+import gradient.model.users.FieldEmitter;
 import rinde.sim.core.graph.Point;
 import rinde.sim.core.model.Agent;
 import rinde.sim.core.model.pdp.Parcel;
@@ -13,7 +14,7 @@ import rinde.sim.core.simulation.TimeLapse;
 
 public class FieldTruck extends Truck<FTData> implements FieldEmitter<FTData>, Agent{
 	
-	private GradientModel gradientAPI;
+	private GradientAPI gradientAPI;
 	private State state;
 	
 	private enum State{
@@ -26,15 +27,11 @@ public class FieldTruck extends Truck<FTData> implements FieldEmitter<FTData>, A
 	}
 	
 	@Override
-	public void setGradientModel(GradientModel model) {
-		this.gradientAPI = model;
+	public void setGradientAPI(GradientAPI api) {
+		api.init(roadAPI);
+		this.gradientAPI = api;
 	}
-
-	@Override
-	public boolean isActive() {
-		return true;	//TODO modify this
-	}
-
+	
 	@Override
 	public void tick(TimeLapse time) {
 		switch(state){
@@ -56,7 +53,7 @@ public class FieldTruck extends Truck<FTData> implements FieldEmitter<FTData>, A
 			}
 			else{
 				//let the field guide the way
-				Point target = gradientAPI.getTargetFor(this, roadAPI.getSpeed());
+				Point target = gradientAPI.getTarget(roadAPI.getSpeed());
 				if(target == null) throw new IllegalStateException();
 				
 				roadAPI.setTarget(target);
@@ -76,6 +73,9 @@ public class FieldTruck extends Truck<FTData> implements FieldEmitter<FTData>, A
 	}
 	
 	private void changeState(State newState){
+		//Todo in originele RinSim versie
+		gradientAPI.setIsActive(state == State.SEARCHING);
+		
 		this.state = newState;
 	}
 	
@@ -91,5 +91,10 @@ public class FieldTruck extends Truck<FTData> implements FieldEmitter<FTData>, A
 		public double getStrenght() {
 			return strength;
 		}
+	}
+
+	@Override
+	public GradientState getGradientState() {
+		return gradientAPI.getState();
 	}
 }

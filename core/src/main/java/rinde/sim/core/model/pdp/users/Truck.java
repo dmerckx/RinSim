@@ -34,7 +34,7 @@ public class Truck<D extends TruckData> implements Container<D>, MovingRoadUser<
     }
     
     public final void setTruckAPI(TruckAPI api){
-        api.init(roadAPI, containerAPI);
+        api.init(roadAPI);
         this.truckAPI = api;
     }
 }

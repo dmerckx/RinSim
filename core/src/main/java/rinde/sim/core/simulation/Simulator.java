@@ -7,6 +7,11 @@ import org.apache.commons.math3.random.RandomGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
+
 import rinde.sim.core.Monitor;
 import rinde.sim.core.model.Agent;
 import rinde.sim.core.model.Data;
@@ -227,8 +232,14 @@ public class Simulator{
         }
     }
     
+    Multimap<User<?>, User<?>> users = ArrayListMultimap.create();
+    
     private <D extends Data> void addUser(UserInit<D> init, TimeLapseHandle lapse){
         List<UserInit<?>> guards = modelManager.register(init.user, init.data, lapse);
+        
+        for(UserInit<?> g:guards){
+            users.put(init.user, g.user);
+        }
         
         if(init.user instanceof InitUser){
             timeUserPolicy.addInituser((InitUser) init.user);
@@ -248,11 +259,13 @@ public class Simulator{
     }
     
     private <D extends Data> void removeUser(User<?> user){
-        List<User<?>> guards = modelManager.unregister(user);
+        modelManager.unregister(user);
         
-        for(User<?> g:guards){
+        for(User<?> g:users.get(user)){
             removeUser(g);
         }
+        
+        users.removeAll(user);
     }
 
     /**

@@ -117,7 +117,7 @@ public class ModelManager implements ModelProvider {
      *             configured
      */
     @SuppressWarnings("unchecked")
-    public <U extends User<?>> List<User<?>> unregister(U user) {
+    public <U extends User<?>> void unregister(U user) {
         assert user!=null : "Can not unregister null";
         assert !(user instanceof Model): "Can not unregister models";
         
@@ -133,12 +133,10 @@ public class ModelManager implements ModelProvider {
                 final Collection<Model<?,?>> assignableModels = registry
                         .get(modelSupportedType);
                 for (final Model<?,?> m : assignableModels) {
-                    result.addAll(((Model<?,U>) m).unregister(user));
+                    ((Model<?,U>) m).unregister(user);
                 }
             }
         }
-        
-        return result;
     }
 
     /**

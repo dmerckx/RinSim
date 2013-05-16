@@ -1,5 +1,7 @@
 package rinde.sim.util;
 
+import rinde.sim.core.graph.Point;
+
 public class Rectangle{
     public final double xMin;
     public final double xMax;
@@ -11,6 +13,11 @@ public class Rectangle{
         this.xMax = xMax;
         this.yMin = yMin;
         this.yMax = yMax;
+    }
+    
+    public boolean isOutsideBounds(Point pos){
+        return pos.x < xMin || pos.x > xMax
+                || pos.y < yMin || pos.y > yMax;
     }
     
     @Override

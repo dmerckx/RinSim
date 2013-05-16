@@ -28,7 +28,7 @@ public interface Model<D extends Data, T extends User<? extends D>>{
      * Unregister element from a model.
      * @param element the <code>! null</code> should be imposed
      */
-    List<User<?>> unregister(T user);
+    void unregister(T user);
     
     /**
      * @return The class of the type supported by this model.

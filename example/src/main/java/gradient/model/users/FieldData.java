@@ -1,4 +1,4 @@
-package gradient;
+package gradient.model.users;
 
 import rinde.sim.core.graph.Point;
 import rinde.sim.core.model.road.users.RoadData;

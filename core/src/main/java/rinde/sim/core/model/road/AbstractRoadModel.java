@@ -284,7 +284,7 @@ public abstract class AbstractRoadModel<T> implements RoadModel{
         }
         else if( user instanceof FixedRoadUser<?>){
             
-            RoadGuard guard = new RoadGuard(user, data, this);
+            RoadGuard guard = new RoadGuard(user, data, this, handle);
             ((FixedRoadUser<?>) user).setRoadAPI(guard);
             mapping.put(user, guard);
         }
@@ -297,14 +297,12 @@ public abstract class AbstractRoadModel<T> implements RoadModel{
     }
 
     @Override
-    public List<User<?>> unregister(RoadUser<?> user) {
+    public void unregister(RoadUser<?> user) {
         assert user!=null : "User can not be null.";
         assert containsObject(user) : "The user has to be present in this model";
         
         removeObject(user);
         mapping.remove(user);
-        
-        return Lists.newArrayList();
     }
 
     @Override

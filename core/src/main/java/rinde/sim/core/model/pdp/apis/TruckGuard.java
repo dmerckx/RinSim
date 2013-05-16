@@ -20,13 +20,13 @@ public class TruckGuard implements TruckAPI{
     }
 
     @Override
-    public void init(RoadAPI roadAPI, ContainerAPI containerAPI) {
-        assert roadAPI == null: "RoadAPI can only be set ones";
+    public void init(RoadAPI roadAPI) {
+        assert this.roadAPI == null: "RoadAPI can only be set ones "; 
         this.roadAPI = roadAPI;
     }
     
     @Override
-    public synchronized Point findClosestAvailableParcel() {
+    public Point findClosestAvailableParcel() {
         assert roadAPI != null: "Init has to be called first";
         
         ClosestAvailableParcelQuery q = new ClosestAvailableParcelQuery(roadAPI.getCurrentLocation());
@@ -34,14 +34,6 @@ public class TruckGuard implements TruckAPI{
         roadAPI.queryAround(roadAPI.getCurrentLocation(), pdpModel.range, q);
         
         return q.getCLosest();
-        /*PickupPoint<?> p = pdpModel.queryClosestPickup(roadAPI.getCurrentLocation(), new Filter<PickupPoint<?>>() {
-            @Override
-            public boolean matches(PickupPoint<?> p) {
-                return p.getPickupPointState().getPickupState() != PickupState.AVAILABLE;
-            }
-        });
-        
-        return p == null ? null : p.getPickupPointState().getParcel().location;*/
     }
 }
 

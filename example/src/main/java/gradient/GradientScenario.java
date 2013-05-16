@@ -1,5 +1,6 @@
 package gradient;
 
+import gradient.model.GradientModel;
 import comparison.Scenario;
 
 import rinde.sim.core.graph.Point;

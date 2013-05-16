@@ -7,6 +7,8 @@ import rinde.sim.core.model.road.users.FixedRoadUser;
 import rinde.sim.core.model.road.users.MovingRoadUser;
 import rinde.sim.core.model.road.users.RoadData;
 import rinde.sim.core.model.road.users.RoadUser;
+import rinde.sim.core.simulation.time.TimeLapseHandle;
+import rinde.sim.util.StateCache;
 import rinde.sim.util.positions.Query;
 
 /**
@@ -17,13 +19,11 @@ import rinde.sim.util.positions.Query;
  * 
  * @author dmerckx
  */
+@SuppressWarnings("javadoc")
 public class RoadGuard extends RoadState implements RoadAPI{
-    @SuppressWarnings("javadoc")
-    protected RoadModel model;
-    @SuppressWarnings("javadoc")
-    protected RoadUser<?> user;
-    @SuppressWarnings("javadoc")
-    protected Point lastLocation;
+    protected final RoadModel model;
+    protected final RoadUser<?> user;
+    protected final StateCache<Point> location;
     
     /**
      * Construct a new guard. 
@@ -32,24 +32,24 @@ public class RoadGuard extends RoadState implements RoadAPI{
      * @param model The road model.
      */
     @SuppressWarnings("hiding")
-    public RoadGuard(RoadUser<?> user, RoadData data, RoadModel model) {
+    public RoadGuard(RoadUser<?> user, RoadData data, RoadModel model, TimeLapseHandle handle) {
         this.user = user;
         this.model = model;
-        this.lastLocation = data.getStartPosition();
+        this.location = new StateCache<Point>(data.getStartPosition(), handle);
     }
     
     @Override
-    public synchronized Point getCurrentLocation() {
-        return lastLocation;
+    public Point getCurrentLocation() {
+        return location.getActualValue();
     }
 
     @Override
-    public synchronized Point getLocation() {
-        return lastLocation;
+    public Point getLocation() {
+        return location.getFrozenValue();
     }
     
     @Override
-    public synchronized RoadState getState(){
+    public RoadState getState(){
         return this;
     }
     
@@ -57,22 +57,22 @@ public class RoadGuard extends RoadState implements RoadAPI{
     // ----- ROAD QUERIES ----- //
 
     @Override
-    public synchronized <T extends RoadUser<?>> void queryAround(Point pos, double range, Query<T> q) {
+    public <T extends RoadUser<?>> void queryAround(Point pos, double range, Query<T> q) {
         model.queryAround(pos, range, q);
     }
 
     @Override
-    public synchronized SafeIterator<RoadUser<?>> queryRoadUsers() {
+    public SafeIterator<RoadUser<?>> queryRoadUsers() {
         return model.queryRoadUsers();
     }
 
     @Override
-    public synchronized SafeIterator<FixedRoadUser<?>> queryFixedRoadUsers() {
+    public SafeIterator<FixedRoadUser<?>> queryFixedRoadUsers() {
         return model.queryFixedRoadUsers();
     }
 
     @Override
-    public synchronized SafeIterator<MovingRoadUser<?>> queryMovingRoadUsers() {
+    public SafeIterator<MovingRoadUser<?>> queryMovingRoadUsers() {
         return model.queryMovingRoadUsers();
     }
 }
