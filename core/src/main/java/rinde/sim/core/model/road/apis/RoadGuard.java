@@ -1,10 +1,7 @@
 package rinde.sim.core.model.road.apis;
 
 import rinde.sim.core.graph.Point;
-import rinde.sim.core.model.SafeIterator;
 import rinde.sim.core.model.road.RoadModel;
-import rinde.sim.core.model.road.users.FixedRoadUser;
-import rinde.sim.core.model.road.users.MovingRoadUser;
 import rinde.sim.core.model.road.users.RoadData;
 import rinde.sim.core.model.road.users.RoadUser;
 import rinde.sim.core.simulation.time.TimeLapseHandle;
@@ -59,20 +56,5 @@ public class RoadGuard extends RoadState implements RoadAPI{
     @Override
     public <T extends RoadUser<?>> void queryAround(Point pos, double range, Query<T> q) {
         model.queryAround(pos, range, q);
-    }
-
-    @Override
-    public SafeIterator<RoadUser<?>> queryRoadUsers() {
-        return model.queryRoadUsers();
-    }
-
-    @Override
-    public SafeIterator<FixedRoadUser<?>> queryFixedRoadUsers() {
-        return model.queryFixedRoadUsers();
-    }
-
-    @Override
-    public SafeIterator<MovingRoadUser<?>> queryMovingRoadUsers() {
-        return model.queryMovingRoadUsers();
     }
 }

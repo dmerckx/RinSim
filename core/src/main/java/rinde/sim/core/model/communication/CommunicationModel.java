@@ -76,7 +76,7 @@ public class CommunicationModel implements Model<Data, CommUser<?>>{
 	    SimpleCommGuard receiver = comms.get(destination);
 	    receiver.receive(msg);
 	}
-	
+	    
 	/**
 	 * Broadcast a message.
 	 * @param msg The message to be broadcasted.

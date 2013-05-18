@@ -16,6 +16,7 @@ public class StateCache<T> {
         this.backupValue = initValue;
         this.lastChangedTime = globalTime.getStartTime();
     }
+
     
     public synchronized void setValue(T value){
         if(globalTime.getStartTime() > lastChangedTime){

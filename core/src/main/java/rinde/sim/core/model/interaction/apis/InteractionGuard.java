@@ -28,10 +28,9 @@ import com.google.common.collect.Lists;
  * 
  * @author dmerckx
  */
-public class InteractiveGuard implements InteractionAPI, Comparable<InteractiveGuard>{
+public class InteractionGuard implements InteractionAPI, Comparable<InteractionGuard>{
     private final InteractionModel interactionModel;
     private final InteractionUser<?> user;
-    private SimpleCommAPI commAPI;
     private Integer id;
     
     private final TimeLapseHandle handle;
@@ -45,7 +44,7 @@ public class InteractiveGuard implements InteractionAPI, Comparable<InteractiveG
      * @param handle A handle to the users time lapse.
      */
     @SuppressWarnings("hiding")
-    public InteractiveGuard(InteractionUser<?> user, InteractionModel model, TimeLapseHandle handle, int id) {
+    public InteractionGuard(InteractionUser<?> user, InteractionModel model, TimeLapseHandle handle, int id) {
         this.user = user;
         this.interactionModel = model;
         this.handle = handle;
@@ -69,21 +68,6 @@ public class InteractiveGuard implements InteractionAPI, Comparable<InteractiveG
         handle.unblock(time);
         user.notifyDone(receiver);
         receiver = null;
-    }
-    
-    @Override
-    public List<Message> getNotifications(){
-        Iterator<Delivery> it = commAPI.getMessages();
-        
-        List<Message> result = Lists.newArrayList();
-        
-        while(it.hasNext()){
-            Delivery d = it.next();
-            result.add(d.message);
-            it.remove();
-        }
-        
-        return result;
     }
     
     @Override
@@ -114,7 +98,7 @@ public class InteractiveGuard implements InteractionAPI, Comparable<InteractiveG
     }
 
     @Override
-    public int compareTo(InteractiveGuard o) {
+    public int compareTo(InteractionGuard o) {
         return id.compareTo(o.id);
     }
 }

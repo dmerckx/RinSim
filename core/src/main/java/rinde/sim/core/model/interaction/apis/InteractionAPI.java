@@ -30,15 +30,6 @@ import rinde.sim.core.simulation.TimeLapse;
  * @author dmerckx
  */
 public interface InteractionAPI{
-    
-    /**
-     * Get all new notifications send by the advertised receiver.
-     * Ones this list is requested the notifications inside will
-     * not longer be available during a later inquiry.
-     * @return A list with notifications.
-     */
-    public List<Message> getNotifications();
-    
     /**
      * Use a visitor, it will be applied to all the receivers
      * on its location.

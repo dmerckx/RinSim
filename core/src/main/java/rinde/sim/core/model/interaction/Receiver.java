@@ -1,7 +1,7 @@
 package rinde.sim.core.model.interaction;
 
 import rinde.sim.core.graph.Point;
-import rinde.sim.core.model.interaction.apis.InteractiveGuard;
+import rinde.sim.core.model.interaction.apis.InteractionGuard;
 import rinde.sim.core.model.interaction.users.InteractionUser;
 
 /**
@@ -26,7 +26,7 @@ public class Receiver implements Comparable<Receiver>{
      */
     public final Point location;
     InteractionModel model;
-    InteractiveGuard guard;
+    InteractionGuard guard;
     
     /**
      * Indicates whether this receiver is scheduled for termination.

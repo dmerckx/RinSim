@@ -7,7 +7,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -19,8 +18,6 @@ import org.apache.commons.math3.random.MersenneTwister;
 import org.apache.commons.math3.random.RandomGenerator;
 
 import rinde.sim.core.graph.Point;
-import rinde.sim.core.model.SafeIterator;
-import rinde.sim.core.model.User;
 import rinde.sim.core.model.road.apis.MovingRoadGuard;
 import rinde.sim.core.model.road.apis.RoadGuard;
 import rinde.sim.core.model.road.users.FixedRoadUser;
@@ -101,56 +98,6 @@ public abstract class AbstractRoadModel<T> implements RoadModel{
         }
     }
 
-    @Override
-    public SafeIterator<RoadUser<?>> queryRoadUsers() {
-        return new SafeIterator.Std<RoadUser<?>>(mapping.keySet());
-    }
-
-    @Override
-    public SafeIterator<FixedRoadUser<?>> queryFixedRoadUsers() {
-        final Iterator<RoadUser<?>> it1 = mapping.keySet().iterator();
-        final Iterator<RoadUser<?>> it2 = mapping.keySet().iterator();
-        return new SafeIterator<FixedRoadUser<?>>(){
-            @Override
-            public boolean hasNext() {
-                while(it1.hasNext()){
-                    if(it1.next() instanceof FixedRoadUser<?>) return true;
-                }
-                return false;
-            }
-            @Override
-            public FixedRoadUser<?> next() {
-                RoadUser<?> result = it2.next();
-                while(!(result instanceof FixedRoadUser<?>)){
-                    result = it2.next();
-                }
-                return (FixedRoadUser<?>) result;
-            }
-        };
-    }
-    
-    @Override
-    public SafeIterator<MovingRoadUser<?>> queryMovingRoadUsers() {
-        final Iterator<RoadUser<?>> it1 = mapping.keySet().iterator();
-        final Iterator<RoadUser<?>> it2 = mapping.keySet().iterator();
-        return new SafeIterator<MovingRoadUser<?>>(){
-            @Override
-            public boolean hasNext() {
-                while(it1.hasNext()){
-                    if(it1.next() instanceof MovingRoadUser<?>) return true;
-                }
-                return false;
-            }
-            @Override
-            public MovingRoadUser<?> next() {
-                RoadUser<?> result = it2.next();
-                while(!(result instanceof MovingRoadUser<?>)){
-                    result = it2.next();
-                }
-                return (MovingRoadUser<?>) result;
-            }
-        };
-    }
 
     @Override
     public Class<RoadUser<?>> getSupportedType() {
@@ -238,16 +185,11 @@ public abstract class AbstractRoadModel<T> implements RoadModel{
         objLocs.remove(roadUser);
         if(cached) cache.remove(roadUser);
     }
-
-    protected boolean containsObject(RoadUser<?> obj) {
-        checkArgument(obj != null, "obj can not be null");
-        return objLocs.containsKey(obj);
-    }
     
     @Override
     public Point getPosition(RoadUser<?> roadUser) {
         checkArgument(roadUser != null, "object can not be null");
-        checkArgument(containsObject(roadUser), "RoadUser<?> does not exist");
+        checkArgument(objLocs.containsKey(roadUser), "RoadUser<?> does not exist");
         return locObj2point(objLocs.get(roadUser));
     }
 
@@ -299,7 +241,7 @@ public abstract class AbstractRoadModel<T> implements RoadModel{
     @Override
     public void unregister(RoadUser<?> user) {
         assert user!=null : "User can not be null.";
-        assert containsObject(user) : "The user has to be present in this model";
+        assert objLocs.containsKey(user) : "The user has to be present in this model";
         
         removeObject(user);
         mapping.remove(user);

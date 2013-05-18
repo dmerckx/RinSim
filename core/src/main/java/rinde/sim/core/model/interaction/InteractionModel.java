@@ -8,8 +8,7 @@ import java.util.SortedSet;
 import rinde.sim.core.graph.Point;
 import rinde.sim.core.model.Data;
 import rinde.sim.core.model.Model;
-import rinde.sim.core.model.User;
-import rinde.sim.core.model.interaction.apis.InteractiveGuard;
+import rinde.sim.core.model.interaction.apis.InteractionGuard;
 import rinde.sim.core.model.interaction.users.InteractionUser;
 import rinde.sim.core.simulation.TimeInterval;
 import rinde.sim.core.simulation.TimeLapse;
@@ -35,7 +34,7 @@ import com.google.common.collect.Sets;
 public class InteractionModel implements Model<Data, InteractionUser<?>> {
     
     private LinkedHashMultimap<Point, Receiver> receiversPos = LinkedHashMultimap.create();
-    private HashMap<InteractionUser<?>, InteractiveGuard> mapping = Maps.newHashMap();
+    private HashMap<InteractionUser<?>, InteractionGuard> mapping = Maps.newHashMap();
     
     private SortedSet<Receiver> schedualedForAdd = Sets.newTreeSet();
     private List<Receiver> schedualedRemoval = Lists.newArrayList();
@@ -82,7 +81,7 @@ public class InteractionModel implements Model<Data, InteractionUser<?>> {
      * @param receiver The receiver to be terminated.
      * @param time The time at which the receiver terminates.
      */
-    public synchronized void terminate(final Receiver receiver,final long time){
+    public synchronized void terminate(Receiver receiver, long time){
         schedualedTermination.add(Tuple.create(receiver, time));
     }
     
@@ -101,7 +100,7 @@ public class InteractionModel implements Model<Data, InteractionUser<?>> {
      * @param receiver The receiver to add.
      * @param guard The guard that created the guard.
      */
-    public synchronized void schedualAdd(Receiver receiver, InteractiveGuard guard){
+    public synchronized void schedualAdd(Receiver receiver, InteractionGuard guard){
         receiver.model = this;
         receiver.guard = guard;
         
@@ -115,7 +114,7 @@ public class InteractionModel implements Model<Data, InteractionUser<?>> {
     public List<UserInit<?>> register(InteractionUser<?> user, Data d, TimeLapseHandle handle) {
         assert user!=null : "User can not be null.";
         
-        InteractiveGuard guard = new InteractiveGuard(user, this, handle, guardId++);
+        InteractionGuard guard = new InteractionGuard(user, this, handle, guardId++);
         user.setInteractionAPi(guard);
         
         mapping.put(user, guard);
