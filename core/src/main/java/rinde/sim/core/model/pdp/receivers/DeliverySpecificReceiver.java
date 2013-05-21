@@ -27,8 +27,8 @@ public class DeliverySpecificReceiver extends DeliveryReceiver {
      */
     @SuppressWarnings( "hiding" )
     public DeliverySpecificReceiver(Point location,
-            List<? extends Parcel> targets, TimeWindowPolicy policy) {
-        super(location, Parcel.class, policy);
+            List<? extends Parcel> targets, TimeWindowPolicy policy, double maxMagnitude) {
+        super(location, Parcel.class, policy, maxMagnitude);
         this.targets = targets;
     }
 

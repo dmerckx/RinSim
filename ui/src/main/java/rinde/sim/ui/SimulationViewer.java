@@ -528,6 +528,13 @@ public class SimulationViewer extends Composite implements TickListener, Control
 
 	@Override
 	public void tick(TimeInterval timeLapse) {
+		try {
+			Thread.sleep(100);
+		} catch (InterruptedException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		
 		if (simulator.isPlaying()
 				&& lastRefresh + timeLapse.getTimeStep() * speedUp > timeLapse.getStartTime()) {
 			return;

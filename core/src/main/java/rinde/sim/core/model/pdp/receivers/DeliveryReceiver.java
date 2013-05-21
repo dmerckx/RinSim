@@ -21,6 +21,7 @@ public class DeliveryReceiver extends Receiver {
 
     private final Class<? extends Parcel> target;
     private final TimeWindowPolicy policy;
+    private final double maxMagnitude;
     
     private Parcel received = null;
     
@@ -32,10 +33,11 @@ public class DeliveryReceiver extends Receiver {
      */
     @SuppressWarnings("hiding")
     public DeliveryReceiver(Point location, Class<? extends Parcel> target,
-            TimeWindowPolicy policy) {
+            TimeWindowPolicy policy, double maxMagnitude) {
         super(location);
         this.target = target;
         this.policy = policy;
+        this.maxMagnitude = maxMagnitude;
     }
 
     /**
@@ -55,6 +57,7 @@ public class DeliveryReceiver extends Receiver {
      */
     public boolean canAccept(TimeLapse time, Parcel parcel, DeliveryVisitor visitor) {
        if(terminated) return false;
+       if(parcel.magnitude > maxMagnitude) return false;
         
        return parcel.getClass().isAssignableFrom(target)
                 && policy.canDeliver(parcel.deliveryTimeWindow, time.getCurrentTime(), parcel.deliveryDuration);

@@ -28,7 +28,8 @@ import com.google.common.collect.Lists;
 public class ModPoolBatch extends AgentsPolicyAbstr{
     protected int batchSize;
     protected Thread[] workers;
-    protected LinkedBlockingQueue<Runnable> tasks = new LinkedBlockingQueue<Runnable>();
+    protected LinkedBlockingQueue<Runnable> tasks =
+            new LinkedBlockingQueue<Runnable>();
     
     protected final Rules rules = createRules();
     

@@ -90,6 +90,7 @@ public class PDPModelRenderer implements ModelRenderer {
 					final int offsetX = x - image.getBounds().width / 2;
 					final int offsetY = y - image.getBounds().height / 2;
 					gc.drawImage(image, offsetX, offsetY);
+					//gc.drawText(user.toString(), offsetX, offsetY);
 				} else {
 					final Color color = uiSchema.getColor(type);
 					if (color == null) {

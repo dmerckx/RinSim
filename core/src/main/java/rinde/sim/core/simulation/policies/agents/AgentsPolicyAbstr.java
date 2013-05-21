@@ -2,12 +2,10 @@ package rinde.sim.core.simulation.policies.agents;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
 
 import rinde.sim.core.model.Agent;
 import rinde.sim.core.model.InitUser;
 import rinde.sim.core.simulation.TimeInterval;
-import rinde.sim.core.simulation.policies.InteractionRules;
 import rinde.sim.core.simulation.policies.AgentsPolicy;
 import rinde.sim.core.simulation.time.TimeLapseHandle;
 

@@ -7,7 +7,6 @@ import gradient.model.users.FieldEmitter;
 import java.util.List;
 
 import rinde.sim.core.model.Model;
-import rinde.sim.core.model.User;
 import rinde.sim.core.model.road.RoadModel;
 import rinde.sim.core.simulation.TimeInterval;
 import rinde.sim.core.simulation.UserInit;

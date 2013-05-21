@@ -38,7 +38,7 @@ public class FieldTruck extends Truck<FTData> implements FieldEmitter<FTData>, A
 		case SEARCHING:
 			Point closest = truckAPI.findClosestAvailableParcel();
 
-			if(closest != null && Point.distance(closest, roadAPI.getCurrentLocation()) < 3 * roadAPI.getSpeed()){
+			if(closest != null && Point.distance(closest, roadAPI.getCurrentLocation()) < 5*roadAPI.getSpeed()){
 				//drive to the most nearby package
 				roadAPI.setTarget(closest);
 				roadAPI.advance(time);
@@ -53,7 +53,7 @@ public class FieldTruck extends Truck<FTData> implements FieldEmitter<FTData>, A
 			}
 			else{
 				//let the field guide the way
-				Point target = gradientAPI.getTarget(roadAPI.getSpeed());
+				Point target = gradientAPI.getTarget(5*roadAPI.getSpeed());
 				if(target == null) throw new IllegalStateException();
 				
 				roadAPI.setTarget(target);

@@ -8,9 +8,16 @@ import rinde.sim.core.model.road.apis.RoadState;
 import rinde.sim.core.model.road.users.MovingRoadUser;
 
 public class Truck<D extends TruckData> implements Container<D>, MovingRoadUser<D>{
+    private static int idCounter = 0;
+    private int id;
+    
     protected MovingRoadAPI roadAPI;
     protected ContainerAPI containerAPI;
     protected TruckAPI truckAPI;
+    
+    public Truck() {
+        this.id = idCounter++;
+    }
     
     @Override
     public final void setRoadAPI(MovingRoadAPI api) {
@@ -36,5 +43,10 @@ public class Truck<D extends TruckData> implements Container<D>, MovingRoadUser<
     public final void setTruckAPI(TruckAPI api){
         api.init(roadAPI);
         this.truckAPI = api;
+    }
+    
+    @Override
+    public String toString() {
+        return "tr" + id;
     }
 }

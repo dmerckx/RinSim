@@ -2,6 +2,8 @@ package rinde.sim.core.model.pdp.apis;
 
 import java.util.List;
 
+import com.google.common.collect.ImmutableList;
+
 import rinde.sim.core.model.Data;
 import rinde.sim.core.model.User;
 import rinde.sim.core.model.pdp.Parcel;
@@ -41,7 +43,7 @@ public interface ContainerAPI extends User<Data>{
      * Returns all the parcels currently contained.
      * @return The list of contained parcels.
      */
-    public List<Parcel> getCurrentLoad();
+    public ImmutableList<Parcel> getCurrentLoad();
     
     
     /**

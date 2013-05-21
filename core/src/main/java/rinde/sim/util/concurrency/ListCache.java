@@ -1,10 +1,13 @@
-package rinde.sim.util;
+package rinde.sim.util.concurrency;
 
+import java.util.List;
+
+import rinde.sim.core.model.pdp.Parcel;
 import rinde.sim.core.simulation.TimeInterval;
 
 import com.google.common.collect.ImmutableList;
 
-public class ListStateCache<T> {
+public class ListCache<T> {
 
     private final TimeInterval globalTime;
     
@@ -12,7 +15,7 @@ public class ListStateCache<T> {
     private ImmutableList<T> backupValue;
     private long lastChangedTime;
     
-    public ListStateCache(TimeInterval globalTime, T... initValues) {
+    public ListCache(TimeInterval globalTime, T... initValues) {
         this.globalTime = globalTime;
         
         this.actualValue = ImmutableList.copyOf(initValues);

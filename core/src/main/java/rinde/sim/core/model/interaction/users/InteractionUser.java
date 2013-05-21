@@ -1,5 +1,6 @@
 package rinde.sim.core.model.interaction.users;
 
+
 import rinde.sim.core.model.Data;
 import rinde.sim.core.model.User;
 import rinde.sim.core.model.interaction.Receiver;
@@ -35,7 +36,6 @@ public interface InteractionUser<D extends Data> extends User<D> {
      * Called at the end of a tick (after all agents were processed)
      * whenever a registered receiver created by this user is disabled
      * (either by the receiver itself or manually by this user).
-     * @param receiver The receiver that was originally advertised.
      */
-    public void notifyDone(Receiver receiver);
+    public void notifyDone(Receiver rec);
 }

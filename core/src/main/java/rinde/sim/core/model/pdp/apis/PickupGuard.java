@@ -7,11 +7,13 @@ import rinde.sim.core.model.interaction.apis.InteractionAPI;
 import rinde.sim.core.model.interaction.users.InteractionUser;
 import rinde.sim.core.model.pdp.Parcel;
 import rinde.sim.core.model.pdp.PdpModel;
+import rinde.sim.core.model.pdp.apis.PickupAPI.PickupState;
 import rinde.sim.core.model.pdp.receivers.PickupReceiver;
 import rinde.sim.core.model.pdp.users.PickupPoint;
 import rinde.sim.core.model.pdp.users.PickupPointData;
 import rinde.sim.core.simulation.TimeInterval;
 import rinde.sim.core.simulation.time.TimeLapseHandle;
+import rinde.sim.util.concurrency.StateCache;
 
 import com.google.common.collect.Lists;
 
@@ -19,21 +21,19 @@ public class PickupGuard extends PickupPointState implements PickupAPI, InitUser
     
     private final PdpModel pdpModel;
     private final PickupPoint<?> user;
-    private InteractionAPI interactionAPI;
-    
-    private Parcel parcel;
-    
-    private long lastUpdatedState = -1;
-    private long pickedupTime = -1;
-    private PickupState state;
-    
     private final TimeLapseHandle handle;
     
+    private final Parcel parcel;
+    private final StateCache<PickupState> state;
+    
+    private InteractionAPI interactionAPI;
+
     public PickupGuard(PickupPoint<?> user, PickupPointData data, PdpModel model, TimeLapseHandle handle) {
         this.parcel = data.getParcel();
         this.pdpModel = model;
         this.user = user;
         this.handle = handle;
+        this.state = new PickupStateCache(handle, parcel);
     }
 
     @Override
@@ -45,74 +45,87 @@ public class PickupGuard extends PickupPointState implements PickupAPI, InitUser
     @Override
     public void init() {
         //Advertise a receiver, waiting for the parcel to be picked up
-        interactionAPI.advertise(
-                new PickupReceiver(parcel.location, Lists.newArrayList(parcel), pdpModel.getPolicy()));
+        makeAvailable();
     }
 
     @Override
-    public void notifyDone(Receiver receiver) {
-        pickedupTime = handle.getCurrentTime();
-        handle.consume(parcel.deliveryDuration);
+    public void notifyDone(Receiver rec) {
+        handle.consume(parcel.pickupDuration);
+        state.setValue(PickupState.BEING_PICKED_UP);
         pdpModel.notifyParcelPickup(user);
-    }
-    
-    /**
-     * State always remains the same during a single tick.
-     */
-    private void updateState(){
-        if(lastUpdatedState == handle.getStartTime()) 
-            return; //up to date 
-        
-        long time = handle.getStartTime();
-       
-        if(pickedupTime == -1){
-            if(time < parcel.pickupTimeWindow.begin)
-                state = PickupState.SETTING_UP;
-            else if(time < parcel.pickupTimeWindow.end)
-                state = PickupState.AVAILABLE;
-            else 
-                state = PickupState.LATE;
-        }
-        else {
-            if(time < pickedupTime + parcel.pickupDuration)
-                state = PickupState.BEING_PICKED_UP;
-            else
-                state = PickupState.PICKED_UP;
-        }
-        
-        lastUpdatedState = time;
     }
     
     // ----- PICKUP API ----- //
     
     @Override
-    public synchronized boolean isPickedUp() {
-        return getPickupState() == PickupState.BEING_PICKED_UP 
-                || getPickupState() == PickupState.PICKED_UP;
+    public boolean isPickedUp() {
+        return state.getActualValue() == PickupState.BEING_PICKED_UP 
+                || state.getActualValue() == PickupState.PICKED_UP;
     }
     
     @Override
-    public synchronized boolean canBePickedUp(TimeInterval time) {
+    public boolean canBePickedUp(TimeInterval time) {
         return !isPickedUp() && pdpModel.getPolicy().canPickup(
                 parcel.pickupTimeWindow, time.getStartTime(), parcel.pickupDuration);
     }
 
     @Override
-    public synchronized PickupPointState getState() {
+    public PickupPointState getState() {
         return this;
     }
-    
-    // ----- OVERLAP PICKUP API & PICKUP POINT STATE ----- //
 
     @Override
-    public synchronized PickupState getPickupState() {
-        updateState();
-        return state;
+    public void setCustomReceiver(PickupReceiver rec) {
+        interactionAPI.advertise(rec);
     }
     
     @Override
-    public synchronized Parcel getParcel() {
+    public void makeAvailable() {
+        interactionAPI.advertise(
+                new PickupReceiver(parcel.location, Lists.newArrayList(parcel), pdpModel.getPolicy()));
+    }
+
+    @Override
+    public void makeUnavailable() {
+        interactionAPI.stopAdvertising();
+    }
+    
+    // ----- PICKUP POINT STATE ----- //
+
+    @Override
+    public PickupState getPickupState() {
+        return state.getFrozenValue();
+    }
+    
+    @Override
+    public Parcel getParcel() {
         return parcel;
     }
-
 }
+
+class PickupStateCache extends StateCache<PickupState>{
+    private final Parcel parcel;
+    
+    public PickupStateCache(TimeLapseHandle handle, Parcel parcel) {
+        super(PickupState.SETTING_UP, handle);
+        this.parcel = parcel;
+    }
+
+    @Override
+    public PickupState getState(PickupState currentState, long time) {
+        switch(currentState){
+        case SETTING_UP:
+            if(time > parcel.pickupTimeWindow.begin) return PickupState.AVAILABLE;
+            break;
+        case AVAILABLE:
+            if(time > parcel.pickupTimeWindow.end) return PickupState.LATE;
+            break;
+        case BEING_PICKED_UP:
+            if(time > lastChangedTime + parcel.pickupDuration) return PickupState.PICKED_UP;
+            break;
+        default:
+            break;
+        }
+        return currentState;
+    }
+};

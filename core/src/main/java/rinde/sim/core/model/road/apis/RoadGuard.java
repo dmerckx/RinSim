@@ -5,7 +5,7 @@ import rinde.sim.core.model.road.RoadModel;
 import rinde.sim.core.model.road.users.RoadData;
 import rinde.sim.core.model.road.users.RoadUser;
 import rinde.sim.core.simulation.time.TimeLapseHandle;
-import rinde.sim.util.StateCache;
+import rinde.sim.util.concurrency.ValueCache;
 import rinde.sim.util.positions.Query;
 
 /**
@@ -20,7 +20,7 @@ import rinde.sim.util.positions.Query;
 public class RoadGuard extends RoadState implements RoadAPI{
     protected final RoadModel model;
     protected final RoadUser<?> user;
-    protected final StateCache<Point> location;
+    protected final ValueCache<Point> location;
     
     /**
      * Construct a new guard. 
@@ -32,7 +32,7 @@ public class RoadGuard extends RoadState implements RoadAPI{
     public RoadGuard(RoadUser<?> user, RoadData data, RoadModel model, TimeLapseHandle handle) {
         this.user = user;
         this.model = model;
-        this.location = new StateCache<Point>(data.getStartPosition(), handle);
+        this.location = new ValueCache<Point>(data.getStartPosition(), handle);
     }
     
     @Override

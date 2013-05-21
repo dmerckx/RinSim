@@ -1,6 +1,7 @@
 package rinde.sim.core.model.pdp.apis;
 
 import rinde.sim.core.model.pdp.Parcel;
+import rinde.sim.core.model.pdp.receivers.PickupReceiver;
 import rinde.sim.core.model.pdp.users.PickupPoint;
 import rinde.sim.core.simulation.TimeInterval;
 
@@ -32,18 +33,6 @@ public interface PickupAPI {
      * @return Whether the contained package is picked up yet.
      */
     public boolean isPickedUp();
-    
-    /**
-     * Data of the parcel that was originally contained by this pickup point.
-     * @return The parcel associated with this point.
-     */
-    public Parcel getParcel();
-    
-    /**
-     * Returns the current state of this pickup point as an enum.
-     * @return The current state.
-     */
-    public PickupState getPickupState();
 
     /**
      * Check whether the time constraints on this {@link PickupPoint} still
@@ -52,6 +41,12 @@ public interface PickupAPI {
      * @return Whether pickup is still allowed at the given time. 
      */
     public boolean canBePickedUp(TimeInterval time);
+    
+    public void setCustomReceiver(PickupReceiver rec);
+    
+    public void makeAvailable();
+    
+    public void makeUnavailable();
     
     /**
      * The possible states a {@link PickupPoint} can be in.

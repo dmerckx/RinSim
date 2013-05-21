@@ -17,6 +17,8 @@ import rinde.sim.core.simulation.policies.agents.SingleThreaded;
 import rinde.sim.core.simulation.policies.agents.areas.Areas;
 import rinde.sim.core.simulation.policies.agents.areas2.Areas2;
 
+import comparison.Scenario.Result;
+
 public class ComparisonPlot{
 	//public static final String PATH = "/home/dmerckx/Documents/plots2/";
 	public static String PATH = "/tmp/"; 

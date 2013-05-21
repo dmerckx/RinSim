@@ -13,8 +13,8 @@ public class ContractScenario extends Scenario{
 	
 	public final double radius;
 	
-	public ContractScenario(long seed, AgentsPolicy policy, int speed, int ticks, int cars,
-			int proportion, double closestPackageRange, double radius) {
+	public ContractScenario(long seed, AgentsPolicy policy, double speed, int ticks, int cars,
+			double proportion, double closestPackageRange, double radius) {
 		super(seed, policy, speed, ticks, cars, proportion, closestPackageRange);
 		this.radius = radius;
 	}
@@ -28,7 +28,7 @@ public class ContractScenario extends Scenario{
 	}
 
 	@Override
-	protected void registerTruck(Point pos, int speed, int cap) {
+	protected void registerTruck(Point pos, double speed, int cap) {
 		sim.registerUser(
 				new ContractTruck(),
 				new ContractTruck.CTTruckData(speed, pos, 1, radius));

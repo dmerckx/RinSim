@@ -5,6 +5,9 @@ import naive.NaiveScenario;
 import rinde.sim.core.simulation.policies.AgentsPolicy;
 import rinde.sim.core.simulation.policies.agents.ModPoolBatch2;
 import rinde.sim.core.simulation.policies.agents.SingleThreaded;
+
+import comparison.Scenario.Result;
+
 import contractnet.ContractScenario;
 
 public class Comparison {
@@ -15,17 +18,16 @@ public class Comparison {
 	
 	public static void main(String[] args) {
 		int seed = 26;
-		AgentsPolicy policy = new SingleThreaded();
 		int speed = 1;
 		int ticks = 500;
-		int cars = 700;
+		int cars = 2;
 		int proportion = 5;
 		
 		long time = System.currentTimeMillis();
 		
-		Scenario s = makeScenario(2, seed, policy, speed, ticks, cars, proportion);
+		Scenario s = makeScenario(2, seed, new SingleThreaded(), speed, ticks, cars, proportion);
 		s.init(0);
-		//s.runGUI();
+		s.runGUI();
 		Result r = s.run();
 		
 		System.out.println("time: " + (System.currentTimeMillis() - time));

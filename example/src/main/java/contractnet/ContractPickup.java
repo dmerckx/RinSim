@@ -1,7 +1,10 @@
 package contractnet;
 
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
+import java.util.LinkedList;
 import java.util.Map.Entry;
 
 import rinde.sim.core.model.Agent;
@@ -17,34 +20,36 @@ import rinde.sim.core.model.pdp.users.PickupPoint;
 import rinde.sim.core.model.pdp.users.PickupPointData;
 import rinde.sim.core.simulation.TimeLapse;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 import contractnet.ContractPickup.CTPickupData;
 import contractnet.messages.Accept;
 import contractnet.messages.Auction;
 import contractnet.messages.Bid;
+import contractnet.messages.Proposal;
 import contractnet.messages.Reject;
-import contractnet.messages.Winner;
 
-public class ContractPickup extends PickupPoint<CTPickupData> implements FullCommUser<CTPickupData>, Agent{
+public class ContractPickup extends PickupPoint<CTPickupData> implements FullCommUser<CTPickupData>,
+							Agent, Comparator<Entry<Address, Double>>{
 
-	public static final int REFRESH_RATE = 20;
+	public static final int REFRESH_RATE = 10;
+	public static final int MAX_REJECTS = 2;
 	
 	private CommAPI commAPI;
 
-	private Map<Address, Double> bids = Maps.newLinkedHashMap();
+	private HashMap<Address, Double> bids = Maps.newHashMap();
+	private int rejections = 0;
 	private State state;
-	private int counter;
 	
 	private enum State{
-		BEFORE_AUCTION,
 		AUCTIONING,
-		WAITING_FOR_WINNER,
+		WAITING,
 		SOLD;
 	}
 	
 	public ContractPickup() {
-		this.state = State.BEFORE_AUCTION;
+		this.state = State.AUCTIONING;
 	}
 	
 	@Override
@@ -60,7 +65,7 @@ public class ContractPickup extends PickupPoint<CTPickupData> implements FullCom
 	@Override
 	public void tick(TimeLapse time) {
 		handleMail();
-		handleState();
+		handleState(time);
 	}
 	
 	private void handleMail() {
@@ -71,20 +76,18 @@ public class ContractPickup extends PickupPoint<CTPickupData> implements FullCom
 			Message m = d.message;
 			
 			switch(state){
-			case BEFORE_AUCTION:
-				break;
 			case AUCTIONING:
 				if(m instanceof Bid){
 					bids.put(d.sender, ((Bid) m).value);
 				}
 				break;
-			case WAITING_FOR_WINNER:
+			case WAITING:
 				if(m instanceof Accept){
 					bids.clear();
 					changeState(State.SOLD);
 				}
 				else if(m instanceof Reject){
-					bids.remove(d.sender);
+					rejections++;
 					changeState(State.AUCTIONING);
 				}
 				break;
@@ -96,33 +99,43 @@ public class ContractPickup extends PickupPoint<CTPickupData> implements FullCom
 		}
 	}
 	
-	private void handleState() {
-		counter++;
-		
+	private void handleState(TimeLapse time) {
 		switch(state){
-		case BEFORE_AUCTION:
-			commAPI.broadcast(new Auction(roadAPI.getCurrentLocation()));
-			changeState(State.AUCTIONING);
-			break;
 		case AUCTIONING:
-			if(counter > REFRESH_RATE){
-				if(bids.isEmpty()){
+			if(time.getStartTime() % REFRESH_RATE == 0)
+				commAPI.broadcast(new Auction(roadAPI.getCurrentLocation()));
+			
+			if(rejections > MAX_REJECTS){
+				bids.clear();
+				rejections = 0;
+				break;
+			}
+			
+			if(bids.isEmpty()) break;
+			
+			LinkedList<Entry<Address, Double>> bidsList = Lists.newLinkedList(bids.entrySet());
+			Collections.sort(bidsList, this);
+			Entry<Address, Double> bestBid = bidsList.getLast();
+			
+			bids.remove(bestBid.getKey());
+			commAPI.send(bestBid.getKey(), new Proposal(roadAPI.getCurrentLocation()));
+			changeState(State.WAITING);
+			
+			/*if(counter > REFRESH_RATE){
+				if(bids.isEmpty() || rejections > MAX_REJECTS){
+					bids.clear();
+					rejections = 0;
+					counter = 0;
 					changeState(State.BEFORE_AUCTION);
 				}
 				else{
-					Address winner = null;
-					double highest = 0;
-					
-					for(Entry<Address, Double> e:bids.entrySet()){
-						if(highest < e.getValue())
-							winner = e.getKey();
-					}
-					commAPI.send(winner, new Winner(roadAPI.getCurrentLocation()));
+					Collections.sort(bids, this);
+					commAPI.send(bids.removeLast().sender, new Proposal(roadAPI.getCurrentLocation()));
 					changeState(State.WAITING_FOR_WINNER);
 				}
-			}
+			}*/
 			break;
-		case WAITING_FOR_WINNER:
+		case WAITING:
 			break;
 		case SOLD:
 			break;
@@ -131,7 +144,6 @@ public class ContractPickup extends PickupPoint<CTPickupData> implements FullCom
 	
 	private void changeState(State newState){
 		this.state = newState;
-		this.counter = 0;
 	}
 	
 	public static class CTPickupData extends PickupPointData.Std implements CommData{
@@ -151,5 +163,15 @@ public class ContractPickup extends PickupPoint<CTPickupData> implements FullCom
 		public Double getInitialRadius() {
 			return radius;
 		}
+	}
+
+	@Override
+	public int compare(Entry<Address, Double> o1, Entry<Address, Double> o2) {
+		return o1.getValue().compareTo(o2.getValue());
+	}
+	
+	@Override
+	public String toString() {
+		return "pp" + (commAPI != null? commAPI.getAddress().id:"");
 	}
 }

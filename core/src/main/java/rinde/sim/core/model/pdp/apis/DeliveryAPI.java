@@ -1,6 +1,8 @@
 package rinde.sim.core.model.pdp.apis;
 
 import rinde.sim.core.model.pdp.Parcel;
+import rinde.sim.core.model.pdp.receivers.DeliveryReceiver;
+import rinde.sim.core.model.pdp.receivers.PickupReceiver;
 import rinde.sim.core.model.pdp.users.DeliveryPoint;
 import rinde.sim.core.simulation.TimeInterval;
 
@@ -34,24 +36,18 @@ public interface DeliveryAPI {
     public boolean isDelivered();
     
     /**
-     * Data of the parcel that should be delivered to this point.
-     * @return The parcel associated with this point.
-     */
-    public Parcel getParcel();
-    
-    /**
-     * Returns the current state of this pickup point as an enum.
-     * @return The current state.
-     */
-    public DeliveryState getDeliveryState();
-
-    /**
      * Check whether the time constraints on this {@link DeliveryPoint} still
      * allow it to be delivered at the given time (if it was not already delivered then).
      * @param time The time at which we would like to check.
      * @return Whether delivery is still allowed at the given time. 
      */
     public boolean canBeDelivered(TimeInterval time);
+    
+    public void setCustomReceiver(DeliveryReceiver rec);
+    
+    public void makeAvailable();
+    
+    public void makeUnavailable();
     
     /**
      * The possible states a {@link DeliveryPoint} can be in.

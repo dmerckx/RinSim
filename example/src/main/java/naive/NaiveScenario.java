@@ -13,8 +13,8 @@ import comparison.Scenario;
 
 public class NaiveScenario extends Scenario{
 
-	public NaiveScenario(long seed, AgentsPolicy policy, int speed, int ticks, int cars,
-			int proportion, double closestPackageRange) {
+	public NaiveScenario(long seed, AgentsPolicy policy, double speed, int ticks, int cars,
+			double proportion, double closestPackageRange) {
 		super(seed, policy, speed, ticks, cars, proportion, closestPackageRange);
 	}
 
@@ -24,7 +24,7 @@ public class NaiveScenario extends Scenario{
 	}
 
 	@Override
-	protected void registerTruck(Point pos, int speed, int cap) {
+	protected void registerTruck(Point pos, double speed, int cap) {
 		sim.registerUser(
 				new NaiveTruck(),
 				new TruckData.Std(speed, pos, 1));

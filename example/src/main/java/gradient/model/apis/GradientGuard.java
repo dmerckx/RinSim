@@ -6,14 +6,14 @@ import gradient.model.users.FieldEmitter;
 import rinde.sim.core.graph.Point;
 import rinde.sim.core.model.road.apis.RoadAPI;
 import rinde.sim.core.simulation.time.TimeLapseHandle;
-import rinde.sim.util.StateCache;
+import rinde.sim.util.concurrency.ValueCache;
 import rinde.sim.util.positions.Query;
 
 @SuppressWarnings("hiding")
 public class GradientGuard extends GradientState implements GradientAPI {
 
     private final double strength;
-    private final StateCache<Boolean> active;
+    private final ValueCache<Boolean> active;
     private final FieldEmitter<?> user;
 
     private final GradientModel model;
@@ -22,7 +22,7 @@ public class GradientGuard extends GradientState implements GradientAPI {
     
     public GradientGuard(FieldEmitter<?> user, FieldData data, GradientModel model, TimeLapseHandle handle) {
     	this.strength = data.getStrenght();
-    	this.active = new StateCache<Boolean>(true, handle);
+    	this.active = new ValueCache<Boolean>(true, handle);
     	this.user = user;
     	
     	this.model = model;

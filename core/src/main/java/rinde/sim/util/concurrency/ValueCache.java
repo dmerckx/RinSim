@@ -1,8 +1,8 @@
-package rinde.sim.util;
+package rinde.sim.util.concurrency;
 
 import rinde.sim.core.simulation.TimeInterval;
 
-public class StateCache<T> {
+public class ValueCache<T> {
 
     private final TimeInterval globalTime;
     
@@ -10,7 +10,7 @@ public class StateCache<T> {
     private T backupValue;
     private long lastChangedTime;
     
-    public StateCache(T initValue, TimeInterval globalTime) {
+    public ValueCache(T initValue, TimeInterval globalTime) {
         this.globalTime = globalTime;
         this.actualValue = initValue;
         this.backupValue = initValue;

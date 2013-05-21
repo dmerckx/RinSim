@@ -1,7 +1,6 @@
 package rinde.sim.util.positions;
 
 import java.util.List;
-import java.util.Queue;
 import java.util.Stack;
 
 import rinde.sim.core.graph.Point;

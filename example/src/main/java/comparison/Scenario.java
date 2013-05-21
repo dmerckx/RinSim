@@ -1,5 +1,8 @@
 package comparison;
 
+import gradient.GradientScenario;
+import naive.NaiveScenario;
+
 import org.apache.commons.math3.random.MersenneTwister;
 import org.apache.commons.math3.random.RandomGenerator;
 
@@ -20,6 +23,7 @@ import rinde.sim.ui.renderers.PDPModelRenderer;
 import rinde.sim.ui.renderers.PlaneRoadModelRenderer;
 import rinde.sim.util.Rectangle;
 import rinde.sim.util.TimeWindow;
+import contractnet.ContractScenario;
 
 public abstract class Scenario  implements PdpObserver{
 	
@@ -29,9 +33,9 @@ public abstract class Scenario  implements PdpObserver{
 	
 	private final int ticks;
 	
-	private final int speed;
+	private final double speed;
 	private final int nrTrucks;
-	private final int proportion;
+	private final double proportion;
 	private final double range;
 	private RandomGenerator rng;
 	
@@ -44,7 +48,7 @@ public abstract class Scenario  implements PdpObserver{
 	
 	private Rectangle rect;
 	
-	public Scenario(long seed, AgentsPolicy policy, int speed, int ticks, int cars, int proportion, double closestPackageRange){
+	public Scenario(long seed, AgentsPolicy policy, double speed, int ticks, int cars, double proportion, double closestPackageRange){
 		this.sim = new Simulator(STEP, seed, policy);
 		this.ticks = ticks;
 		this.speed = speed;
@@ -56,11 +60,18 @@ public abstract class Scenario  implements PdpObserver{
 	}
 	
 	public Result run(){
+		return run(Long.MAX_VALUE);
+	}
+	
+	public Result run(long maxRuntime){
+		long startTime = System.currentTimeMillis();
+		
 		while(sim.getCurrentTime() < ticks * STEP){
+			if(System.currentTimeMillis() - startTime > maxRuntime) return null;
 			sim.advanceTick();
 		}
 		//System.out.println("speed: " + speed + "  interactions: " + ((interactions / ticks) / nrTrucks));
-		return new Result(pickups, deliveries, (interactions / ticks) / nrTrucks);
+		return new Result(pickups, deliveries, (interactions / ticks) / nrTrucks, System.currentTimeMillis() - startTime);
 	}
 	
 	public void runGUI(){
@@ -118,18 +129,21 @@ public abstract class Scenario  implements PdpObserver{
 	private void addParcel(){
 		Point from = roadModel.getRandomPosition(rng);
 		
-		int xMin = (int) Math.max(rect.xMin, from.x - 40) + 1;
-		int xMax = (int) Math.min(rect.xMax, from.x + 40) - 1;
+		int xMin = (int) Math.max(rect.xMin, from.x - 45) + 1;
+		int xMax = (int) Math.min(rect.xMax, from.x + 45) - 1;
 		
-		int yMin = (int) Math.max(rect.yMin, from.y - 40) + 1;
-		int yMax = (int) Math.min(rect.yMax, from.y + 40) - 1;
+		int yMin = (int) Math.max(rect.yMin, from.y - 45) + 1;
+		int yMax = (int) Math.min(rect.yMax, from.y + 45) - 1;
 		
 		//System.out.println(xMin + " " + xMax + "," + yMin + " " + yMax);
 		
+		Point to = null;
+		do{
 		int x = rng.nextInt(xMax - xMin) + xMin;
 		int y = rng.nextInt(yMax - yMin) + yMin;
 		
-		Point to = new Point(x, y);
+		to = new Point(x, y);
+		}while(Point.distance(from, to) > 45);
 		//System.out.println("rect: " + rect);
 		//System.out.println("x " + x + " y " + y);
 		
@@ -140,22 +154,41 @@ public abstract class Scenario  implements PdpObserver{
 	}
 	
 	abstract protected void registerModels();
-	abstract protected void registerTruck(Point pos, int speed, int cap);
+	abstract protected void registerTruck(Point pos, double speed, int cap);
 	abstract protected void registerParcel(Parcel p);
 	
 	public void close(){
 		sim.shutdown();
 	}
-}
 
-class Result{
-	public final int pickups;
-	public final int deliveries;
-	public final double interactionRate;
-	
-	public Result(int pickups, int deliveries, double interactionRate){
-		this.pickups = pickups;
-		this.deliveries = deliveries;
-		this.interactionRate = interactionRate;
+	public static Scenario makeScenario(int scenarioNr, int seed, AgentsPolicy policy, double speed, int ticks, int cars, double proportion,
+			double packageRadius, double gradientRadius, double broadcastRadius){
+		switch (scenarioNr) {
+		case 0:
+			return new NaiveScenario(seed, policy, speed, ticks, cars,
+					proportion, packageRadius);
+		case 1:
+			return new GradientScenario(seed, policy, speed, ticks, cars,
+					proportion, packageRadius, gradientRadius);
+		case 2:
+			return new ContractScenario(seed, policy, speed, ticks, cars,
+					proportion, packageRadius, broadcastRadius);
+		default:
+			throw new IllegalArgumentException();
+		}
+	}
+
+	public static final class Result{
+		public final int pickups;
+		public final int deliveries;
+		public final double interactionRate;
+		public final long runtime;
+		
+		public Result(int pickups, int deliveries, double interactionRate, long runtime){
+			this.pickups = pickups;
+			this.deliveries = deliveries;
+			this.interactionRate = interactionRate;
+			this.runtime = runtime;
+		}
 	}
 }
