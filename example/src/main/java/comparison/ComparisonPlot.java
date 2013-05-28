@@ -12,7 +12,7 @@ import org.apache.commons.math3.random.MersenneTwister;
 import org.apache.commons.math3.random.RandomGenerator;
 
 import rinde.sim.core.simulation.policies.AgentsPolicy;
-import rinde.sim.core.simulation.policies.agents.ModPoolBatch2;
+import rinde.sim.core.simulation.policies.agents.ModPoolBatchRecursive;
 import rinde.sim.core.simulation.policies.agents.SingleThreaded;
 import rinde.sim.core.simulation.policies.agents.areas.Areas;
 import rinde.sim.core.simulation.policies.agents.areas2.Areas2;
@@ -140,10 +140,10 @@ public class ComparisonPlot{
 		case 0:	//Naive 
 			switch(policyNr){
 				case 0: return new SingleThreaded();
-				case 1: return new ModPoolBatch2(new int[]{65, 100, 120, 120, 120, 120}[agentNr],1);
-				case 2: return new ModPoolBatch2(new int[]{55, 85, 120, 120, 120, 120}[agentNr],3);
-				case 3: return new ModPoolBatch2(new int[]{50, 75, 90, 100, 100, 100}[agentNr],7);
-				case 4: return new ModPoolBatch2(new int[]{50, 75, 90, 100, 100, 100}[agentNr],15);
+				case 1: return new ModPoolBatchRecursive(new int[]{65, 100, 120, 120, 120, 120}[agentNr],1);
+				case 2: return new ModPoolBatchRecursive(new int[]{55, 85, 120, 120, 120, 120}[agentNr],3);
+				case 3: return new ModPoolBatchRecursive(new int[]{50, 75, 90, 100, 100, 100}[agentNr],7);
+				case 4: return new ModPoolBatchRecursive(new int[]{50, 75, 90, 100, 100, 100}[agentNr],15);
 				case 5: return new Areas(20, 8, 6);
 				case 6: return new Areas2(20, 8, 4);
 				default:
@@ -152,14 +152,14 @@ public class ComparisonPlot{
 		case 1: //Gradient field
 			switch(policyNr){
 				case 0: return new SingleThreaded();
-				case 1: return new ModPoolBatch2(new int[]{4, 5, 4, 3, 3, 3}[agentNr],1);
+				case 1: return new ModPoolBatchRecursive(new int[]{4, 5, 4, 3, 3, 3}[agentNr],1);
 				case 2:
-					/*if(agentNr == 1)*/ return new ModPoolBatch2(4,3);
+					/*if(agentNr == 1)*/ return new ModPoolBatchRecursive(4,3);
 					//else return new ModPoolSingle(3);
 				case 3:
-					/*if(agentNr == 1)*/ return new ModPoolBatch2(4,7);
+					/*if(agentNr == 1)*/ return new ModPoolBatchRecursive(4,7);
 					//else return new ModPoolSingle(7);
-				case 4: return new ModPoolBatch2(4,15);
+				case 4: return new ModPoolBatchRecursive(4,15);
 				case 5: return new Areas(3, 8, 6);
 				case 6: return new Areas2(3, 8, 4);
 				default:

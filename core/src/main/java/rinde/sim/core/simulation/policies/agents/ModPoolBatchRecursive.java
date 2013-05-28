@@ -20,18 +20,14 @@ import com.google.common.collect.Lists;
  * {@link ModPoolBatch} with recursive execution
  * @author dmerckx
  */
-public class ModPoolBatch2 extends AgentsPolicyAbstr{
+public class ModPoolBatchRecursive extends AgentsPolicyAbstr{
     protected int batchSize;
     protected Thread[] workers;
     protected LinkedBlockingQueue<Runnable> tasks = new LinkedBlockingQueue<Runnable>();
     
     protected final Rules2 rules = createRules();
     
-    public ModPoolBatch2(int batchSize) {
-        this(batchSize, NR_CORES-1);
-    }
-    
-    public ModPoolBatch2(int batchSize, int nrThreads) {
+    public ModPoolBatchRecursive(int batchSize, int nrThreads) {
         this.batchSize = batchSize;
         
         workers = new Thread[nrThreads];

@@ -8,7 +8,7 @@ import org.apache.commons.math3.random.MersenneTwister;
 import org.apache.commons.math3.random.RandomGenerator;
 
 import rinde.sim.core.simulation.policies.AgentsPolicy;
-import rinde.sim.core.simulation.policies.agents.ModPoolBatch2;
+import rinde.sim.core.simulation.policies.agents.ModPoolBatchRecursive;
 import rinde.sim.core.simulation.policies.agents.SingleThreaded;
 
 public class InteractionsPlot {
@@ -133,9 +133,9 @@ public class InteractionsPlot {
 	public static AgentsPolicy getPolicy(int nr){
 		switch(nr){
 			case 0: return new SingleThreaded();
-			case 1: return new ModPoolBatch2(5,1);
-			case 2: return new ModPoolBatch2(5,3);
-			case 3: return new ModPoolBatch2(5,7);
+			case 1: return new ModPoolBatchRecursive(5,1);
+			case 2: return new ModPoolBatchRecursive(5,3);
+			case 3: return new ModPoolBatchRecursive(5,7);
 			default:
 				throw new IllegalArgumentException("Unknown policy nr");
 		}

@@ -32,6 +32,7 @@ import rinde.sim.core.simulation.policies.InteractionRules;
 import rinde.sim.core.simulation.time.TimeLapseHandle;
 import rinde.sim.util.SpeedConverter;
 import rinde.sim.util.TimeUnit;
+import rinde.sim.util.positions.ConcurrentPositionCache;
 import rinde.sim.util.positions.PositionCache;
 import rinde.sim.util.positions.Query;
 
@@ -49,12 +50,14 @@ import com.google.common.collect.Lists;
  */
 public abstract class AbstractRoadModel<T> implements RoadModel{
 
+    private int idCounter = 0;
     private RandomGenerator rnd;
     private Map<RoadUser<?>, RoadGuard> mapping = new HashMap<RoadUser<?>, RoadGuard>();
     protected volatile Map<RoadUser<?>, T> objLocs;
 
+    //Cache variables
     private boolean cached;
-    private PositionCache<RoadUser<?>> cache;
+    private int blocks;
     
     protected final SpeedConverter speedConverter;
     protected final boolean useSpeedConversion;
@@ -74,8 +77,8 @@ public abstract class AbstractRoadModel<T> implements RoadModel{
     public void setCache(int blocks){
         if(blocks <= 0) throw new IllegalArgumentException();
         
-        cached = true;
-        cache = new PositionCache<RoadUser<?>>(getViewRect(), blocks);
+        this.cached = true;
+        this.blocks = blocks;
     }
     
     public double getSpeed(MovingRoadUser<?> user){
@@ -220,13 +223,13 @@ public abstract class AbstractRoadModel<T> implements RoadModel{
         if( user instanceof MovingRoadUser<?>){
             assert data instanceof MovingRoadData: "Data must fit user";
             
-            MovingRoadGuard guard = new MovingRoadGuard((MovingRoadUser<?>) user, (MovingRoadData) data, this, rnd.nextLong(), handle);
+            MovingRoadGuard guard = new MovingRoadGuard((MovingRoadUser<?>) user, (MovingRoadData) data, this, rnd.nextLong(), handle, idCounter++);
             ((MovingRoadUser<?>) user).setRoadAPI(guard);
             mapping.put(user, guard);
         }
         else if( user instanceof FixedRoadUser<?>){
             
-            RoadGuard guard = new RoadGuard(user, data, this, handle);
+            RoadGuard guard = new RoadGuard(user, data, this, handle, idCounter++);
             ((FixedRoadUser<?>) user).setRoadAPI(guard);
             mapping.put(user, guard);
         }
@@ -249,12 +252,16 @@ public abstract class AbstractRoadModel<T> implements RoadModel{
 
     @Override
     public void tick(TimeInterval time) {
-        if(cached) cache.tick();
+        //if(cached) cache.tick();
     }
-    
+
+    private ConcurrentPositionCache<RoadUser<?>> cache;
+    //private PositionCache<RoadUser<?>> cache;
     @Override
     public void init(long seed, InteractionRules rules, TimeInterval masterTime) {
         this.rnd = new MersenneTwister(seed);
+        this.cache = new ConcurrentPositionCache(getViewRect(), blocks, masterTime);
+        //cache = new PositionCache<RoadUser<?>>(getViewRect(), blocks);
     }
 }
 

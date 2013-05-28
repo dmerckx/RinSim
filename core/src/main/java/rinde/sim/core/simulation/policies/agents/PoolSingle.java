@@ -16,10 +16,6 @@ public class PoolSingle extends AgentsPolicyAbstr{
     private final ExecutorService pool;
     
     private final Rules rules = new Rules();
-
-    public PoolSingle() {
-        this(NR_CORES);
-    }
     
     public PoolSingle(int cores) {
         pool = Executors.newFixedThreadPool(cores);

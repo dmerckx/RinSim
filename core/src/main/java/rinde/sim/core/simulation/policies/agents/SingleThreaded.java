@@ -6,6 +6,7 @@ import rinde.sim.core.model.Agent;
 import rinde.sim.core.simulation.TimeInterval;
 import rinde.sim.core.simulation.policies.InteractionRules;
 import rinde.sim.core.simulation.time.TimeLapseHandle;
+import rinde.sim.util.Rectangle;
 
 public class SingleThreaded extends AgentsPolicyAbstr{
     @Override
@@ -19,6 +20,10 @@ public class SingleThreaded extends AgentsPolicyAbstr{
             @Override
             public void awaitAllPrevious() {
                 //Nothing has to be done since execution is single threaded
+            }
+
+            @Override
+            public void notifyQuery(double range) {
             }
         };
     }
@@ -41,6 +46,11 @@ public class SingleThreaded extends AgentsPolicyAbstr{
             
             agent.tick(lapse);
         }
+    }
+
+    @Override
+    public void init(Rectangle mapSize) {
+        
     }
 
 }

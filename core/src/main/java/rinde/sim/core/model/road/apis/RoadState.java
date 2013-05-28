@@ -19,4 +19,9 @@ public abstract class RoadState {
      * @return The location of this user.
      */
     public abstract Point getLocation();
+    
+    /**
+     * Returns a fixed id associated with this road user.
+     */
+    public abstract Integer getId();
 }

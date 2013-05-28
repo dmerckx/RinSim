@@ -33,10 +33,6 @@ public class ModPoolBatch extends AgentsPolicyAbstr{
     
     protected final Rules rules = createRules();
     
-    public ModPoolBatch(int batchSize) {
-        this(batchSize, NR_CORES-1);
-    }
-    
     public ModPoolBatch(int batchSize, int nrThreads) {
         this.batchSize = batchSize;
         

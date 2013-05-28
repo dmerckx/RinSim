@@ -9,7 +9,7 @@ import org.apache.commons.math3.random.RandomGenerator;
 
 import rinde.sim.core.simulation.policies.AgentsPolicy;
 import rinde.sim.core.simulation.policies.agents.ModPoolBatch;
-import rinde.sim.core.simulation.policies.agents.ModPoolBatch2;
+import rinde.sim.core.simulation.policies.agents.ModPoolBatchRecursive;
 import rinde.sim.core.simulation.policies.agents.ModPoolSingle;
 import rinde.sim.core.simulation.policies.agents.SingleThreaded;
 
@@ -144,7 +144,7 @@ public class BatchPlot {
 			case 0: return new SingleThreaded();
 			case 1: return new ModPoolSingle(CORES-1);
 			case 2: return new ModPoolBatch(25, CORES-1);
-			case 3: return new ModPoolBatch2(25, CORES-1);
+			case 3: return new ModPoolBatchRecursive(25, CORES-1);
 			default:
 				throw new IllegalArgumentException("Unknown policy nr");
 		}

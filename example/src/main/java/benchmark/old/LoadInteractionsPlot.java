@@ -10,7 +10,7 @@ import org.apache.commons.math3.random.RandomGenerator;
 import benchmark.TestProblem;
 
 import rinde.sim.core.simulation.policies.AgentsPolicy;
-import rinde.sim.core.simulation.policies.agents.ModPoolBatch2;
+import rinde.sim.core.simulation.policies.agents.ModPoolBatchRecursive;
 import rinde.sim.core.simulation.policies.agents.SingleThreaded;
 
 public class LoadInteractionsPlot {
@@ -142,9 +142,9 @@ public class LoadInteractionsPlot {
 	public static AgentsPolicy getPolicy(int nr){
 		switch(nr){
 			case 0: return new SingleThreaded();
-			case 1: return new ModPoolBatch2(5, 2);
-			case 2: return new ModPoolBatch2(5, 4);
-			case 3: return new ModPoolBatch2(5, 8);
+			case 1: return new ModPoolBatchRecursive(5, 2);
+			case 2: return new ModPoolBatchRecursive(5, 4);
+			case 3: return new ModPoolBatchRecursive(5, 8);
 			default:
 				throw new IllegalArgumentException("Unknown policy nr");
 		}

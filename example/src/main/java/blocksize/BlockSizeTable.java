@@ -14,13 +14,13 @@ public class BlockSizeTable {
 	
 	public static final int CORES = 2;
 	
-	public static final double SAMPLES = 8;
+	public static final double SAMPLES = 1; //8;
 	
 	public static int[] AGENTS;
 	public static int[] TICKS;
 	
 	private static final int AMOUNT = 11;
-	private static final int BASE_TICKS = 2500 * 100;
+	private static final int BASE_TICKS = /*500 * 100; */2500 * 100;
 	
 	public static final int[] BLOCKSIZES = new int[]{0, 5, 10, 15, 20, 25, 30, 35, 45};
 	public static final String[] NAMES = new String[]{"Naive", "GradientField", "ContractNet"};
@@ -31,7 +31,7 @@ public class BlockSizeTable {
 		AGENTS = new int[AMOUNT];
 		TICKS = new int[AMOUNT];
 		for(int i = 0; i < AMOUNT; i++){
-			AGENTS[i] = (int) Math.pow(5 + i*5, 2);
+			AGENTS[i] = (int) Math.pow(/*5*/ 10 + i*5, 2);
 			TICKS[i] = BASE_TICKS / AGENTS[i];
 		}
 		
@@ -109,7 +109,7 @@ public class BlockSizeTable {
 					System.out.print(".");
 					Scenario s = getScenario(TICKS[a], AGENTS[a]);
 					s.init(BLOCKSIZES[b]);
-					Result res = s.run(10000);
+					Result res = s.run(25000);
 					if(res == null){
 						totalTime = Long.MAX_VALUE;
 						break;
@@ -118,7 +118,7 @@ public class BlockSizeTable {
 				}
 				
 				results[a][b] = totalTime == Long.MAX_VALUE? Long.MAX_VALUE : (long) (totalTime / SAMPLES);
-				System.out.println( " " + results[a][b]);
+				System.out.println( " " + (results[a][b] == Long.MAX_VALUE ? "n/a" : results[a][b]));
 			}
 		}
 		

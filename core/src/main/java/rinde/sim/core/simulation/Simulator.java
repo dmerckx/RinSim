@@ -27,6 +27,7 @@ import rinde.sim.core.simulation.policies.ModelPolicy;
 import rinde.sim.core.simulation.policies.TickListenerPolicy;
 import rinde.sim.core.simulation.policies.TickListenerSerialPolicy;
 import rinde.sim.core.simulation.policies.agents.ModPoolBatch;
+import rinde.sim.core.simulation.policies.agents.SingleThreaded;
 import rinde.sim.core.simulation.policies.agents.areas.Areas;
 import rinde.sim.core.simulation.policies.agents.areas2.Areas2;
 import rinde.sim.core.simulation.time.TimeIntervalImpl;
@@ -142,7 +143,7 @@ public class Simulator{
         masterTime = new TimeIntervalImpl(0, step);
         
         modelPolicy = new ModelPolicy();
-        timeUserPolicy = policy == null? new ModPoolBatch(5) : policy;
+        timeUserPolicy = policy == null? new SingleThreaded() : policy;
         externalPolicy = new TickListenerSerialPolicy(true);
         
         timeStep = step;

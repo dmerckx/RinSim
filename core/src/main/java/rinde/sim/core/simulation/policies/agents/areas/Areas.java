@@ -12,6 +12,7 @@ import rinde.sim.core.graph.Point;
 import rinde.sim.core.model.Agent;
 import rinde.sim.core.model.road.PlaneRoadModel;
 import rinde.sim.core.model.road.RoadModel;
+import rinde.sim.core.model.road.apis.RoadGuard;
 import rinde.sim.core.model.road.users.RoadUser;
 import rinde.sim.core.simulation.TimeInterval;
 import rinde.sim.core.simulation.policies.InteractionRules;
@@ -36,8 +37,6 @@ public class Areas extends AgentsPolicyAbstr{
     protected final int nrRegions;
     protected final int threadsPerRegio;
     
-
-    protected RoadModel rm;
     protected Rectangle mapsize;
     protected double width;
     
@@ -205,15 +204,12 @@ public class Areas extends AgentsPolicyAbstr{
         }
     }
 
-    public void setRoadModel(RoadModel model) {
-        this.initUsers.clear();
-        this.agents.clear();
+    @Override
+    public void init(Rectangle mapSize) {
+        super.init(mapSize);
         
-        this.rm = model;
-        this.mapsize = rm.getViewRect();
+        this.mapsize = mapSize;
         this.width = mapsize.xMax - mapsize.xMin;
-        
-        rules.setRoadModel(rm);
     }
 }
 
@@ -245,7 +241,6 @@ class Task2 implements Runnable{
 }
 
 class AreaRules implements InteractionRules {
-    private RoadModel rm;
     private final Areas areas;
     public final ThreadLocal<Task2> task = new ThreadLocal<Task2>();
     public final ThreadLocal<AreaWorker> worker = new ThreadLocal<AreaWorker>();
@@ -254,17 +249,13 @@ class AreaRules implements InteractionRules {
         this.areas = areas;
     }
     
-    public void setRoadModel(RoadModel rm) {
-        this.rm = rm;
-    }
-    
     @Override
     public void awaitAllPrevious() {
         Task2 t = task.get();
         
         if(t == null) return;
         
-        if(areas.getRegion(rm.getPosition(t.getCurrentAgenRoadUser())) != t.region){
+        if(areas.getRegion(((RoadGuard) t.getCurrentAgenRoadUser().getRoadState()).getCurrentLocation()) != t.region){
             //block this thread
             //System.out.println("Stuck on " + t);
             //System.out.println("t: " + t);
@@ -275,6 +266,12 @@ class AreaRules implements InteractionRules {
     @Override
     public boolean isDeterministic() {
         return true;
+    }
+
+    @Override
+    public void notifyQuery(double range) {
+        // TODO Auto-generated method stub
+        
     }
 }
 

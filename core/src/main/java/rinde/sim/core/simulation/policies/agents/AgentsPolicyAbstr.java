@@ -8,14 +8,12 @@ import rinde.sim.core.model.InitUser;
 import rinde.sim.core.simulation.TimeInterval;
 import rinde.sim.core.simulation.policies.AgentsPolicy;
 import rinde.sim.core.simulation.time.TimeLapseHandle;
+import rinde.sim.util.Rectangle;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 public abstract class AgentsPolicyAbstr implements AgentsPolicy{
-    
-    public static final int NR_CORES = 4;
-
     protected HashMap<Agent, TimeLapseHandle> agents = Maps.newLinkedHashMap();
     protected List<InitUser> initUsers = Lists.newArrayList();
 
@@ -54,6 +52,12 @@ public abstract class AgentsPolicyAbstr implements AgentsPolicy{
     protected abstract void doTicks(TimeInterval interval);
     
     @Override
+    public void init(Rectangle mapSize) {
+        agents.clear();
+        initUsers.clear();
+    }
+    
+    @Override
     public boolean canRegisterDuringExecution() {
         return false;
     }
@@ -62,5 +66,4 @@ public abstract class AgentsPolicyAbstr implements AgentsPolicy{
     public boolean canUnregisterDuringExecution() {
         return false;
     }
-
 }

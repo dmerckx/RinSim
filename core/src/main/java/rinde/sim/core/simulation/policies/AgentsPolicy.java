@@ -4,9 +4,9 @@ import rinde.sim.core.model.Agent;
 import rinde.sim.core.model.InitUser;
 import rinde.sim.core.simulation.TickPolicy;
 import rinde.sim.core.simulation.time.TimeLapseHandle;
+import rinde.sim.util.Rectangle;
 
 public interface AgentsPolicy extends TickPolicy{
-    
     public void register(Agent agent, TimeLapseHandle handle);
     
     public void unregister(Agent agent);
@@ -21,6 +21,8 @@ public interface AgentsPolicy extends TickPolicy{
      */
     public InteractionRules getInteractionRules();
 
+    public void init(Rectangle mapSize);
+    
     /**
      * Policies using thread pools get the chance to warm up
      * (initialize threads etc).

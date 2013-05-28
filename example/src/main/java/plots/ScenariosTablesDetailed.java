@@ -4,7 +4,7 @@ import org.apache.commons.math3.random.MersenneTwister;
 import org.apache.commons.math3.random.RandomGenerator;
 
 import rinde.sim.core.simulation.policies.AgentsPolicy;
-import rinde.sim.core.simulation.policies.agents.ModPoolBatch2;
+import rinde.sim.core.simulation.policies.agents.ModPoolBatchRecursive;
 
 import comparison.Scenario;
 import comparison.Scenario.Result;
@@ -117,7 +117,7 @@ public class ScenariosTablesDetailed {
 	
 	
 	private static Result run(int scenarioNr, int seed, double speed, int ticks, int cars, double proportion){
-		AgentsPolicy policy = new ModPoolBatch2(5, 2);
+		AgentsPolicy policy = new ModPoolBatchRecursive(5, 2);
 		Scenario s = Scenario.makeScenario(scenarioNr, seed, policy, speed, ticks, cars, proportion,
 				Standards.FIND_PACKAGE_RADIUS, Standards.GRADIENT_RADIUS, Standards.BROADCAST_RADIUS);
 		s.init(Standards.getBlocks(cars));

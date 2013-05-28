@@ -6,8 +6,7 @@ import rinde.sim.core.simulation.policies.InteractionRules;
 
 public class RulesCont implements InteractionRules {
     public final ThreadLocal<CountDownLatch> previousLatch = new ThreadLocal<CountDownLatch>();
-    
-    
+     
     @Override
     public void awaitAllPrevious() {
         if( previousLatch.get() == null)
@@ -25,4 +24,8 @@ public class RulesCont implements InteractionRules {
         return true;
     }
 
+    @Override
+    public void notifyQuery(double range) {
+        
+    }
 }

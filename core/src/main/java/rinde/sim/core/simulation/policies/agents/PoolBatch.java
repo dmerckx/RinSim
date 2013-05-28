@@ -30,10 +30,6 @@ public class PoolBatch extends AgentsPolicyAbstr{
     
     private final Rules rules = new Rules();
     
-    public PoolBatch(int batchSize) {
-        this(batchSize, NR_CORES);
-    }
-    
     public PoolBatch(int batchSize, int nrThreads) {
         this.batchSize = batchSize;
         pool = Executors.newFixedThreadPool(nrThreads);
