@@ -1,7 +1,8 @@
 package rinde.sim.core.simulation.policies.agents;
 
-import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import rinde.sim.core.model.Agent;
 import rinde.sim.core.model.InitUser;
@@ -14,24 +15,37 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 public abstract class AgentsPolicyAbstr implements AgentsPolicy{
-    protected HashMap<Agent, TimeLapseHandle> agents = Maps.newLinkedHashMap();
+    protected Map<Agent, Integer> agentsMapping = Maps.newHashMap();
+    protected List<AgentContainer> agents = Lists.newArrayList();
+    protected LinkedList<Integer> nulls = Lists.newLinkedList();
+    
     protected List<InitUser> initUsers = Lists.newArrayList();
 
     @Override
-    public void register(Agent agent, TimeLapseHandle handle){
+    public synchronized void register(Agent agent, TimeLapseHandle handle){
         assert agent != null;
         assert handle != null;
+        assert !agentsMapping.containsKey(agent);
         
-        assert !agents.containsKey(agent);
-        
-        agents.put(agent, handle);
+        if(nulls.isEmpty()){
+            agents.add(new AgentContainer(agent, handle));
+            agentsMapping.put(agent, agents.size()-1);
+        }
+        else{
+            Integer index = nulls.pop();
+            agents.set(index, new AgentContainer(agent, handle));
+            agentsMapping.put(agent, index);
+        }
     }
 
     @Override
-    public void unregister(Agent agent) {
-        assert agents.containsKey(agent);
+    public synchronized void unregister(Agent agent) {
+        assert agentsMapping.containsKey(agent);
         
-        agents.remove(agent);
+        int index = agentsMapping.get(agent);
+        agents.set(index, NullAgent.instance);
+        nulls.add(index);
+        agentsMapping.remove(agent);
     }
 
     @Override
@@ -65,5 +79,16 @@ public abstract class AgentsPolicyAbstr implements AgentsPolicy{
     @Override
     public boolean canUnregisterDuringExecution() {
         return false;
+    }
+    
+    private static class NullAgent extends AgentContainer{
+        public static final NullAgent instance = new NullAgent();
+        
+        private NullAgent() {
+            super(null, null);
+        }
+        
+        @Override
+        public void doTick() {}
     }
 }

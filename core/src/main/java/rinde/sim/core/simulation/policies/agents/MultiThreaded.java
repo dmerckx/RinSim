@@ -2,9 +2,7 @@ package rinde.sim.core.simulation.policies.agents;
 
 import rinde.sim.core.simulation.TimeInterval;
 import rinde.sim.core.simulation.policies.InteractionRules;
-import rinde.sim.core.simulation.policies.agents.util.CustomPool;
 import rinde.sim.core.simulation.policies.agents.util.Pool;
-import rinde.sim.core.simulation.policies.agents.util.StdPool;
 
 /**
  * Parallel time user policy which takes a batch of tick operations from multiple different
@@ -29,7 +27,7 @@ public class MultiThreaded extends AgentsPolicyAbstr{
 
     @Override
     public void doTicks(TimeInterval interval) {
-        execution.execute(agents.entrySet().iterator());
+        execution.execute(agents);
         
         //Afterwards he helps out with doing the work
         pool.helpFinish();

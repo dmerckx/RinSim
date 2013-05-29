@@ -20,10 +20,10 @@ public class BSTableContract  extends BatchSizeTableAbstr{
 
 	public static final String PATH = "/tmp/";
 	
-	public static final int[] AGENTS = new int[]{50, 100, 150, 200, 300, 500, 700};
-	public static final int[] BATCHSIZES = new int[]{1, 2, 4, 6, 8, 12, 15, 20};
+	public static final int[] AGENTS = new int[]{50, 100, 200, 400, 800, 1200, 1500, 2000, 3000};
+	public static final int[] BATCHSIZES = new int[]{0, 1, 5, 15, 30, 60, 100, 200, 300, 500};
 	
-	private static int BASE_TICKS = 35000 * 100;
+	private static int BASE_TICKS = 10000 * 100;
 	
 	
 	//public static final String[] NAMES = new String[]{"Naive", "GradientField", "ContractNet"};
@@ -40,7 +40,7 @@ public class BSTableContract  extends BatchSizeTableAbstr{
 		
 		CORES = 4; //TODO: test with 8
 		
-		String res = new BSTableNaive(AGENTS, BATCHSIZES, BASE_TICKS).run();
+		String res = new BSTableContract(AGENTS, BATCHSIZES, BASE_TICKS).run();
 		
 		try {
 			FileWriter writer = new FileWriter(new File(PATH + "BATCHSIZETABLE"));

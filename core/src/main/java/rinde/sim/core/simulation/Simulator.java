@@ -26,6 +26,7 @@ import rinde.sim.core.simulation.policies.InteractionRules;
 import rinde.sim.core.simulation.policies.ModelPolicy;
 import rinde.sim.core.simulation.policies.TickListenerPolicy;
 import rinde.sim.core.simulation.policies.TickListenerSerialPolicy;
+import rinde.sim.core.simulation.policies.agents.AgentContainer;
 import rinde.sim.core.simulation.policies.agents.MultiThreaded;
 import rinde.sim.core.simulation.policies.agents.SingleThreaded;
 import rinde.sim.core.simulation.policies.agents.areas.Areas;

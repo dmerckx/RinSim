@@ -1,17 +1,12 @@
 package rinde.sim.core.simulation.policies.execution;
 
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map.Entry;
 
-import rinde.sim.core.model.Agent;
 import rinde.sim.core.simulation.policies.InteractionRules;
+import rinde.sim.core.simulation.policies.agents.AgentContainer;
 import rinde.sim.core.simulation.policies.agents.Execution;
 import rinde.sim.core.simulation.policies.agents.util.LatchNode;
 import rinde.sim.core.simulation.policies.agents.util.Rules;
-import rinde.sim.core.simulation.time.TimeLapseHandle;
-
-import com.google.common.collect.Lists;
 
 public class BatchExe extends Execution{
     protected final int batchSize;
@@ -23,24 +18,15 @@ public class BatchExe extends Execution{
     }
     
     @Override
-    public void execute(Iterator<Entry<Agent, TimeLapseHandle>> it) {
+    public void execute(List<AgentContainer> containers) {
         LatchNode lastNode = new LatchNode();
         
-        int c = 0;
-        List<Entry<Agent,TimeLapseHandle>> batch = Lists.newArrayListWithCapacity(batchSize);
-        
+        int max = containers.size();
         //Divide the work and feed it to the thread pool
-        while(it.hasNext()){
-            Entry<Agent, TimeLapseHandle> entry = it.next();
-            batch.add(entry);
-            c = (c + 1) % batchSize;
-            
-            if(c == 0 || !it.hasNext()){
-                pool.addTask(new Task(batch, lastNode, rules));
-                
-                lastNode = lastNode.makeNext();
-                batch = Lists.newArrayList();
-            }
+        for(int i = 0; i < containers.size(); i += batchSize){
+            int j = Math.min(i + batchSize, max);
+            pool.addTask(new Task(containers.subList(i, j), lastNode, rules));
+            lastNode = lastNode.makeNext();
         }
     }
 
@@ -52,11 +38,11 @@ public class BatchExe extends Execution{
 }
 
 class Task implements Runnable{
-    protected final List<Entry<Agent, TimeLapseHandle>> batch;
+    protected final List<AgentContainer> batch;
     protected final LatchNode node;
     protected final Rules rules;
     
-    public Task(List<Entry<Agent,TimeLapseHandle>> batch, LatchNode node, Rules rules) {
+    public Task(List<AgentContainer> batch, LatchNode node, Rules rules) {
         this.batch = batch;
         this.node = node;
         this.rules = rules;
@@ -65,8 +51,8 @@ class Task implements Runnable{
     public void run(){
         rules.node.set(node);
         
-        for(Entry<Agent, TimeLapseHandle> e:batch){
-            e.getKey().tick(e.getValue());
+        for(AgentContainer c:batch){
+            c.doTick();
         }
         
         node.done();

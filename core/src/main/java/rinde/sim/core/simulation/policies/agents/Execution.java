@@ -1,6 +1,7 @@
 package rinde.sim.core.simulation.policies.agents;
 
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map.Entry;
 
 import rinde.sim.core.model.Agent;
@@ -16,7 +17,7 @@ public abstract class Execution {
         this.pool = pool;
     }
 
-    public abstract void execute(Iterator<Entry<Agent, TimeLapseHandle>> agents);
+    public abstract void execute(List<AgentContainer> agents);
     
     public abstract InteractionRules getRules();
 }

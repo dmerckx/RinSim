@@ -1,17 +1,9 @@
 package batchsize;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-
-import naive.NaiveScenario;
-
 import org.apache.commons.math3.random.MersenneTwister;
 import org.apache.commons.math3.random.RandomGenerator;
 
 import plots.Standards;
-import rinde.sim.core.simulation.policies.AgentsPolicy;
-import rinde.sim.core.simulation.policies.Policies;
 
 import comparison.Scenario;
 import comparison.Scenario.Result;
@@ -107,7 +99,6 @@ public abstract class BatchSizeTableAbstr {
 
 	public long[][] getResults(){
 		long[][] results = new long[agents.length][batchsizes.length+1];
-		RandomGenerator rng = new MersenneTwister(15);
 		
 
 		for(int i = 0; i < SAMPLES; i++){
@@ -125,7 +116,15 @@ public abstract class BatchSizeTableAbstr {
 					if(results[a][b+1] == Long.MAX_VALUE) continue;
 					
 					Scenario s = getScenario(ticks[a], agents[a], batchsizes[b]);
-					s.init(Standards.getBlocks(agents[a]));
+					
+					if(ticks[a] > 1500){
+						s.init(Standards.getBlocks(agents[a]));
+					}
+					else {
+						s.init(Standards.getBlocks(agents[a]));
+						s.warmupTicks(150);
+					}
+						
 					Result res = s.run();
 					if(res == null){
 						results[a][b+1] = Long.MAX_VALUE;

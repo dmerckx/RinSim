@@ -16,7 +16,6 @@ import rinde.sim.core.model.pdp.users.DeliveryPoint;
 import rinde.sim.core.model.pdp.users.PickupPoint;
 import rinde.sim.core.model.road.AbstractRoadModel;
 import rinde.sim.core.model.road.PlaneRoadModel;
-import rinde.sim.core.model.road.RoadModel;
 import rinde.sim.core.simulation.Simulator;
 import rinde.sim.core.simulation.policies.AgentsPolicy;
 import rinde.sim.ui.View;
@@ -46,6 +45,7 @@ public abstract class Scenario  implements PdpObserver{
 	
 	private int pickups = 0;
 	private int deliveries = 0;
+	private int advanced = 0;
 	
 	private Rectangle rect;
 	
@@ -64,17 +64,31 @@ public abstract class Scenario  implements PdpObserver{
 		return run(Long.MAX_VALUE);
 	}
 	
-	public Result run(long maxRuntime){
-		long startTime = System.currentTimeMillis();
-		
+	public void warmupTicks(int ticks){
 		while(sim.getCurrentTime() < ticks * STEP){
-			if(System.currentTimeMillis() - startTime > maxRuntime) return null;
 			sim.advanceTick();
 		}
 		
+		pickups = 0;
+		deliveries = 0;
+		interactions = 0;
+		roadModel.queries = 0;
+	}
+	
+	public Result run(long maxRuntime){
+		long startTime = System.currentTimeMillis();
+		
+		while(advanced < ticks){
+			if(System.currentTimeMillis() - startTime > maxRuntime) return null;
+			sim.advanceTick();
+			advanced++;
+		}
+		
+		long endTime = System.currentTimeMillis();
+		
 		sim.shutdown();
 		//System.out.println("speed: " + speed + "  interactions: " + ((interactions / ticks) / nrTrucks));
-		return new Result(pickups, deliveries, (interactions / ticks) / nrTrucks, System.currentTimeMillis() - startTime, roadModel.queries);
+		return new Result(pickups, deliveries, (interactions / ticks) / nrTrucks, endTime - startTime, roadModel.queries);
 	}
 	
 	public void runGUI(){
@@ -100,7 +114,11 @@ public abstract class Scenario  implements PdpObserver{
 		init(0);
 	}
 	
-	public void init(int blocks) {
+	public void init(int blocks){
+		init(blocks, true);
+	}
+	
+	public void init(int blocks, boolean warmup) {
 		double z = Math.max(100, Math.sqrt(nrTrucks) * 50);
 		roadModel = new PlaneRoadModel(new Point(0, 0), new Point(z, z), false, 100, blocks);
 		rect = roadModel.getViewRect();
@@ -113,8 +131,11 @@ public abstract class Scenario  implements PdpObserver{
 		
 		registerModels();
 		
-		sim.configureWithWarmup();
-
+		if(warmup)
+			sim.configureWithWarmup();
+		else
+			sim.configure();
+		
 		for (int i = 0; i < nrTrucks; i++) {
 			addTruck();
 		}

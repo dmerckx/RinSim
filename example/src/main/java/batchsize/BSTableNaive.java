@@ -19,10 +19,11 @@ public class BSTableNaive extends BatchSizeTableAbstr{
 
 	public static final String PATH = "/tmp/";
 	
-	public static final int[] AGENTS = new int[]{100, 500, 1000, 2000, 4000, 6000, 8000};
-	public static final int[] BATCHSIZES = new int[]{0, 1, 50, 100, 200, 400, 700, 1000, 1500};
+	//public static final int[] AGENTS = new int[]{100, 300, 600, 800, 1000, 1500, 2000, 2500, 3000, 4000};
+	public static final int[] AGENTS = new int[]{1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000};
+	public static final int[] BATCHSIZES = new int[]{0, 1}; /*, 5, 15, 50, 100, 200, 400, 700, 1000, 1500};*/
 	
-	private static int BASE_TICKS = 35000 * 100;
+	private static int BASE_TICKS = 20000 * 100;
 	
 	
 	//public static final String[] NAMES = new String[]{"Naive", "GradientField", "ContractNet"};
