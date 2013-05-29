@@ -27,7 +27,8 @@ import rinde.sim.core.model.road.PlaneRoadModel;
 import rinde.sim.core.model.road.RoadModel;
 import rinde.sim.core.simulation.Simulator;
 import rinde.sim.core.simulation.TimeLapse;
-import rinde.sim.core.simulation.policies.agents.ModPoolBatchRecursive;
+import rinde.sim.core.simulation.policies.Policies;
+import rinde.sim.core.simulation.policies.execution.ModPoolBatchRecursive;
 import rinde.sim.util.TimeWindow;
 
 public class Pickup1 {
@@ -46,7 +47,7 @@ public class Pickup1 {
         final InteractionModel interModel = new InteractionModel();
         final PdpModel pdpModel = new PdpModel(new LiberalPolicy());
 
-        simulator = new Simulator(1, new ModPoolBatchRecursive(4));
+        simulator = new Simulator(1, Policies.getModPool(10, 5, false));
         
         simulator.registerModel(roadModel);
         simulator.registerModel(interModel);

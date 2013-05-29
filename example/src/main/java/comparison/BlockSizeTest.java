@@ -3,7 +3,8 @@ package comparison;
 import gradient.GradientScenario;
 import naive.NaiveScenario;
 import rinde.sim.core.simulation.policies.AgentsPolicy;
-import rinde.sim.core.simulation.policies.agents.ModPoolBatch;
+import rinde.sim.core.simulation.policies.Policies;
+import rinde.sim.core.simulation.policies.agents.MultiThreaded;
 import rinde.sim.core.simulation.policies.agents.SingleThreaded;
 
 import comparison.Scenario.Result;
@@ -47,7 +48,7 @@ public class BlockSizeTest {
 		case 0:
 			return new SingleThreaded();
 		case 1:
-			return new ModPoolBatch(10, 5);
+			return Policies.getModPool(2, 10, true);
 		default:
 			throw new IllegalArgumentException();
 		}

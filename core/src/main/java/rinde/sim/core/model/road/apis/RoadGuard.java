@@ -22,6 +22,7 @@ public class RoadGuard extends RoadState implements RoadAPI{
     protected final RoadUser<?> user;
     protected final ValueCache<Point> location;
     protected final int id;
+    protected final TimeLapseHandle handle;
     
     /**
      * Construct a new guard. 
@@ -35,7 +36,14 @@ public class RoadGuard extends RoadState implements RoadAPI{
         this.model = model;
         this.location = new ValueCache<Point>(data.getStartPosition(), handle);
         this.id = id;
+        this.handle = handle;
     }
+    
+    public TimeLapseHandle getHandle(){
+        return handle;
+    }
+    
+    // ----- ROAD API ----- //
     
     @Override
     public Point getCurrentLocation() {

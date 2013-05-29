@@ -1,12 +1,10 @@
 package comparison;
 
-import plots.Standards;
 import gradient.GradientScenario;
 import naive.NaiveScenario;
+import plots.Standards;
 import rinde.sim.core.simulation.policies.AgentsPolicy;
-import rinde.sim.core.simulation.policies.agents.ModPoolBatchRecursive;
-import rinde.sim.core.simulation.policies.agents.SingleThreaded;
-import rinde.sim.core.simulation.policies.agents.areas.Areas;
+import rinde.sim.core.simulation.policies.Policies;
 
 import comparison.Scenario.Result;
 
@@ -16,26 +14,46 @@ public class Comparison {
 	public static void main(String[] args) {
 		int seed = 26;
 		double speed = Standards.SPEED;
-		int ticks = 18000;
-		int cars = 1500;
-		int proportion = 5;
+		int ticks = 3000;
+		int cars = 50;
+		int proportion = 3;
 		
-		int scenario = 2;
+		int scenario = 1;
 		Scenario s = null; Result r = null;
-		
 
-		/*s = makeScenario(scenario, seed, new SingleThreaded(), speed, ticks, cars, proportion);
+		System.out.println(Standards.getBlocks(cars));
+
+		s = makeScenario(scenario, seed, Policies.getSingleThreaded(), speed, ticks, cars, proportion);
 		s.init(Standards.getBlocks(cars));
 		r = s.run();
 		
-		s = makeScenario(scenario, seed, new SingleThreaded(), speed, ticks, cars, proportion);
+		System.out.println("working on it");
+		
+		s = makeScenario(scenario, seed, Policies.getSingleThreaded(), speed, ticks, cars, proportion);
 		s.init(Standards.getBlocks(cars));
 		r = s.run();
+		System.out.println("RESULT: " + r.runtime + " | " + r.deliveries + " " + r.pickups + " -> " + r.interactionRate);
 		
-		System.out.println("RESULT: " + r.runtime + " | " + r.deliveries + " " + r.pickups + " -> " + r.interactionRate);*/
-
-		s = makeScenario(scenario, seed, new Areas(5, 2, 3), speed, ticks, cars, proportion);
+		s = makeScenario(scenario, seed, Policies.getModPool(4, 1, true), speed, ticks, cars, proportion);
 		s.init(Standards.getBlocks(cars));
+		r = s.run();
+		System.out.println("RESULT: " + r.runtime + " | " + r.deliveries + " " + r.pickups + " -> " + r.interactionRate);
+		
+		s = makeScenario(scenario, seed, Policies.getModPool(4, 5, true), speed, ticks, cars, proportion);
+		s.init(Standards.getBlocks(cars));
+		r = s.run();
+		System.out.println("RESULT: " + r.runtime + " | " + r.deliveries + " " + r.pickups + " -> " + r.interactionRate);
+
+		s = makeScenario(scenario, seed, Policies.getModPool(4, 5, true), speed, ticks, cars, proportion);
+		s.init(12);
+		r = s.run();
+		System.out.println("RESULT: " + r.runtime + " | " + r.deliveries + " " + r.pickups + " -> " + r.interactionRate);
+		s = makeScenario(scenario, seed, Policies.getModPool(4, 5, true), speed, ticks, cars, proportion);
+		s.init(16);
+		r = s.run();
+		System.out.println("RESULT: " + r.runtime + " | " + r.deliveries + " " + r.pickups + " -> " + r.interactionRate);
+		s = makeScenario(scenario, seed, Policies.getModPool(4, 5, true), speed, ticks, cars, proportion);
+		s.init(20);
 		r = s.run();
 		System.out.println("RESULT: " + r.runtime + " | " + r.deliveries + " " + r.pickups + " -> " + r.interactionRate);
 	}

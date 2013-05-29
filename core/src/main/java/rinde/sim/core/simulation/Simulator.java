@@ -26,7 +26,7 @@ import rinde.sim.core.simulation.policies.InteractionRules;
 import rinde.sim.core.simulation.policies.ModelPolicy;
 import rinde.sim.core.simulation.policies.TickListenerPolicy;
 import rinde.sim.core.simulation.policies.TickListenerSerialPolicy;
-import rinde.sim.core.simulation.policies.agents.ModPoolBatch;
+import rinde.sim.core.simulation.policies.agents.MultiThreaded;
 import rinde.sim.core.simulation.policies.agents.SingleThreaded;
 import rinde.sim.core.simulation.policies.agents.areas.Areas;
 import rinde.sim.core.simulation.policies.agents.areas2.Areas2;
@@ -173,12 +173,8 @@ public class Simulator{
             model.init(rnd.nextLong(), rules, masterTime);
         }
         
-        if(timeUserPolicy instanceof Areas){
-            ((Areas) timeUserPolicy).setRoadModel(modelManager.getModel(RoadModel.class));
-        }
-        if(timeUserPolicy instanceof Areas2){
-            ((Areas2) timeUserPolicy).setRoadModel(modelManager.getModel(RoadModel.class));
-        }
+        //TODO: skip this step when the roadmodel is not used
+        timeUserPolicy.init(modelManager.getModel(RoadModel.class).getViewRect());
     }
     
     public void configureWithWarmup(){

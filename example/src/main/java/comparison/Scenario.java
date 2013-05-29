@@ -14,6 +14,7 @@ import rinde.sim.core.model.pdp.PdpObserver;
 import rinde.sim.core.model.pdp.twpolicy.LiberalPolicy;
 import rinde.sim.core.model.pdp.users.DeliveryPoint;
 import rinde.sim.core.model.pdp.users.PickupPoint;
+import rinde.sim.core.model.road.AbstractRoadModel;
 import rinde.sim.core.model.road.PlaneRoadModel;
 import rinde.sim.core.model.road.RoadModel;
 import rinde.sim.core.simulation.Simulator;
@@ -39,7 +40,7 @@ public abstract class Scenario  implements PdpObserver{
 	private final double range;
 	private RandomGenerator rng;
 	
-	protected RoadModel roadModel;
+	protected AbstractRoadModel<?> roadModel;
 	
 	private double interactions = 0;
 	
@@ -70,8 +71,10 @@ public abstract class Scenario  implements PdpObserver{
 			if(System.currentTimeMillis() - startTime > maxRuntime) return null;
 			sim.advanceTick();
 		}
+		
+		sim.shutdown();
 		//System.out.println("speed: " + speed + "  interactions: " + ((interactions / ticks) / nrTrucks));
-		return new Result(pickups, deliveries, (interactions / ticks) / nrTrucks, System.currentTimeMillis() - startTime);
+		return new Result(pickups, deliveries, (interactions / ticks) / nrTrucks, System.currentTimeMillis() - startTime, roadModel.queries);
 	}
 	
 	public void runGUI(){
@@ -111,7 +114,6 @@ public abstract class Scenario  implements PdpObserver{
 		registerModels();
 		
 		sim.configureWithWarmup();
-		
 
 		for (int i = 0; i < nrTrucks; i++) {
 			addTruck();
@@ -156,10 +158,6 @@ public abstract class Scenario  implements PdpObserver{
 	abstract protected void registerModels();
 	abstract protected void registerTruck(Point pos, double speed, int cap);
 	abstract protected void registerParcel(Parcel p);
-	
-	public void close(){
-		sim.shutdown();
-	}
 
 	public static Scenario makeScenario(int scenarioNr, int seed, AgentsPolicy policy, double speed, int ticks, int cars, double proportion,
 			double packageRadius, double gradientRadius, double broadcastRadius){
@@ -183,12 +181,14 @@ public abstract class Scenario  implements PdpObserver{
 		public final int deliveries;
 		public final double interactionRate;
 		public final long runtime;
+		public final long queriesPerformed;
 		
-		public Result(int pickups, int deliveries, double interactionRate, long runtime){
+		public Result(int pickups, int deliveries, double interactionRate, long runtime, long queries){
 			this.pickups = pickups;
 			this.deliveries = deliveries;
 			this.interactionRate = interactionRate;
 			this.runtime = runtime;
+			this.queriesPerformed = queries;
 		}
 	}
 }

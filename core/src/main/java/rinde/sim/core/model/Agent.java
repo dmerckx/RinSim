@@ -21,6 +21,7 @@ import rinde.sim.core.simulation.TimeLapse;
  */
 public interface Agent{
     
+    
     /**
      * An agent can 'use' the provided time to perform actions.
      * Actions are methods that specify an operation (usually on a

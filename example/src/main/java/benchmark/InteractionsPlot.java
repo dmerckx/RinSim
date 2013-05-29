@@ -8,8 +8,8 @@ import org.apache.commons.math3.random.MersenneTwister;
 import org.apache.commons.math3.random.RandomGenerator;
 
 import rinde.sim.core.simulation.policies.AgentsPolicy;
-import rinde.sim.core.simulation.policies.agents.ModPoolBatchRecursive;
 import rinde.sim.core.simulation.policies.agents.SingleThreaded;
+import rinde.sim.core.simulation.policies.execution.ModPoolBatchRecursive;
 
 public class InteractionsPlot {
 

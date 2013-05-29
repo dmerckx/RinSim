@@ -41,6 +41,10 @@ public class PdpModel implements Model<Data, PdpUser<?>>{
     private Set<PickupPoint<?>> pickupEvents = Sets.newLinkedHashSet();
     private Set<DeliveryPoint<?>> deliveryEvents = Sets.newLinkedHashSet();
     
+    public PdpModel(TimeWindowPolicy twp){
+        this(twp, Double.MAX_VALUE, null);
+    }
+    
     public PdpModel(TimeWindowPolicy twp, double range) {
         this(twp, range, null);
     }

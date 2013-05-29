@@ -10,8 +10,8 @@ import org.apache.commons.math3.random.RandomGenerator;
 import benchmark.TestProblem;
 
 import rinde.sim.core.simulation.policies.AgentsPolicy;
-import rinde.sim.core.simulation.policies.agents.ModPoolBatchRecursive;
 import rinde.sim.core.simulation.policies.agents.SingleThreaded;
+import rinde.sim.core.simulation.policies.execution.ModPoolBatchRecursive;
 
 public class LoadInteractionsPlot {
 

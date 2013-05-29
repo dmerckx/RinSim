@@ -5,10 +5,10 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 
 public class Worker extends Thread {
-    private LinkedBlockingQueue<Runnable> tasks;
+    private CustomPool pool;
     
-    public Worker(LinkedBlockingQueue<Runnable> tasks) {
-        this.tasks = tasks;
+    public Worker(CustomPool pool) {
+        this.pool = pool;
         setDaemon(true);
     }
     
@@ -16,10 +16,10 @@ public class Worker extends Thread {
     public void run() {
         while(true){
             try {
-                tasks.take().run();
+                pool.doTask();
             } catch (InterruptedException e) {
                 break;
-            } 
+            }
         }
     }
 }

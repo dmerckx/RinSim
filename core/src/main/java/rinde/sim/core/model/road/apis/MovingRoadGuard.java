@@ -29,8 +29,6 @@ public class MovingRoadGuard extends RoadGuard implements MovingRoadAPI{
 
     private Queue<Point> path = Lists.newLinkedList();
     private final RandomGenerator rnd;
-    
-    private final TimeLapseHandle handle;
     private double speed;
     
     public Point getTarget(){
@@ -53,7 +51,6 @@ public class MovingRoadGuard extends RoadGuard implements MovingRoadAPI{
         super(user, data, model, handle, id);
         this.rnd = new MersenneTwister(seed);
         this.speed = data.getInitialSpeed();
-        this.handle = handle;
     }
     
     // ------ MOVING ROAD API ------ //

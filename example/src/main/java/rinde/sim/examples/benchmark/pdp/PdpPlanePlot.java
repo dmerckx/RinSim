@@ -8,10 +8,10 @@ import org.apache.commons.math3.random.MersenneTwister;
 import org.apache.commons.math3.random.RandomGenerator;
 
 import rinde.sim.core.simulation.policies.AgentsPolicy;
-import rinde.sim.core.simulation.policies.agents.ModPoolBatch;
+import rinde.sim.core.simulation.policies.agents.MultiThreaded;
 import rinde.sim.core.simulation.policies.agents.ModPoolSingle;
-import rinde.sim.core.simulation.policies.agents.PoolBatch;
-import rinde.sim.core.simulation.policies.agents.PoolSingle;
+import rinde.sim.core.simulation.policies.agents.SimplePoolBatch;
+import rinde.sim.core.simulation.policies.agents.SimplePoolSingle;
 import rinde.sim.core.simulation.policies.agents.SingleThreaded;
 
 public class PdpPlanePlot {
@@ -131,15 +131,15 @@ public class PdpPlanePlot {
 	private static final int REFERENCE_POLICY = 100;
 	public static AgentsPolicy getPolicy(int nr){
 		switch(nr){
-		case 0: return new PoolSingle(CORES);
-		case 2: return new PoolBatch(2, CORES);
-		case 3: return new PoolBatch(5, CORES);
-		case 4: return new PoolBatch(10, CORES);
+		case 0: return new SimplePoolSingle(CORES);
+		case 2: return new SimplePoolBatch(2, CORES);
+		case 3: return new SimplePoolBatch(5, CORES);
+		case 4: return new SimplePoolBatch(10, CORES);
 		//Custom
 		case 5: return new ModPoolSingle(CORES-1);
-		case 6: return new ModPoolBatch(2,CORES-1);
-		case 7: return new ModPoolBatch(5,CORES-1);
-		case 8: return new ModPoolBatch(10,CORES-1);
+		case 6: return new MultiThreaded(2,CORES-1);
+		case 7: return new MultiThreaded(5,CORES-1);
+		case 8: return new MultiThreaded(10,CORES-1);
 		case 100: return new SingleThreaded();
 		default: throw new IllegalArgumentException("Unknown policy nr");
 		}

@@ -33,7 +33,6 @@ import rinde.sim.core.simulation.time.TimeLapseHandle;
 import rinde.sim.util.SpeedConverter;
 import rinde.sim.util.TimeUnit;
 import rinde.sim.util.positions.ConcurrentPositionCache;
-import rinde.sim.util.positions.PositionCache;
 import rinde.sim.util.positions.Query;
 
 import com.google.common.collect.Lists;
@@ -49,12 +48,12 @@ import com.google.common.collect.Lists;
  * @author Rinde van Lon <rinde.vanlon@cs.kuleuven.be>
  */
 public abstract class AbstractRoadModel<T> implements RoadModel{
+    public long queries = 0;
 
     private int idCounter = 0;
     private RandomGenerator rnd;
     private Map<RoadUser<?>, RoadGuard> mapping = new HashMap<RoadUser<?>, RoadGuard>();
     protected volatile Map<RoadUser<?>, T> objLocs;
-
     //Cache variables
     private boolean cached;
     private int blocks;
@@ -87,6 +86,11 @@ public abstract class AbstractRoadModel<T> implements RoadModel{
 
     @Override
     public <T2 extends RoadUser<?>> void queryAround(Point pos, double range, Query<T2> query){
+        synchronized (this) {
+            queries++;
+        }
+        
+        
         if(cached){
             cache.query(pos, range, query);
         }

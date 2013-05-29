@@ -9,6 +9,12 @@ public class Standards {
 	public static final double PROPORTION = 3;
 	
 	public static int getBlocks(int agents){
-		return agents < 100 ? 0 : (int)(1.5 * Math.sqrt(agents));
+		return getBlocks(agents, (int) Standards.PROPORTION);
+	}
+	
+	public static int getBlocks(int agents, int proportion){
+		double a = agents * (4/ (proportion+1));
+		
+		return a < 70 ? 0 : (int) (0.90 * Math.sqrt(agents) -4);
 	}
 }

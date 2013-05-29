@@ -8,7 +8,7 @@ public class WarmupTask implements Runnable{
     
     @Override
     public void run() {
-        for(int i = 0; i < 500; i++){
+        for(int i = 0; i < 1000; i++){
             dummy += i + "j*";
         }
     }

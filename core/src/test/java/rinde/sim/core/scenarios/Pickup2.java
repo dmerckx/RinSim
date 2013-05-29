@@ -27,6 +27,8 @@ import rinde.sim.core.model.road.PlaneRoadModel;
 import rinde.sim.core.model.road.RoadModel;
 import rinde.sim.core.simulation.Simulator;
 import rinde.sim.core.simulation.TimeLapse;
+import rinde.sim.core.simulation.policies.Policies;
+import rinde.sim.core.simulation.policies.agents.MultiThreaded;
 import rinde.sim.core.simulation.policies.agents.areas2.Areas2;
 import rinde.sim.util.TimeWindow;
 
@@ -47,8 +49,8 @@ public class Pickup2 {
         final InteractionModel interModel = new InteractionModel();
         final PdpModel pdpModel = new PdpModel(new LiberalPolicy());
       
-        simulator = new Simulator(1, new Areas2(10, 3, 4));
-        //simulator = new Simulator(1, new ModPoolBatch2(6,6));
+        //simulator = new Simulator(1, new Areas2(10, 3, 4));
+        simulator = new Simulator(1, Policies.getModPool(5, 5, true));
         
         
         
@@ -72,7 +74,7 @@ public class Pickup2 {
         for(TestTruck2 truck: trucks) {
             simulator.registerUser(
                     truck,
-                    new TruckData.Std(10, roadModel.getRandomPosition(rng), 10));
+                    new TruckData.Std(Double.MAX_VALUE, roadModel.getRandomPosition(rng), 10));
         }
         
         for(int i =0; i < PACKAGES; i++) {
@@ -183,7 +185,7 @@ public class Pickup2 {
 }
 
 class TestTruck2 extends Truck<TruckData> implements Agent{
-    Parcel target = null;
+    Point target = null;
     
     @Override
     public void tick(TimeLapse time) {
@@ -194,18 +196,22 @@ class TestTruck2 extends Truck<TruckData> implements Agent{
         
         if(containerAPI.getCurrentLoad().size() == 0){  //Search new parcel
             if(target != null){
-                target = containerAPI.tryPickup(time);
-                if(target != null){
-                    roadAPI.setTarget(target.destination);
+                Parcel p = containerAPI.tryPickup(time);
+                if(p != null){
+                    roadAPI.setTarget(p.destination);
+                }
+                else{
+                    roadAPI.setTarget(roadAPI.getRandomLocation());
                 }
             }
             else{
-                target = truckAPI.findClosestAvailableParcel(time);
-                roadAPI.setTarget(target!=null?target.location:roadAPI.getRandomLocation());
+                target = truckAPI.findClosestAvailableParcel();
+                roadAPI.setTarget(target!=null?target:roadAPI.getRandomLocation());
             }
         }
         else{
-            target = containerAPI.tryDelivery(time);
+            containerAPI.tryDelivery(time);
+            roadAPI.setTarget(roadAPI.getRandomLocation());
         }
     }
 }
