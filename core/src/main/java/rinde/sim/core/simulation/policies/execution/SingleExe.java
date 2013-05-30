@@ -24,6 +24,14 @@ public class SingleExe  extends Execution{
             pool.addTask(new RealSingleTask(c, lastNode, rules));
             lastNode = lastNode.makeNext();
         }
+        
+        try {
+            lastNode.done();
+            lastNode.await();
+        } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 
     @Override

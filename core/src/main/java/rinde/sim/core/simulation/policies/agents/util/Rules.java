@@ -10,14 +10,14 @@ public class Rules implements InteractionRules {
     
     @Override
     public void awaitAllPrevious() {
-        if( node.get() == null)
+        /*if( node.get() == null)
             return;
 
         try {
             node.get().awaitPrevious();
         } catch (InterruptedException e) {
             e.printStackTrace();
-        }
+        }*/
     }
 
     @Override

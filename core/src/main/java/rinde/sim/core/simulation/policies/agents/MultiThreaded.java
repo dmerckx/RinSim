@@ -30,7 +30,7 @@ public class MultiThreaded extends AgentsPolicyAbstr{
         execution.execute(agents);
         
         //Afterwards he helps out with doing the work
-        pool.helpFinish();
+        //pool.helpFinish();
     }
 
     @Override

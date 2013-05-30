@@ -18,7 +18,7 @@ public class ValueCache<T> {
     }
 
     
-    public synchronized void setValue(T value){
+    public /*synchronized*/ void setValue(T value){
         if(globalTime.getStartTime() > lastChangedTime){
             backupValue = actualValue;
             lastChangedTime = globalTime.getStartTime();
@@ -30,7 +30,7 @@ public class ValueCache<T> {
         return actualValue;
     }
     
-    public synchronized T getFrozenValue(){
+    public /*synchronized*/ T getFrozenValue(){
         if(globalTime.getStartTime() == lastChangedTime)
             //The value was changed during this turn, use backup
             return backupValue;

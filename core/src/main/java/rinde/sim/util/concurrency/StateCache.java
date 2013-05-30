@@ -25,11 +25,11 @@ public abstract class StateCache<T> {
         this.lastUpdatedTime = -1;
     }
 
-    public synchronized void setValue(T value){
+    public /*synchronized*/ void setValue(T value){
         setValue(value, 0);
     }
     
-    public synchronized void setValue(T value, long duration){
+    public /*synchronized*/ void setValue(T value, long duration){
         if(globalTime.getStartTime() > lastChangedTime){
             frozenState = actualState;
             lastChangedTime = globalTime.getStartTime();
@@ -41,12 +41,12 @@ public abstract class StateCache<T> {
         update();
     }
     
-    public synchronized T getActualValue(){
+    public /*synchronized*/ T getActualValue(){
         if(globalTime.getStartTime() == lastUpdatedTime) update();
         return actualState;
     }
     
-    public synchronized T getFrozenValue(){
+    public /*synchronized*/ T getFrozenValue(){
         if(globalTime.getStartTime() == lastChangedTime)
             //The value was changed during this turn, use backup
             return frozenState;

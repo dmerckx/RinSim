@@ -14,7 +14,7 @@ public class Comparison {
 	public static void main(String[] args) {
 		int seed = 26;
 		double speed = Standards.SPEED;
-		int ticks = 50;
+		int ticks = args.length == 1? Integer.parseInt(args[0]) :2000;
 		int cars = 150;
 		int proportion = 3;
 		
@@ -41,12 +41,17 @@ public class Comparison {
 		s = makeScenario(scenario, seed, Policies.getClassicPool(4, 1, true), speed, ticks, cars, proportion);
 		s.init(0);
 		r = s.run();
-		System.out.println("RESULT: " + r.runtime + " | " + r.deliveries + " " + r.pickups + " -> " + r.interactionRate);	
+		System.out.println("RESULT: " + r.runtime + " | " + r.deliveries + " " + r.pickups + " -> " + r.interactionRate);
 	
-		s = makeScenario(scenario, seed, Policies.getClassicPool(8, 1, true), speed, ticks, cars, proportion);
+		s = makeScenario(scenario, seed, Policies.getModPool(4, 1, true), speed, ticks, cars, proportion);
 		s.init(0);
 		r = s.run();
 		System.out.println("RESULT: " + r.runtime + " | " + r.deliveries + " " + r.pickups + " -> " + r.interactionRate);	
+	
+		s = makeScenario(scenario, seed, Policies.getModPool(8, 1, true), speed, ticks, cars, proportion);
+		s.init(0);
+		r = s.run();
+		System.out.println("RESULT: " + r.runtime + " | " + r.deliveries + " " + r.pickups + " -> " + r.interactionRate);
 	}
 	
 	private static Scenario makeScenario(int nr, 

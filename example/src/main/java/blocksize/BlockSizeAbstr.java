@@ -4,42 +4,33 @@ import org.apache.commons.math3.random.MersenneTwister;
 import org.apache.commons.math3.random.RandomGenerator;
 
 import plots.Standards;
-import rinde.sim.core.simulation.policies.AgentsPolicy;
-import rinde.sim.core.simulation.policies.agents.SingleThreaded;
 
 import comparison.Scenario;
 import comparison.Scenario.Result;
 
-public class BlockSizeTable {
+public abstract class BlockSizeAbstr {
 	
-	public static final int CORES = 2;
+	protected static final int CORES = 4;
 	
-	public static final double SAMPLES = 1; //8;
+	protected static final double SAMPLES = 8; //8;
+
+	protected static int BASE_TICKS = 2500 * 100;
+	protected static long MAX_TIME = 25000;
+	protected static int[] AGENTS;
+	protected static int[] TICKS;
 	
-	public static int[] AGENTS;
-	public static int[] TICKS;
+	protected static final int AMOUNT = 10;
 	
-	private static final int AMOUNT = 11;
-	private static final int BASE_TICKS = /*500 * 100; */2500 * 100;
+	protected static final int[] BLOCKSIZES = new int[]{0, 5, 10, 15, 20, 25, 30, 35, 45};
+	//public static final String[] NAMES = new String[]{"Naive", "GradientField", "ContractNet"};
 	
-	public static final int[] BLOCKSIZES = new int[]{0, 5, 10, 15, 20, 25, 30, 35, 45};
-	public static final String[] NAMES = new String[]{"Naive", "GradientField", "ContractNet"};
+	protected static final RandomGenerator rng = new MersenneTwister();
 	
-	private static final RandomGenerator rng = new MersenneTwister();
-	
-	public static void main(String[] args) {
-		AGENTS = new int[AMOUNT];
-		TICKS = new int[AMOUNT];
-		for(int i = 0; i < AMOUNT; i++){
-			AGENTS[i] = (int) Math.pow(/*5*/ 10 + i*5, 2);
-			TICKS[i] = BASE_TICKS / AGENTS[i];
-		}
-		
-		warmup();
-		runScenario();
+	public BlockSizeAbstr() {
+		// TODO Auto-generated constructor stub
 	}
 	
-	public static void runScenario(){
+	public void runScenario(){
 		long[][] results = getResults();
 		
 		System.out.println("    ");
@@ -86,16 +77,13 @@ public class BlockSizeTable {
 		return result;
 	}
 	
-	private static void warmup(){
-		Scenario s = getScenario(2000, 200);
-		s.init(0);
-		s.run();
-		s = getScenario(2000, 200);
-		s.init(25);
+	protected void warmup(){
+		Scenario s = getScenario(1000, 200);
+		s.init(Standards.getBlocks(200));
 		s.run();
 	}
 
-	public static long[][] getResults(){
+	public long[][] getResults(){
 		long[][] results = new long[AGENTS.length][BLOCKSIZES.length];
 		RandomGenerator rng = new MersenneTwister(15);
 		
@@ -109,7 +97,7 @@ public class BlockSizeTable {
 					System.out.print(".");
 					Scenario s = getScenario(TICKS[a], AGENTS[a]);
 					s.init(BLOCKSIZES[b]);
-					Result res = s.run(25000);
+					Result res = s.run(MAX_TIME);
 					if(res == null){
 						totalTime = Long.MAX_VALUE;
 						break;
@@ -125,17 +113,11 @@ public class BlockSizeTable {
 		return results;
 	}
 	
+	protected abstract Scenario getScenario(int ticks, int trucks);
+	
 	public static String rep(String base, int times){
 		String result = "";
 		for(int i = 0; i < times; i++) result += base;
 		return result;
-	}
-	
-	private static Scenario getScenario(int ticks, int trucks){
-		AgentsPolicy policy = new SingleThreaded();
-		
-		Scenario s = new BlocksizeScenario(rng.nextInt(), policy, Standards.SPEED,
-				ticks, trucks, Standards.PROPORTION, Standards.FIND_PACKAGE_RADIUS);
-		return s;
 	}
 }
