@@ -29,6 +29,8 @@ public class TruckGuard implements TruckAPI{
     public Point findClosestAvailableParcel() {
         assert roadAPI != null: "Init has to be called first";
         
+        
+        /*return pdpModel.getClosestParcel(roadAPI.getCurrentLocation());*/
         ClosestAvailableParcelQuery q = new ClosestAvailableParcelQuery(roadAPI.getCurrentLocation());
         
         roadAPI.queryAround(roadAPI.getCurrentLocation(), pdpModel.range, q);
@@ -56,10 +58,9 @@ class ClosestAvailableParcelQuery implements Query<PickupPoint<?>>{
     
     @Override
     public void process(PickupPoint<?> pp) {
-        if(pp.getPickupPointState().getPickupState() != PickupState.AVAILABLE) return;
-        
         double distPp = Point.distance(from, pp.getRoadState().getLocation());
-        if(distPp < dist){
+        if(distPp < dist &&
+                pp.getPickupPointState().getPickupState() == PickupState.AVAILABLE){
             closest = pp.getRoadState().getLocation();
             dist = distPp;
         }

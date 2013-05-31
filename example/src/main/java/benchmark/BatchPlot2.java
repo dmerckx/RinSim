@@ -11,6 +11,7 @@ import rinde.sim.core.simulation.policies.AgentsPolicy;
 import rinde.sim.core.simulation.policies.agents.ModPoolSingle;
 import rinde.sim.core.simulation.policies.agents.SingleThreaded;
 import rinde.sim.core.simulation.policies.execution.ModPoolBatchRecursive;
+import test.TestProblem;
 
 public class BatchPlot2 {
 

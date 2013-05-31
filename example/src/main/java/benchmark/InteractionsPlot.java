@@ -10,6 +10,7 @@ import org.apache.commons.math3.random.RandomGenerator;
 import rinde.sim.core.simulation.policies.AgentsPolicy;
 import rinde.sim.core.simulation.policies.agents.SingleThreaded;
 import rinde.sim.core.simulation.policies.execution.ModPoolBatchRecursive;
+import test.TestProblem;
 
 public class InteractionsPlot {
 

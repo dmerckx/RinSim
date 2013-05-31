@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.math3.random.MersenneTwister;
 import org.apache.commons.math3.random.RandomGenerator;
@@ -48,12 +49,14 @@ import com.google.common.collect.Lists;
  * @author Rinde van Lon <rinde.vanlon@cs.kuleuven.be>
  */
 public abstract class AbstractRoadModel<T> implements RoadModel{
-    public long queries = 0;
+    public final AtomicInteger queries = new AtomicInteger();
 
     private int idCounter = 0;
     private RandomGenerator rnd;
     private Map<RoadUser<?>, RoadGuard> mapping = new HashMap<RoadUser<?>, RoadGuard>();
-    protected volatile Map<RoadUser<?>, T> objLocs;
+    protected Map<RoadUser<?>, T> objLocs;
+    public static ConcurrentPositionCache<RoadUser<?>> cache;
+    
     //Cache variables
     private boolean cached;
     private int blocks;
@@ -65,7 +68,7 @@ public abstract class AbstractRoadModel<T> implements RoadModel{
      * Create a new instance.
      */
     public AbstractRoadModel(boolean pUseSpeedConversion) {
-        objLocs = createObjectToLocationMap();
+        objLocs = new LinkedHashMap<RoadUser<?>, T>();
         speedConverter = new SpeedConverter();
         useSpeedConversion = pUseSpeedConversion;
         
@@ -86,12 +89,10 @@ public abstract class AbstractRoadModel<T> implements RoadModel{
 
     @Override
     public <T2 extends RoadUser<?>> void queryAround(Point pos, double range, Query<T2> query){
-        synchronized (this) {
-            queries++;
-        }
-        
+        //TODO: queries.incrementAndGet();
         
         if(cached){
+            //throw new IllegalStateException();
             cache.query(pos, range, query);
         }
         else {
@@ -109,15 +110,6 @@ public abstract class AbstractRoadModel<T> implements RoadModel{
     @Override
     public Class<RoadUser<?>> getSupportedType() {
         return (Class) RoadUser.class;
-    }
-
-    /**
-     * Defines the specific {@link Map} instance used for storing object
-     * locations.
-     * @return The map instance.
-     */
-    protected Map<RoadUser<?>, T> createObjectToLocationMap() {
-        return Collections.synchronizedMap(new LinkedHashMap<RoadUser<?>, T>());
     }
 
     /**
@@ -233,7 +225,7 @@ public abstract class AbstractRoadModel<T> implements RoadModel{
         }
         else if( user instanceof FixedRoadUser<?>){
             
-            RoadGuard guard = new RoadGuard(user, data, this, handle, idCounter++);
+            RoadGuard guard = new RoadGuard(user, data, this, handle, idCounter++, true);
             ((FixedRoadUser<?>) user).setRoadAPI(guard);
             mapping.put(user, guard);
         }
@@ -259,13 +251,10 @@ public abstract class AbstractRoadModel<T> implements RoadModel{
         //if(cached) cache.tick();
     }
 
-    private ConcurrentPositionCache<RoadUser<?>> cache;
-    //private PositionCache<RoadUser<?>> cache;
     @Override
     public void init(long seed, InteractionRules rules, TimeInterval masterTime) {
         this.rnd = new MersenneTwister(seed);
         this.cache = new ConcurrentPositionCache(getViewRect(), blocks, masterTime);
-        //cache = new PositionCache<RoadUser<?>>(getViewRect(), blocks);
     }
 }
 

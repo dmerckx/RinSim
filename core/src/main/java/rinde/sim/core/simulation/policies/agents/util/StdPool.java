@@ -8,21 +8,20 @@ public class StdPool extends Pool{
     private final ExecutorService pool;
     
     public StdPool(int nrThreads) {
+        super(nrThreads);
         pool = Executors.newFixedThreadPool(nrThreads);
     }
     
     public void addTask(final Runnable task){
-        countUp();
-        pool.execute(new Runnable() {
-            @Override
-            public void run() {
-                task.run();
-                countDown();
-            }
-        });
+        pool.execute(task);
     }
     
     public void shutDown(){
         pool.shutdown();
+    }
+    
+    @Override
+    public String toString() {
+        return cores + "S";
     }
 }

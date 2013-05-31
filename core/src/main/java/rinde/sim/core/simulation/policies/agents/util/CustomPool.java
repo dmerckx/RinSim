@@ -8,6 +8,7 @@ public class CustomPool extends Pool{
     protected Thread[] workers;
     
     public CustomPool(int nrThreads) {
+        super(nrThreads+1);
         workers = new Thread[nrThreads];
         tasks = new LinkedBlockingQueue<Runnable>();
         
@@ -19,11 +20,9 @@ public class CustomPool extends Pool{
     
     public void doTask() throws InterruptedException{
         tasks.take().run(); //blocks
-        countDown();
     }
     
     public void addTask(Runnable task){
-        countUp();
         try {
             tasks.put(task);
         } catch (InterruptedException e) {
@@ -36,7 +35,6 @@ public class CustomPool extends Pool{
             Runnable task = tasks.poll();
             if(task == null) break;
             task.run();
-            countDown();
         }
         super.helpFinish();
     }
@@ -45,6 +43,11 @@ public class CustomPool extends Pool{
         for(Thread worker:workers){
             worker.interrupt();
         }
+    }
+    
+    @Override
+    public String toString() {
+        return cores + "C";
     }
 }
 

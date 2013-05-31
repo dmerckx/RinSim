@@ -1,4 +1,4 @@
-package benchmark;
+package test;
 
 import org.apache.commons.math3.random.MersenneTwister;
 import org.apache.commons.math3.random.RandomGenerator;

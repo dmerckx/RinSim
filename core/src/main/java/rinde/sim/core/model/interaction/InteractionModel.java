@@ -63,7 +63,6 @@ public class InteractionModel implements Model<Data, InteractionUser<?>> {
     @SuppressWarnings("unchecked")
     public <T extends Receiver, R extends Result> R visit(TimeLapse lapse, Visitor<T, R> visitor){
         //interactions++;
-        interactionRules.awaitAllPrevious();
         
         List<T> targets = new ArrayList<T>();
         
@@ -72,6 +71,8 @@ public class InteractionModel implements Model<Data, InteractionUser<?>> {
                 targets.add((T) r);
             }
         }
+        
+        //if(!targets.isEmpty()) interactionRules.awaitAllPrevious();
         
         return visitor.visit(lapse, targets);
     }

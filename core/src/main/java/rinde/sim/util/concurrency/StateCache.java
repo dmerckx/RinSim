@@ -7,13 +7,11 @@ public abstract class StateCache<T> {
 
     private final TimeInterval globalTime;
     
-    protected long lastChangedTime;
     protected long duration;
-    
-    private long lastUpdatedTime;
-    
     private T actualState;
-    private T frozenState;
+    
+    volatile protected long lastChangedTime;
+    volatile private T frozenState;
     
     public StateCache(T initValue, TimeInterval globalTime) {
         this.globalTime = globalTime;
@@ -22,14 +20,13 @@ public abstract class StateCache<T> {
         this.frozenState = initValue;
         
         this.lastChangedTime = globalTime.getStartTime();
-        this.lastUpdatedTime = -1;
     }
 
-    public /*synchronized*/ void setValue(T value){
+    public synchronized void setValue(T value){
         setValue(value, 0);
     }
     
-    public /*synchronized*/ void setValue(T value, long duration){
+    public synchronized void setValue(T value, long duration){
         if(globalTime.getStartTime() > lastChangedTime){
             frozenState = actualState;
             lastChangedTime = globalTime.getStartTime();
@@ -41,22 +38,23 @@ public abstract class StateCache<T> {
         update();
     }
     
-    public /*synchronized*/ T getActualValue(){
-        if(globalTime.getStartTime() == lastUpdatedTime) update();
+    public synchronized T getActualValue(){
+        if(globalTime.getStartTime() != lastChangedTime) update();
         return actualState;
     }
     
-    public /*synchronized*/ T getFrozenValue(){
+    public T getFrozenValue(){
         if(globalTime.getStartTime() == lastChangedTime)
             //The value was changed during this turn, use backup
             return frozenState;
-        else if(globalTime.getStartTime() == lastUpdatedTime)
-            //
-            return actualState;
-        else
-            //
+        
+        synchronized (this) {
+            if(globalTime.getStartTime() == lastChangedTime)
+                return frozenState;
+            
             update();
             return actualState;
+        }
     }
     
     private void update(){
@@ -70,8 +68,6 @@ public abstract class StateCache<T> {
             lastChangedTime = globalTime.getStartTime();
         }
         duration = 0;
-        
-        lastUpdatedTime = globalTime.getStartTime();
     }
     
     public abstract T getState(T currentState, long time);

@@ -15,13 +15,6 @@ public interface GradientAPI {
     Point getTarget(double distance);
     
     /**
-     * Returns the value of the field in the given location for this emitter.
-     * @param The location to calculate the field at.
-     * @return The value of the field.
-     */
-    double getField(Point p);
-    
-    /**
      * Toggles emitting a field on/off.
      * @param Whether or not the field should be active.
      */

@@ -72,7 +72,7 @@ public abstract class Scenario  implements PdpObserver{
 		pickups = 0;
 		deliveries = 0;
 		interactions = 0;
-		roadModel.queries = 0;
+		roadModel.queries.set(0);
 	}
 	
 	public Result run(long maxRuntime){
@@ -88,7 +88,7 @@ public abstract class Scenario  implements PdpObserver{
 		
 		sim.shutdown();
 		//System.out.println("speed: " + speed + "  interactions: " + ((interactions / ticks) / nrTrucks));
-		return new Result(pickups, deliveries, (interactions / ticks) / nrTrucks, endTime - startTime, roadModel.queries);
+		return new Result(pickups, deliveries, (interactions / ticks) / nrTrucks, endTime - startTime, roadModel.queries.get());
 	}
 	
 	public void runGUI(){
@@ -162,10 +162,10 @@ public abstract class Scenario  implements PdpObserver{
 		
 		Point to = null;
 		do{
-		int x = rng.nextInt(xMax - xMin) + xMin;
-		int y = rng.nextInt(yMax - yMin) + yMin;
-		
-		to = new Point(x, y);
+			int x = rng.nextInt(xMax - xMin) + xMin;
+			int y = rng.nextInt(yMax - yMin) + yMin;
+			
+			to = new Point(x, y);
 		}while(Point.distance(from, to) > 45);
 		//System.out.println("rect: " + rect);
 		//System.out.println("x " + x + " y " + y);

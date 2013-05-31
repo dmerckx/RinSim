@@ -2,6 +2,7 @@ package rinde.sim.core.simulation.policies.agents;
 
 import rinde.sim.core.simulation.TimeInterval;
 import rinde.sim.core.simulation.policies.InteractionRules;
+import rinde.sim.core.simulation.policies.agents.util.LatchNode;
 import rinde.sim.core.simulation.policies.agents.util.Pool;
 
 /**
@@ -17,7 +18,6 @@ public class MultiThreaded extends AgentsPolicyAbstr{
     protected final Execution execution;
     protected final Pool pool;
     
-    
     public MultiThreaded(Execution execution, Pool pool) {
         this.execution = execution;
         this.pool = pool;
@@ -27,10 +27,17 @@ public class MultiThreaded extends AgentsPolicyAbstr{
 
     @Override
     public void doTicks(TimeInterval interval) {
-        execution.execute(agents);
+        LatchNode finalNode = execution.execute(agents);
         
         //Afterwards he helps out with doing the work
-        //pool.helpFinish();
+        pool.helpFinish();
+        
+        finalNode.done();
+        try {
+            finalNode.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -46,5 +53,10 @@ public class MultiThreaded extends AgentsPolicyAbstr{
     @Override
     public void shutDown() {
         pool.shutDown();
+    }
+    
+    @Override
+    public String toString() {
+        return pool + " " + execution;
     }
 }

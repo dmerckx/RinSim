@@ -34,30 +34,20 @@ public class FieldTruck extends Truck<FTData> implements FieldEmitter<FTData>, A
 	
 	@Override
 	public void tick(TimeLapse time) {
-		switch(state){
+		gradientAPI.getTarget(5*roadAPI.getSpeed());
+		
+		/*switch(state){
 		case SEARCHING:
-			Point closest = truckAPI.findClosestAvailableParcel();
+			Point target = gradientAPI.getTarget(5*roadAPI.getSpeed());
+			roadAPI.setTarget(target);
+			roadAPI.advance(time);
 
-			if(closest != null && Point.distance(closest, roadAPI.getCurrentLocation()) < 5*roadAPI.getSpeed()){
-				//drive to the most nearby package
-				roadAPI.setTarget(closest);
-				roadAPI.advance(time);
-
-				if(!roadAPI.isDriving() && time.hasTimeLeft()){
-					Parcel p = containerAPI.tryPickup(time);
-					if(p != null){
-						roadAPI.setTarget(p.destination);
-						changeState(State.DRIVING_TO_DELIVERY);
-					}
+			if(!roadAPI.isDriving() && time.hasTimeLeft()){
+				Parcel p = containerAPI.tryPickup(time);
+				if(p != null){
+					roadAPI.setTarget(p.destination);
+					changeState(State.DRIVING_TO_DELIVERY);
 				}
-			}
-			else{
-				//let the field guide the way
-				Point target = gradientAPI.getTarget(5*roadAPI.getSpeed());
-				if(target == null) throw new IllegalStateException();
-				
-				roadAPI.setTarget(target);
-				roadAPI.advance(time);
 			}
 			break;
 		case DRIVING_TO_DELIVERY:
@@ -69,7 +59,7 @@ public class FieldTruck extends Truck<FTData> implements FieldEmitter<FTData>, A
 				changeState(State.SEARCHING);
 			}
 			break;
-		}
+		}*/
 	}
 	
 	private void changeState(State newState){

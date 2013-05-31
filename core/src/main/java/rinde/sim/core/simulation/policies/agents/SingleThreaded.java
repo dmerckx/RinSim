@@ -45,5 +45,10 @@ public class SingleThreaded extends AgentsPolicyAbstr{
     public void init(Rectangle mapSize) {
         
     }
+    
+    @Override
+    public String toString() {
+        return "Single Threaded";
+    }
 
 }

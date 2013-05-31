@@ -146,7 +146,7 @@ public class ContainerGuard extends ContainerState implements ContainerAPI, Inte
     }
     
     @Override
-    public synchronized Parcel tryDelivery(TimeLapse lapse){
+    public Parcel tryDelivery(TimeLapse lapse){
         assert handle == lapse;
         if(!handle.hasTimeLeft()) return null;
         
@@ -173,7 +173,7 @@ public class ContainerGuard extends ContainerState implements ContainerAPI, Inte
     }
 
     @Override
-    public synchronized void acceptAll(TimeLapse lapse){
+    public void acceptAll(TimeLapse lapse){
         assert handle == lapse;
         if(interactiveAPI.isAdvertising()) return;
         if(!handle.hasTimeLeft()) return;
@@ -184,7 +184,7 @@ public class ContainerGuard extends ContainerState implements ContainerAPI, Inte
     }
     
     @Override
-    public synchronized void accept(TimeLapse lapse, List<Parcel> parcels){
+    public void accept(TimeLapse lapse, List<Parcel> parcels){
         assert handle == lapse;
         if(interactiveAPI.isAdvertising()) return;
         if(!handle.hasTimeLeft()) return;
@@ -195,12 +195,12 @@ public class ContainerGuard extends ContainerState implements ContainerAPI, Inte
     }
 
     @Override
-    public synchronized void advertiseAll(TimeLapse lapse) {
+    public void advertiseAll(TimeLapse lapse) {
         advertise(lapse, load.getActualValue());
     }
     
     @Override
-    public synchronized void advertise(TimeLapse lapse, List<Parcel> parcels) {
+    public void advertise(TimeLapse lapse, List<Parcel> parcels) {
         assert handle == lapse;
         assert load.getActualValue().containsAll(parcels);
         if(interactiveAPI.isAdvertising()) return;
@@ -212,27 +212,26 @@ public class ContainerGuard extends ContainerState implements ContainerAPI, Inte
     }
     
     @Override
-    public synchronized void stopAdvertisingOrAccepting(){
+    public void stopAdvertisingOrAccepting(){
         interactiveAPI.stopAdvertising();
     }
     
     @Override
-    public synchronized ContainerState getState() {
+    public ContainerState getState() {
         return this;
     }
     
     // ----- CONTAINER STATE ----- //
 
     @Override
-    public synchronized ContState getContState() {
+    public ContState getContState() {
         return state.getFrozenValue();
     }
 
     @Override
-    public synchronized ImmutableList<Parcel> getLoad() {
+    public ImmutableList<Parcel> getLoad() {
         return load.getFrozenValue();
     }
-
 }
 
 class State{

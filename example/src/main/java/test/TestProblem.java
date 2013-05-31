@@ -1,4 +1,4 @@
-package benchmark;
+package test;
 
 import rinde.sim.core.simulation.Simulator;
 import rinde.sim.core.simulation.policies.AgentsPolicy;

@@ -1,4 +1,4 @@
-package benchmark;
+package test;
 
 import java.util.List;
 
@@ -43,9 +43,7 @@ public class TestModel implements Model<Data, TestUser>{
 	}
 
 	@Override
-	public List<User<?>> unregister(TestUser user) {
-		return Lists.newArrayList();
-	}
+	public void unregister(TestUser user) {}
 
 	@Override
 	public Class<TestUser> getSupportedType() {

@@ -7,7 +7,6 @@ import java.io.IOException;
 import org.apache.commons.math3.random.MersenneTwister;
 import org.apache.commons.math3.random.RandomGenerator;
 
-import benchmark.TestProblem;
 
 import rinde.sim.core.simulation.policies.AgentsPolicy;
 import rinde.sim.core.simulation.policies.agents.MultiThreaded;
@@ -15,6 +14,7 @@ import rinde.sim.core.simulation.policies.agents.ModPoolSingle;
 import rinde.sim.core.simulation.policies.agents.SimplePoolSingle;
 import rinde.sim.core.simulation.policies.agents.SimplePoolBatch;
 import rinde.sim.core.simulation.policies.agents.SingleThreaded;
+import test.TestProblem;
 
 public class LoadNoInteractionsPlot {
 

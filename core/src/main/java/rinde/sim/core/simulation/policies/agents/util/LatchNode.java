@@ -106,15 +106,21 @@ public class LatchNode{
     }
     
     private synchronized void beforeIsDone(){
-        beforeIsFinished = true;
-        
-        //If this node was ready
-        //  -> this node is finished
-        //  -> notify the next node
-        if(done){
-            latch.countDown();
-            if(nextNode != null)
-                nextNode.beforeIsDone();
+        synchronized (this) {
+            beforeIsFinished = true;
+            
+            //If this node was ready
+            //  -> this node is finished
+            //  -> notify the next node
+            if(done){
+                latch.countDown();
+                if(nextNode == null) return;
+            }
+            else{
+                return;
+            }
         }
+        
+        nextNode.beforeIsDone();
     }
 }

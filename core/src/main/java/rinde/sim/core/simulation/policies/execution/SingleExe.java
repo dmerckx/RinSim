@@ -16,7 +16,7 @@ public class SingleExe  extends Execution{
     }
     
     @Override
-    public void execute(List<AgentContainer> agents) {
+    public LatchNode execute(List<AgentContainer> agents) {
         LatchNode lastNode = new LatchNode();
         
         //The main thread start by dividing the work in pieces
@@ -25,18 +25,17 @@ public class SingleExe  extends Execution{
             lastNode = lastNode.makeNext();
         }
         
-        try {
-            lastNode.done();
-            lastNode.await();
-        } catch (InterruptedException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
+        return lastNode;
     }
 
     @Override
     public InteractionRules getRules() {
         return rules;
+    }
+
+    @Override
+    public String toString() {
+        return "SingleExe";
     }
 
 }

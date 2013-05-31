@@ -18,7 +18,7 @@ public class BatchRecExe extends Execution{
     }
     
     @Override
-    public void execute(List<AgentContainer> containers) {
+    public LatchNode execute(List<AgentContainer> containers) {
         LatchNode lastNode = new LatchNode();
         
         int max = containers.size();
@@ -28,11 +28,18 @@ public class BatchRecExe extends Execution{
             pool.addTask(new Task2(containers.subList(i, j), lastNode, rules));
             lastNode = lastNode.makeNext();
         }
+        
+        return lastNode;
     }
 
     @Override
     public InteractionRules getRules() {
         return rules;
+    }
+
+    @Override
+    public String toString() {
+        return "BatchRecExe";
     }
 
 }

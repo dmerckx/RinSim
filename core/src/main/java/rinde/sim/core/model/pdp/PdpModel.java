@@ -3,6 +3,7 @@ package rinde.sim.core.model.pdp;
 import java.util.List;
 import java.util.Set;
 
+import rinde.sim.core.graph.Point;
 import rinde.sim.core.model.Data;
 import rinde.sim.core.model.Model;
 import rinde.sim.core.model.User;
@@ -13,6 +14,7 @@ import rinde.sim.core.model.pdp.apis.DeliveryGuard;
 import rinde.sim.core.model.pdp.apis.PickupAPI;
 import rinde.sim.core.model.pdp.apis.PickupGuard;
 import rinde.sim.core.model.pdp.apis.TruckGuard;
+import rinde.sim.core.model.pdp.apis.PickupAPI.PickupState;
 import rinde.sim.core.model.pdp.twpolicy.TimeWindowPolicy;
 import rinde.sim.core.model.pdp.users.Container;
 import rinde.sim.core.model.pdp.users.ContainerData;
@@ -40,6 +42,27 @@ public class PdpModel implements Model<Data, PdpUser<?>>{
     private final PdpObserver observer;
     private Set<PickupPoint<?>> pickupEvents = Sets.newLinkedHashSet();
     private Set<DeliveryPoint<?>> deliveryEvents = Sets.newLinkedHashSet();
+
+    
+    
+    private Set<PickupPoint<?>> pickups = Sets.newLinkedHashSet();
+    public Point getClosestParcel(Point position){
+        double minDist = Double.POSITIVE_INFINITY;
+        PickupPoint<?> closestPp = null;
+        
+        for(PickupPoint<?> p:pickups){
+            if(p.getPickupPointState().getPickupState() != PickupState.AVAILABLE) continue;
+            if(Point.distance(p.getRoadState().getLocation(), position) < minDist){
+                minDist = Point.distance(p.getRoadState().getLocation(), position);
+                closestPp = p;
+            }
+        }
+        if(closestPp == null) return null;
+        
+        return closestPp.getRoadState().getLocation();
+    }
+    
+    
     
     public PdpModel(TimeWindowPolicy twp){
         this(twp, Double.MAX_VALUE, null);
@@ -61,12 +84,16 @@ public class PdpModel implements Model<Data, PdpUser<?>>{
     
     // ----- NOTIFICATIONS ----- //
     
-    public synchronized void notifyParcelPickup(PickupPoint<?> p){
-        pickupEvents.add(p);
+    public void notifyParcelPickup(PickupPoint<?> p){
+        synchronized (pickupEvents) {
+            pickupEvents.add(p);
+        }
     }
     
-    public synchronized void notifyParcelDelivery(DeliveryPoint<?> d){
-        deliveryEvents.add(d);
+    public void notifyParcelDelivery(DeliveryPoint<?> d){
+        synchronized (deliveryEvents) {
+            deliveryEvents.add(d);
+        }
     }
     
     // ------ MODEL ------ //
@@ -93,6 +120,8 @@ public class PdpModel implements Model<Data, PdpUser<?>>{
         else if(user instanceof PickupPoint){
             guard = new PickupGuard((PickupPoint<?>) user, (PickupPointData) data, this, handle);
             ((PickupPoint) user).setPickupAPI((PickupAPI) guard);
+            
+            pickups.add((PickupPoint) user);
         }
         else if(user instanceof DeliveryPoint){
             guard = new DeliveryGuard((DeliveryPoint<?>) user, (DeliveryPointData) data, this, handle);
@@ -110,6 +139,9 @@ public class PdpModel implements Model<Data, PdpUser<?>>{
 
     @Override
     public void unregister(PdpUser<?> user) {
+        if(user instanceof PickupPoint) pickups.remove(user);
+        
+        
         assert user != null;
     }
 

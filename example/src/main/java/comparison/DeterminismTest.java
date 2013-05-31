@@ -4,9 +4,8 @@ import gradient.GradientScenario;
 import naive.NaiveScenario;
 import naive.NaiveTruck;
 import rinde.sim.core.simulation.policies.AgentsPolicy;
-import rinde.sim.core.simulation.policies.agents.MultiThreaded;
+import rinde.sim.core.simulation.policies.Policies;
 import rinde.sim.core.simulation.policies.agents.SingleThreaded;
-import rinde.sim.core.simulation.policies.execution.BatchExe;
 
 import comparison.Scenario.Result;
 
@@ -66,7 +65,7 @@ public class DeterminismTest {
 		case 0:
 			return new SingleThreaded();
 		case 1:
-			return new MultiThreaded(new BatchExe(10), 5);
+			return Policies.getModPool(5, 10, false); 
 		default:
 			throw new IllegalArgumentException();
 		}

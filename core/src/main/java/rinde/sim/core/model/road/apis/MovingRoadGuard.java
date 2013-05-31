@@ -48,7 +48,7 @@ public class MovingRoadGuard extends RoadGuard implements MovingRoadAPI{
      */
     @SuppressWarnings("hiding")
     public MovingRoadGuard(MovingRoadUser<?> user, MovingRoadData data, RoadModel model, long seed, TimeLapseHandle handle, int id) {
-        super(user, data, model, handle, id);
+        super(user, data, model, handle, id, false);
         this.rnd = new MersenneTwister(seed);
         this.speed = data.getInitialSpeed();
     }

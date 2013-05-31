@@ -142,7 +142,7 @@ public class GraphRoadModel extends AbstractRoadModel<Loc> {
             tempPos = tempLoc;
         }
 
-        objLocs.put(object, tempLoc);
+        updateObject(object, tempLoc);
         return new MoveProgress(traveled, time.getTimeConsumed(),
                 travelledNodes);
     }

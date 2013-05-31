@@ -11,6 +11,9 @@ import rinde.sim.core.simulation.policies.execution.SingleExe;
 public class Policies {
 
     public static AgentsPolicy getClassicPool(int maxThreads, int batchSize, boolean recursive){
+        if(maxThreads == 1)
+            return getSingleThreaded();
+        
         if(batchSize == 1)
             return new MultiThreaded(new SingleExe(), new StdPool(maxThreads));
         
@@ -21,6 +24,9 @@ public class Policies {
     }
     
     public static AgentsPolicy getModPool(int maxThreads, int batchSize, boolean recursive){
+        if(maxThreads == 1)
+            return getSingleThreaded();
+        
         if(batchSize == 1)
             return new MultiThreaded(new SingleExe(), new CustomPool(maxThreads-1));
         
