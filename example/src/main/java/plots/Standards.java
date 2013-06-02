@@ -15,6 +15,6 @@ public class Standards {
 	public static int getBlocks(int agents, int proportion){
 		double a = agents * (4/ (proportion+1));
 		
-		return a < 70 ? 0 : (int) (0.90 * Math.sqrt(agents) -4);
+		return a < 70 ? 1 : (int) (0.90 * Math.sqrt(agents) -4);
 	}
 }

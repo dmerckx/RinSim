@@ -1,6 +1,5 @@
 package rinde.sim.core.simulation.policies.agents.util;
 
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class CustomPool extends Pool{
@@ -30,13 +29,13 @@ public class CustomPool extends Pool{
         }
     }
     
-    public void helpFinish(){
+    public void awaitFinish(){
         while(true){
             Runnable task = tasks.poll();
             if(task == null) break;
             task.run();
         }
-        super.helpFinish();
+        super.awaitFinish();
     }
     
     public void shutDown(){
@@ -48,22 +47,5 @@ public class CustomPool extends Pool{
     @Override
     public String toString() {
         return cores + "C";
-    }
-}
-
-class FinishTask implements Runnable {
-    private final CountDownLatch latch;
-    
-    public FinishTask(int threads) {
-        latch = new CountDownLatch(threads);
-    }
-    
-    public void run() {
-        latch.countDown();
-        try {
-            latch.await();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
     }
 }

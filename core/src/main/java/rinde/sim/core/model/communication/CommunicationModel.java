@@ -18,6 +18,7 @@ import rinde.sim.core.model.communication.users.FullCommUser;
 import rinde.sim.core.model.communication.users.SimpleCommData;
 import rinde.sim.core.model.communication.users.SimpleCommUser;
 import rinde.sim.core.model.road.RoadModel;
+import rinde.sim.core.model.road.users.RoadUser;
 import rinde.sim.core.simulation.Simulator;
 import rinde.sim.core.simulation.TimeInterval;
 import rinde.sim.core.simulation.UserInit;
@@ -166,7 +167,7 @@ public class CommunicationModel implements Model<Data, CommUser<?>>{
     }
 }
 
-class FindAddresses implements Query<FullCommUser<?>>{
+class FindAddresses implements Query{
     public final List<Address> addresses;
      
     public FindAddresses() {
@@ -174,8 +175,11 @@ class FindAddresses implements Query<FullCommUser<?>>{
     }
     
     @Override
-    public void process(FullCommUser<?> t) {
-        addresses.add(t.getCommunicationState().getAddress());
+    public void process(RoadUser<?> t) {
+        if(!(t instanceof CommUser<?>))
+            return;
+        
+        addresses.add(((CommUser) t).getCommunicationState().getAddress());
     }
 
     @Override
@@ -184,7 +188,7 @@ class FindAddresses implements Query<FullCommUser<?>>{
     }
 }
 
-class DoBroadcast implements Query<FullCommUser<?>>{
+class DoBroadcast implements Query{
     private final Delivery msg; 
     
     public DoBroadcast(Delivery msg) {
@@ -192,9 +196,12 @@ class DoBroadcast implements Query<FullCommUser<?>>{
     }
     
     @Override
-    public void process(FullCommUser<?> t) {
+    public void process(RoadUser<?> t) {
+        if(!(t instanceof CommUser<?>))
+            return;
+        
         //A bit hacky, but most efficient
-        SimpleCommGuard g = (SimpleCommGuard) t.getCommunicationState();
+        SimpleCommGuard g = (SimpleCommGuard) ((CommUser<?>) t).getCommunicationState();
         
         try {
             g.receive(msg.clone());

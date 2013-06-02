@@ -19,11 +19,10 @@ public class BSTableNaive extends BatchSizeTableAbstr{
 
 	public static final String PATH = "/tmp/";
 	
-	//public static final int[] AGENTS = new int[]{100, 300, 600, 800, 1000, 1500, 2000, 2500, 3000, 4000};
-	public static final int[] AGENTS = new int[]{1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000};
-	public static final int[] BATCHSIZES = new int[]{0, 1}; /*, 5, 15, 50, 100, 200, 400, 700, 1000, 1500};*/
+	public static final int[] AGENTS = new int[]{100, 300, 600, 800, 1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000};
+	public static final int[] BATCHSIZES = new int[]{0, 1, 15, 50, 100, 200, 400, 800, 1200};
 	
-	private static int BASE_TICKS = 20000 * 100;
+	public static int BASE_TICKS = 20000 * 100;
 	
 	
 	//public static final String[] NAMES = new String[]{"Naive", "GradientField", "ContractNet"};
@@ -43,7 +42,7 @@ public class BSTableNaive extends BatchSizeTableAbstr{
 		String res = new BSTableNaive(AGENTS, BATCHSIZES, BASE_TICKS).run();
 		
 		try {
-			FileWriter writer = new FileWriter(new File(PATH + "BATCHSIZETABLE"));
+			FileWriter writer = new FileWriter(new File(PATH + "BATCHSIZETABLE_NAIVE"));
 			writer.write(res);
 			writer.close();
 		} catch (IOException e) {

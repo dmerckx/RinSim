@@ -6,6 +6,7 @@ import java.util.Comparator;
 import java.util.List;
 
 import rinde.sim.core.graph.Point;
+import rinde.sim.core.model.pdp.users.DeliveryPoint;
 import rinde.sim.core.model.road.users.RoadUser;
 import rinde.sim.core.simulation.TimeInterval;
 import rinde.sim.util.Tuple;
@@ -16,7 +17,7 @@ import com.google.common.collect.Sets;
 public class ConcurrentRegion<T extends RoadUser<?>> extends Region implements Comparator<Tuple<T, Action>>{
     private final TimeInterval globalTime;
     
-    private final Collection<T> values;
+    public final Collection<T> values;
     private final List<Tuple<T, Action>> updates;
     
     private long lastUpdate = -100;
@@ -29,10 +30,16 @@ public class ConcurrentRegion<T extends RoadUser<?>> extends Region implements C
         this.updates = Lists.newArrayList();
     }
     
-    private synchronized void update(){
-        if(globalTime.getStartTime() != lastUpdate){
+    private void update(){
+        if(globalTime.getStartTime() == lastUpdate)
+            return;
+
+        synchronized(this){
+            if(globalTime.getStartTime() == lastUpdate)
+                return;
+
             Collections.sort(updates, this);
-            
+
             for(Tuple<T, Action> u:updates){
                 switch (u.getValue()) {
                 case ADD:
@@ -43,7 +50,6 @@ public class ConcurrentRegion<T extends RoadUser<?>> extends Region implements C
                     break;
                 }
             }
-            
             lastUpdate = globalTime.getStartTime();
         }
     }
@@ -66,13 +72,14 @@ public class ConcurrentRegion<T extends RoadUser<?>> extends Region implements C
         updates.add(Tuple.create(user, Action.REMOVE));
     }
     
-    public <T2 extends T> void queryUpon(Point point, double radius, Query<T2> query){
+    public void queryUpon(Point point, double radius, Query query){
         update();
         
-        for(T user: values){
-            if(!query.getType().isInstance(user)) continue;
-            if(Point.distance(point, user.getRoadState().getLocation()) < radius)
-                query.process((T2) user);
+        for(T user:values){
+            if(Point.distance(point, user.getRoadState().getLocation()) < radius){
+                //if(!query.getType().isInstance(user)) continue;
+                query.process(user);
+            }
         }
     }
 

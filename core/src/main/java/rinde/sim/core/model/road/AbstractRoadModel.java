@@ -5,7 +5,6 @@ package rinde.sim.core.model.road;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -55,7 +54,7 @@ public abstract class AbstractRoadModel<T> implements RoadModel{
     private RandomGenerator rnd;
     private Map<RoadUser<?>, RoadGuard> mapping = new HashMap<RoadUser<?>, RoadGuard>();
     protected Map<RoadUser<?>, T> objLocs;
-    public static ConcurrentPositionCache<RoadUser<?>> cache;
+    public ConcurrentPositionCache<RoadUser<?>> cache;
     
     //Cache variables
     private boolean cached;
@@ -88,21 +87,22 @@ public abstract class AbstractRoadModel<T> implements RoadModel{
     }
 
     @Override
-    public <T2 extends RoadUser<?>> void queryAround(Point pos, double range, Query<T2> query){
-        //TODO: queries.incrementAndGet();
+    public void queryAround(Point pos, double range, Query query){
+        queries.incrementAndGet();
         
         if(cached){
             //throw new IllegalStateException();
             cache.query(pos, range, query);
         }
         else {
+            throw new UnsupportedOperationException();
             //Simply iteratie over all road users
-            for(RoadUser<?> obj:mapping.keySet()){
+            /*for(RoadUser<?> obj:mapping.keySet()){
                 if(!query.getType().isInstance(obj)) continue;
                 if(Point.distance(obj.getRoadState().getLocation(), pos) < range){
                     query.process((T2) obj);
                 } 
-            }
+            }*/
         }
     }
 

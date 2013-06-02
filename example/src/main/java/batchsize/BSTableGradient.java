@@ -16,11 +16,10 @@ public class BSTableGradient extends BatchSizeTableAbstr{
 
 	public static final String PATH = "/tmp/";
 	
-	public static final int[] AGENTS = new int[]{50, 100, 150, 200, 300, 500, 700};
-	public static final int[] BATCHSIZES = new int[]{0, 1, 4};
+	public static final int[] AGENTS = new int[]{50, 100, 150, 200, 300, 500, 700, 1000};
+	public static final int[] BATCHSIZES = new int[]{0, 1, 2, 4, 7, 10, 13, 16, 20};
 	
-	private static int BASE_TICKS = 1400 * 100;
-	
+	public static int BASE_TICKS = 5000 * 100;
 	
 	public static void main(String[] args) {
 		CORES = 4; //TODO: test with 8

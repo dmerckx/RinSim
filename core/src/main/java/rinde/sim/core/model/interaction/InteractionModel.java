@@ -72,7 +72,7 @@ public class InteractionModel implements Model<Data, InteractionUser<?>> {
             }
         }
         
-        //if(!targets.isEmpty()) interactionRules.awaitAllPrevious();
+        if(!targets.isEmpty()) interactionRules.awaitAllPrevious();
         
         return visitor.visit(lapse, targets);
     }

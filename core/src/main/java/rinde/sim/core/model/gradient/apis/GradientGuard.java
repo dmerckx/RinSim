@@ -1,15 +1,14 @@
-package gradient.model.apis;
+package rinde.sim.core.model.gradient.apis;
 
-import gradient.model.GradientModel;
-import gradient.model.users.FieldData;
-import gradient.model.users.FieldEmitter;
 import rinde.sim.core.graph.Point;
+import rinde.sim.core.model.gradient.GradientModel;
+import rinde.sim.core.model.gradient.queries.GetField;
+import rinde.sim.core.model.gradient.users.FieldData;
+import rinde.sim.core.model.gradient.users.FieldEmitter;
 import rinde.sim.core.model.road.apis.RoadAPI;
 import rinde.sim.core.simulation.time.TimeLapseHandle;
-import rinde.sim.util.Rectangle;
 import rinde.sim.util.concurrency.ValueCache;
 import rinde.sim.util.concurrency.VariableValueCache;
-import rinde.sim.util.positions.Query;
 
 @SuppressWarnings("hiding")
 public class GradientGuard extends GradientState implements GradientAPI {
@@ -50,12 +49,12 @@ public class GradientGuard extends GradientState implements GradientAPI {
 	private final int[] y = {	1,	1,	1,	0,	-1,	-1,	-1,	0	};
 	@Override
 	public Point getTarget(double distance) {
-		GetTarget q = new GetTarget(roadAPI.getCurrentLocation(), distance, user, model.bounds);
+		/*GetTarget q = new GetTarget(roadAPI.getCurrentLocation(), distance, user, model.bounds);
 		roadAPI.queryAround(roadAPI.getCurrentLocation(), model.range, q);
 		
-		return q.getTarget();
+		return q.getTarget();*/
 		
-		/*double maxField = Double.NEGATIVE_INFINITY;
+		double maxField = Double.NEGATIVE_INFINITY;
 		Point maxFieldPoint = null;
 		Point pos = roadAPI.getCurrentLocation();
 		
@@ -74,16 +73,18 @@ public class GradientGuard extends GradientState implements GradientAPI {
 			}
 		}
 		
-		return maxFieldPoint;*/
+		return maxFieldPoint;
 	}
 
-	/*@Override
+	@Override
 	public double getField(Point pos) {
 		GetField q = new GetField(pos, user);
 		roadAPI.queryAround(pos, model.range, q);
 		
 		return q.getField();
-	}*/
+		
+		//return 100;
+	}
 
 	@Override
 	public GradientState getState() {
@@ -103,7 +104,7 @@ public class GradientGuard extends GradientState implements GradientAPI {
 	}
 }
 
-class GetTarget implements Query<FieldEmitter<?>>{
+/*class GetTarget implements Query<FieldEmitter<?>>{
 	private final FieldEmitter<?> exclude;
 	private final double dist;
 	private final Point pos;
@@ -172,9 +173,9 @@ class GetTarget implements Query<FieldEmitter<?>>{
 		}
 	}
 
-	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
-	public Class<FieldEmitter<?>> getType() {
-		return (Class) FieldEmitter.class;
+	public boolean isApplicable(Object o) {
+		return o instanceof FieldEmitter;
 	}
-}
+}*/
+

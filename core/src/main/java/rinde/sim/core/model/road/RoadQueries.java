@@ -14,6 +14,6 @@ public interface RoadQueries {
      * @param range
      * @param q
      */
-    <T extends RoadUser<?>> void queryAround(Point pos, double range, Query<T> q);
+    <T extends RoadUser<?>> void queryAround(Point pos, double range, Query q);
 }
         

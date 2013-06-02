@@ -16,8 +16,8 @@ public class SingleExe  extends Execution{
     }
     
     @Override
-    public LatchNode execute(List<AgentContainer> agents) {
-        LatchNode lastNode = new LatchNode();
+    public LatchNode execute(LatchNode startNode, List<AgentContainer> agents) {
+        LatchNode lastNode = startNode;
         
         //The main thread start by dividing the work in pieces
         for(AgentContainer c:agents){

@@ -18,8 +18,8 @@ public class BatchExe extends Execution{
     }
     
     @Override
-    public LatchNode execute(List<AgentContainer> containers) {
-        LatchNode lastNode = new LatchNode();
+    public LatchNode execute(LatchNode startNode, List<AgentContainer> containers) {
+        LatchNode lastNode = startNode;
         
         int max = containers.size();
         //Divide the work and feed it to the thread pool

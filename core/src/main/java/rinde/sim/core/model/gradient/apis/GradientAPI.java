@@ -1,4 +1,4 @@
-package gradient.model.apis;
+package rinde.sim.core.model.gradient.apis;
 
 import rinde.sim.core.graph.Point;
 import rinde.sim.core.model.road.apis.RoadAPI;
@@ -19,6 +19,8 @@ public interface GradientAPI {
      * @param Whether or not the field should be active.
      */
     void setIsActive(boolean active);
+    
+    double getField(Point point);
  
     /**
      * Returns if the field is active.

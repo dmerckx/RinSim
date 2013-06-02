@@ -1,7 +1,6 @@
 package comparison;
 
 import gradient.GradientScenario;
-import gradient2.FieldTruck2;
 import gradient2.GradientScenario2;
 import naive.NaiveScenario;
 import plots.Standards;
@@ -13,12 +12,12 @@ import comparison.Scenario.Result;
 import contractnet.ContractScenario;
 
 public class Comparison {
-	private static int seed = 26;
+	private static int seed = 29;
 	private static double speed = Standards.SPEED;
-	private static int ticks = 50;
-	private static int cars = 150;
+	private static int ticks = 200 ;
+	private static int cars = 300;
 	private static int proportion = 3;
-	private static int scenarioNr = 3;
+	private static int scenarioNr = 1;
 	
 	public static void main(String[] args) {
 		if(args.length >= 1) ticks = Integer.parseInt(args[0]);
@@ -26,17 +25,22 @@ public class Comparison {
 		int blocksize = args.length >= 3? Integer.parseInt(args[2]) : 1;
 		Scenario s = null; Result r = null;
 		
-		
+		System.out.println(seed);
 		makeAndRunQuiet(Policies.getModPool(4, 1, true));
 		
-		for(int i = 1; i <= 8; i = i*2){
-			FieldTruck2.mode = 0;
-			makeAndRun(Policies.getModPool(i, 1, true), blocksize);
-			FieldTruck2.mode = 1;
-			makeAndRun(Policies.getModPool(i, 1, true), blocksize);
-			FieldTruck2.mode = 2;
-			makeAndRun(Policies.getModPool(i, 1, true), blocksize);
-		}
+		makeAndRun(Policies.getModPool(4, 1, true));
+		makeAndRun(Policies.getModPool(4, 5, true));
+		makeAndRun(Policies.getAdaptive(4));
+		
+		
+		/*for(int i = 1; i <= 8; i = i*2){
+			//FieldTruck2.mode = 0;
+			makeAndRun(Policies.getModPool(i, 1, true));
+			//FieldTruck2.mode = 1;
+			makeAndRun(Policies.getModPool(i, 1, true));
+			//FieldTruck2.mode = 2;
+			makeAndRun(Policies.getModPool(i, 1, true));
+		}*/
 	}
 	
 	private static Scenario makeScenario(AgentsPolicy policy){
@@ -74,7 +78,7 @@ public class Comparison {
 		Scenario s = makeScenario(policy);
 		s.init(blocks);
 		Result r = s.run();
-		if(!quiet) System.out.println(policy + " : " + r.runtime + " | " + r.deliveries + "/" + r.pickups);
+		if(!quiet) System.out.println(policy + " : " + r.runtime + " | " + r.deliveries + "/" + r.pickups + " | blocksize: " + blocks);
 		else System.out.println(".");
 	} 
 }

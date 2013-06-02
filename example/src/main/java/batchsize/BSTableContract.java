@@ -1,7 +1,5 @@
 package batchsize;
 
-import gradient.GradientScenario;
-
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -14,16 +12,17 @@ import rinde.sim.core.simulation.policies.AgentsPolicy;
 import rinde.sim.core.simulation.policies.Policies;
 
 import comparison.Scenario;
+
 import contractnet.ContractScenario;
 
 public class BSTableContract  extends BatchSizeTableAbstr{
 
 	public static final String PATH = "/tmp/";
 	
-	public static final int[] AGENTS = new int[]{50, 100, 200, 400, 800, 1200, 1500, 2000, 3000};
-	public static final int[] BATCHSIZES = new int[]{0, 1, 5, 15, 30, 60, 100, 200, 300, 500};
+	public static final int[] AGENTS = new int[]{50, 100, 200, 400, 800, 1200, 1500, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000};
+	public static final int[] BATCHSIZES = new int[]{0, 1, 5, 15, 30, 60, 100, 200, 300};
 	
-	private static int BASE_TICKS = 10000 * 100;
+	public static int BASE_TICKS = 10000 * 100;
 	
 	
 	//public static final String[] NAMES = new String[]{"Naive", "GradientField", "ContractNet"};
@@ -43,7 +42,7 @@ public class BSTableContract  extends BatchSizeTableAbstr{
 		String res = new BSTableContract(AGENTS, BATCHSIZES, BASE_TICKS).run();
 		
 		try {
-			FileWriter writer = new FileWriter(new File(PATH + "BATCHSIZETABLE"));
+			FileWriter writer = new FileWriter(new File(PATH + "BATCHSIZETABLE_CONTRACT"));
 			writer.write(res);
 			writer.close();
 		} catch (IOException e) {

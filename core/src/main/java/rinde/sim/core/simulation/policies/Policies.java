@@ -4,6 +4,7 @@ import rinde.sim.core.simulation.policies.agents.MultiThreaded;
 import rinde.sim.core.simulation.policies.agents.SingleThreaded;
 import rinde.sim.core.simulation.policies.agents.util.CustomPool;
 import rinde.sim.core.simulation.policies.agents.util.StdPool;
+import rinde.sim.core.simulation.policies.execution.AdaptiveBatchRecExe;
 import rinde.sim.core.simulation.policies.execution.BatchExe;
 import rinde.sim.core.simulation.policies.execution.BatchRecExe;
 import rinde.sim.core.simulation.policies.execution.SingleExe;
@@ -34,6 +35,13 @@ public class Policies {
             return new MultiThreaded(new BatchRecExe(batchSize), new CustomPool(maxThreads-1));
 
         return new MultiThreaded(new BatchExe(batchSize), new CustomPool(maxThreads-1));
+    }
+    
+    public static AgentsPolicy getAdaptive(int maxThreads){
+        if(maxThreads == 1)
+            return getSingleThreaded();
+    
+        return new MultiThreaded(new AdaptiveBatchRecExe(), new CustomPool(maxThreads-1));
     }
 
     public static AgentsPolicy getSingleThreaded() {

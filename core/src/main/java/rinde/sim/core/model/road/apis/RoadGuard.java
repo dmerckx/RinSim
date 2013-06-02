@@ -71,7 +71,7 @@ public class RoadGuard extends RoadState implements RoadAPI{
     // ----- ROAD QUERIES ----- //
 
     @Override
-    public <T extends RoadUser<?>> void queryAround(Point pos, double range, Query<T> q) {
+    public void queryAround(Point pos, double range, Query q) {
         model.queryAround(pos, range, q);
     }
 }

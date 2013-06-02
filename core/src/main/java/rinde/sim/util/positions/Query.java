@@ -1,11 +1,13 @@
 package rinde.sim.util.positions;
 
-public interface Query<T> {
+import rinde.sim.core.model.road.users.RoadUser;
+
+public interface Query {
     
     /**
      * Return true if value should be filtered out of the results
      */
-    void process(T t);
+    void process(RoadUser<?> t);
     
-    Class<T> getType();
+    public Class<?> getType();
 }

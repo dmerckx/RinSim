@@ -1,19 +1,11 @@
-package gradient.model;
-
-import gradient.model.apis.GradientGuard;
-import gradient.model.users.FieldData;
-import gradient.model.users.FieldEmitter;
+package rinde.sim.core.model.gradient;
 
 import java.util.List;
-import java.util.Set;
 
-import rinde.sim.core.graph.Point;
 import rinde.sim.core.model.Model;
-import rinde.sim.core.model.pdp.apis.PickupAPI;
-import rinde.sim.core.model.pdp.apis.PickupAPI.PickupState;
-import rinde.sim.core.model.pdp.apis.PickupPointState;
-import rinde.sim.core.model.pdp.apis.TruckAPI;
-import rinde.sim.core.model.pdp.users.PickupPoint;
+import rinde.sim.core.model.gradient.apis.GradientGuard;
+import rinde.sim.core.model.gradient.users.FieldData;
+import rinde.sim.core.model.gradient.users.FieldEmitter;
 import rinde.sim.core.model.road.RoadModel;
 import rinde.sim.core.simulation.TimeInterval;
 import rinde.sim.core.simulation.UserInit;
@@ -22,7 +14,6 @@ import rinde.sim.core.simulation.time.TimeLapseHandle;
 import rinde.sim.util.Rectangle;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 
 public class GradientModel implements Model<FieldData, FieldEmitter<?>>{
 

@@ -9,7 +9,7 @@ import rinde.sim.core.simulation.policies.agents.util.LatchNode;
 import rinde.sim.core.simulation.policies.agents.util.Rules;
 
 public class BatchRecExe extends Execution{
-    protected final int batchSize;
+    protected int batchSize;
     protected final Rules2 rules;
     
     public BatchRecExe(int batchSize) {
@@ -18,8 +18,8 @@ public class BatchRecExe extends Execution{
     }
     
     @Override
-    public LatchNode execute(List<AgentContainer> containers) {
-        LatchNode lastNode = new LatchNode();
+    public LatchNode execute(LatchNode startNode, List<AgentContainer> containers) {
+        LatchNode lastNode = startNode;
         
         int max = containers.size();
         //Divide the work and feed it to the thread pool
@@ -39,7 +39,7 @@ public class BatchRecExe extends Execution{
 
     @Override
     public String toString() {
-        return "BatchRecExe";
+        return "Batch" + batchSize + "RecExe";
     }
 
 }
@@ -56,7 +56,7 @@ class Task2 implements Runnable{
         this.batch = batch;
         this.node = node;
         this.rules = rules;
-        this.counter = 0;
+        this.counter = batch.size();
     }
     
     public void run(){
@@ -73,9 +73,9 @@ class Task2 implements Runnable{
     }
     
     public void startNext(){
-        while(counter < batch.size()){
-            counter++;
-            batch.get(counter-1).doTick();
+        while(counter > 0){
+            counter--;
+            batch.get(counter).doTick();
         }
     }
 }

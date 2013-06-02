@@ -7,6 +7,7 @@ import rinde.sim.core.model.pdp.users.PickupPoint;
 import rinde.sim.core.model.pdp.users.Truck;
 import rinde.sim.core.model.pdp.users.TruckData;
 import rinde.sim.core.model.road.apis.RoadAPI;
+import rinde.sim.core.model.road.users.RoadUser;
 import rinde.sim.util.positions.Query;
 
 //TODO
@@ -39,7 +40,7 @@ public class TruckGuard implements TruckAPI{
     }
 }
 
-class ClosestAvailableParcelQuery implements Query<PickupPoint<?>>{
+class ClosestAvailableParcelQuery implements Query{
     private final Point from;
     
     private Point closest;
@@ -57,7 +58,12 @@ class ClosestAvailableParcelQuery implements Query<PickupPoint<?>>{
     }
     
     @Override
-    public void process(PickupPoint<?> pp) {
+    public void process(RoadUser<?> obj) {
+        if(!(obj instanceof PickupPoint))
+            return;
+        
+        PickupPoint<?> pp = (PickupPoint<?>) obj;
+        
         double distPp = Point.distance(from, pp.getRoadState().getLocation());
         if(distPp < dist &&
                 pp.getPickupPointState().getPickupState() == PickupState.AVAILABLE){
@@ -67,8 +73,7 @@ class ClosestAvailableParcelQuery implements Query<PickupPoint<?>>{
     }
 
     @Override
-    public Class<PickupPoint<?>> getType() {
-        return (Class) PickupPoint.class;
+    public Class<?> getType() {
+        return PickupPoint.class;
     }
-    
 }

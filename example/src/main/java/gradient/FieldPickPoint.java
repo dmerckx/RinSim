@@ -1,10 +1,10 @@
 package gradient;
 
 import gradient.FieldPickPoint.FPData;
-import gradient.model.apis.GradientAPI;
-import gradient.model.apis.GradientState;
-import gradient.model.users.FieldData;
-import gradient.model.users.FieldEmitter;
+import rinde.sim.core.model.gradient.apis.GradientAPI;
+import rinde.sim.core.model.gradient.apis.GradientState;
+import rinde.sim.core.model.gradient.users.FieldData;
+import rinde.sim.core.model.gradient.users.FieldEmitter;
 import rinde.sim.core.model.pdp.Parcel;
 import rinde.sim.core.model.pdp.users.PickupPoint;
 import rinde.sim.core.model.pdp.users.PickupPointData;

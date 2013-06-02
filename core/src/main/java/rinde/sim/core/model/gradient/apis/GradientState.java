@@ -1,4 +1,4 @@
-package gradient.model.apis;
+package rinde.sim.core.model.gradient.apis;
 
 
 public abstract class GradientState {

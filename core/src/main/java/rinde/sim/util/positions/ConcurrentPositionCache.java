@@ -16,10 +16,10 @@ public class ConcurrentPositionCache<T extends RoadUser<?>> {
     private final double width;
     private final double height;
     
-    private final int nrBlocks;
     private final TimeInterval clock;
-    
-    private final ConcurrentRegion<T>[] regions;
+
+    public final int nrBlocks;
+    public final ConcurrentRegion<T>[] regions;
     
     public ConcurrentPositionCache(Rectangle bounds, int nrBlocks, TimeInterval clock) {
         if (clock == null) throw new IllegalStateException();
@@ -52,7 +52,7 @@ public class ConcurrentPositionCache<T extends RoadUser<?>> {
         }
     }
     
-    public <T2 extends T> void query(Point pos, double range, Query<T2> query){
+    public void query(Point pos, double range, Query query){
         Region minReg = getRegion(new Point(pos.x - range, pos.y - range));
         Region maxReg = getRegion(new Point(pos.x + range, pos.y + range));
        

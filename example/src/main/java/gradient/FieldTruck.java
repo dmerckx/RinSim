@@ -1,12 +1,12 @@
 package gradient;
 
 import gradient.FieldTruck.FTData;
-import gradient.model.apis.GradientAPI;
-import gradient.model.apis.GradientState;
-import gradient.model.users.FieldData;
-import gradient.model.users.FieldEmitter;
 import rinde.sim.core.graph.Point;
 import rinde.sim.core.model.Agent;
+import rinde.sim.core.model.gradient.apis.GradientAPI;
+import rinde.sim.core.model.gradient.apis.GradientState;
+import rinde.sim.core.model.gradient.users.FieldData;
+import rinde.sim.core.model.gradient.users.FieldEmitter;
 import rinde.sim.core.model.pdp.Parcel;
 import rinde.sim.core.model.pdp.users.Truck;
 import rinde.sim.core.model.pdp.users.TruckData;
@@ -34,20 +34,30 @@ public class FieldTruck extends Truck<FTData> implements FieldEmitter<FTData>, A
 	
 	@Override
 	public void tick(TimeLapse time) {
-		gradientAPI.getTarget(5*roadAPI.getSpeed());
-		
-		/*switch(state){
+		switch(state){
 		case SEARCHING:
-			Point target = gradientAPI.getTarget(5*roadAPI.getSpeed());
-			roadAPI.setTarget(target);
-			roadAPI.advance(time);
+			Point closest = truckAPI.findClosestAvailableParcel();
 
-			if(!roadAPI.isDriving() && time.hasTimeLeft()){
-				Parcel p = containerAPI.tryPickup(time);
-				if(p != null){
-					roadAPI.setTarget(p.destination);
-					changeState(State.DRIVING_TO_DELIVERY);
+			if(closest != null && Point.distance(closest, roadAPI.getCurrentLocation()) < 5*roadAPI.getSpeed()){
+				//drive to the most nearby package
+				roadAPI.setTarget(closest);
+				roadAPI.advance(time);
+
+				if(!roadAPI.isDriving() && time.hasTimeLeft()){
+					Parcel p = containerAPI.tryPickup(time);
+					if(p != null){
+						roadAPI.setTarget(p.destination);
+						changeState(State.DRIVING_TO_DELIVERY);
+					}
 				}
+			}
+			else{
+				//let the field guide the way
+				Point target = gradientAPI.getTarget(5*roadAPI.getSpeed());
+				if(target == null) throw new IllegalStateException();
+
+				roadAPI.setTarget(target);
+				roadAPI.advance(time);
 			}
 			break;
 		case DRIVING_TO_DELIVERY:
@@ -59,7 +69,7 @@ public class FieldTruck extends Truck<FTData> implements FieldEmitter<FTData>, A
 				changeState(State.SEARCHING);
 			}
 			break;
-		}*/
+		}
 	}
 	
 	private void changeState(State newState){

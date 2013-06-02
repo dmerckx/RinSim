@@ -1,13 +1,13 @@
 package gradient;
 
-import gradient.model.GradientModel;
-import comparison.Scenario;
-
 import rinde.sim.core.graph.Point;
+import rinde.sim.core.model.gradient.GradientModel;
 import rinde.sim.core.model.pdp.Parcel;
 import rinde.sim.core.model.pdp.users.DeliveryPoint;
 import rinde.sim.core.model.pdp.users.DeliveryPointData;
 import rinde.sim.core.simulation.policies.AgentsPolicy;
+
+import comparison.Scenario;
 
 public class GradientScenario extends Scenario{
 	

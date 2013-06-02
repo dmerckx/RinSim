@@ -11,7 +11,7 @@ import comparison.Scenario.Result;
 public abstract class BatchSizeTableAbstr {
 	public static final String PATH = "/tmp/";
 	
-	protected static int SAMPLES = 11;
+	protected static int SAMPLES = 8;
 	protected static int CORES = 4;
 	
 	private int baseTicks;
@@ -142,7 +142,7 @@ public abstract class BatchSizeTableAbstr {
 		}
 		
 		for(int a = 0; a < agents.length; a++){
-			results[a][0] = (agents[a] * ticks[a]) / (results[a][0] / (SAMPLES));
+			results[a][0] = (100 * agents[a] * ticks[a]) / (results[a][0] / SAMPLES);
 			for(int b = 0; b < batchsizes.length; b++){
 				if(results[a][b+1] == Long.MAX_VALUE) continue;
 				
